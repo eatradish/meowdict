@@ -77,8 +77,8 @@ fn response_moedict(keyword: &str) -> Result<HashMap<String, Vec<Vec<String>>>> 
                         }
                     }
                 }
-                count += 1;
             }
+            count += 1;
         }
     }
     Ok(result)
