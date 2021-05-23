@@ -10,6 +10,7 @@ pub fn build_cli() -> App<'static, 'static> {
             Arg::with_name("INPUT")
                 .help("Input the keyword to use")
                 .required(true)
-                .index(1),
+                .index(1)
+                .min_values(1),
         )
 }

@@ -6,11 +6,14 @@ mod cli;
 
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
-    let result = response_moedict(app.value_of("INPUT").unwrap())?;
-    for (k, v) in result {
-        println!("{}:", k);
-        for (i, value) in v.iter().enumerate() {
-            println!("{}.{}", i + 1, value.join("\n"));
+    for entry in app.values_of("INPUT").unwrap() {
+        let result = response_moedict(entry)?;
+        println!("{}:", entry);
+        for (k, v) in result {
+            println!("{}:", k);
+            for (i, value) in v.iter().enumerate() {
+                println!("{}.{}", i + 1, value.join("\n"));
+            }
         }
     }
 
