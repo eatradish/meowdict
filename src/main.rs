@@ -94,15 +94,13 @@ fn format_result(result: String) -> Result<HashMap<String, Vec<Vec<String>>>> {
 fn format_output(moedict_result: HashMap<String, Vec<Vec<String>>>) -> String {
     let mut result = Vec::new();
     for (k, v) in moedict_result {
-        result.push(k);
+        if k != "notype" {
+            result.push(k);
+        }
         for (i, value) in v.iter().enumerate() {
             result.push(format!("{}.{}", i + 1, value.join("\n")));
         }
     }
 
-    result
-        .into_iter()
-        .filter(|x| !x.contains("notype"))
-        .collect::<Vec<String>>()
-        .join("\n")
+    result.join("\n")
 }
