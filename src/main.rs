@@ -30,7 +30,6 @@ fn response_moedict(keyword: &str) -> Result<HashMap<String, Vec<Vec<String>>>> 
         .ok_or_else(|| anyhow!("Failed to get dict!"))?
         .as_array()
         .ok_or_else(|| anyhow!("dict is not array!"))?;
-
     let mut result: HashMap<String, Vec<Vec<String>>> = HashMap::new();
     for i in dict {
         let dicts_item = i
@@ -65,37 +64,22 @@ fn response_moedict(keyword: &str) -> Result<HashMap<String, Vec<Vec<String>>>> 
                         .ok_or_else(|| anyhow!("This item is not String!"))?
                         .to_string(),
                 );
-            } else if let Some(v) = dict_item.get("q") {
-                let item_list = v
-                    .as_array()
-                    .ok_or_else(|| anyhow!("This item is not arrays!"))?;
-                for j in item_list {
-                    if let Some(j) = j.as_str() {
-                        result.get_mut(t).unwrap()[count].push(j.to_string());
+            } else {
+                for i in vec!["q", "e", "l"] {
+                    if let Some(v) = dict_item.get(i) {
+                        let item_list = v
+                            .as_array()
+                            .ok_or_else(|| anyhow!("This item is not arrays!"))?;
+                        for j in item_list {
+                            if let Some(j) = j.as_str() {
+                                result.get_mut(t).unwrap()[count].push(j.to_string());
+                            }
+                        }
                     }
                 }
-            } else if let Some(v) = dict_item.get("e") {
-                let item_list = v
-                    .as_array()
-                    .ok_or_else(|| anyhow!("This item is not arrays!"))?;
-                for j in item_list {
-                    if let Some(j) = j.as_str() {
-                        result.get_mut(t).unwrap()[count].push(j.to_string());
-                    }
-                }
-            } else if let Some(v) = dict_item.get("l") {
-                let item_list = v
-                    .as_array()
-                    .ok_or_else(|| anyhow!("This item is not arrays!"))?;
-                for j in item_list {
-                    if let Some(j) = j.as_str() {
-                        result.get_mut(t).unwrap()[count].push(j.to_string());
-                    }
-                }
+                count += 1;
             }
-            count += 1;
         }
     }
-
     Ok(result)
 }
