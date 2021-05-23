@@ -64,16 +64,15 @@ fn response_moedict(keyword: &str) -> Result<HashMap<String, Vec<Vec<String>>>> 
                         .ok_or_else(|| anyhow!("This item is not String!"))?
                         .to_string(),
                 );
-            } else {
-                for i in &["q", "e", "l"] {
-                    if let Some(v) = dict_item.get(&i.to_string()) {
-                        let item_list = v
-                            .as_array()
-                            .ok_or_else(|| anyhow!("This item is not arrays!"))?;
-                        for j in item_list {
-                            if let Some(j) = j.as_str() {
-                                result.get_mut(t).unwrap()[count].push(j.to_string());
-                            }
+            }
+            for i in &["q", "e", "l"] {
+                if let Some(v) = dict_item.get(&i.to_string()) {
+                    let item_list = v
+                        .as_array()
+                        .ok_or_else(|| anyhow!("This item is not arrays!"))?;
+                    for j in item_list {
+                        if let Some(j) = j.as_str() {
+                            result.get_mut(t).unwrap()[count].push(j.to_string());
                         }
                     }
                 }
