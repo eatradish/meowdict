@@ -1,5 +1,5 @@
 # meowdict
-moedict.tw web cli client
+moedict.tw web client
 
 ## Usage
 ```
