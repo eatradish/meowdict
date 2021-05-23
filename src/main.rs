@@ -6,14 +6,14 @@ mod cli;
 
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
-    for entry in app.values_of("INPUT").unwrap() {
-        let result = response_moedict(entry)?;
-        println!("{}:", entry);
-        for (k, v) in result {
-            println!("{}:", k);
-            for (i, value) in v.iter().enumerate() {
-                println!("{}.{}", i + 1, value.join("\n"));
-            }
+    let input: Vec<&str> = app.values_of("INPUT").unwrap().collect();
+    if input.len() == 1 {
+        let result = response_moedict(input[0])?;
+        println!("{}", format_output(result));
+    } else {
+        for entry in app.values_of("INPUT").unwrap() {
+            let result = response_moedict(entry)?;
+            println!("{}:\n{}", entry, format_output(result));
         }
     }
 
@@ -27,6 +27,11 @@ fn response_moedict(keyword: &str) -> Result<HashMap<String, Vec<Vec<String>>>> 
     if result.contains("<title>404 Not Found</title>") {
         return Err(anyhow!("Could not find keyword: {}", keyword));
     }
+    let result = format_result(result)?;
+    Ok(result)
+}
+
+fn format_result(result: String) -> Result<HashMap<String, Vec<Vec<String>>>> {
     let json: HashMap<String, Value> = serde_json::from_str(&result)?;
     let dict = json
         .get("h")
@@ -53,7 +58,7 @@ fn response_moedict(keyword: &str) -> Result<HashMap<String, Vec<Vec<String>>>> 
                     .as_str()
                     .ok_or_else(|| anyhow!("This item is not String!"))?;
             } else {
-                t = keyword;
+                t = "notype";
             }
             if result.get(t).is_none() {
                 result.insert(t.to_string(), vec![Vec::new()]);
@@ -84,4 +89,20 @@ fn response_moedict(keyword: &str) -> Result<HashMap<String, Vec<Vec<String>>>> 
         }
     }
     Ok(result)
+}
+
+fn format_output(moedict_result: HashMap<String, Vec<Vec<String>>>) -> String {
+    let mut result = Vec::new();
+    for (k, v) in moedict_result {
+        result.push(k);
+        for (i, value) in v.iter().enumerate() {
+            result.push(format!("{}.{}", i + 1, value.join("\n")));
+        }
+    }
+
+    result
+        .into_iter()
+        .filter(|x| !x.contains("notype"))
+        .collect::<Vec<String>>()
+        .join("\n")
 }
