@@ -9,8 +9,8 @@ fn main() -> Result<()> {
     let result = response_moedict(app.value_of("INPUT").unwrap())?;
     for (k, v) in result {
         println!("{}:", k);
-        for i in 0..v.len() {
-            println!("{}.{}", i + 1, v[i].join("\n"));
+        for (i, value) in v.iter().enumerate() {
+            println!("{}.{}", i + 1, value.join("\n"));
         }
     }
 
