@@ -65,8 +65,8 @@ fn response_moedict(keyword: &str) -> Result<HashMap<String, Vec<Vec<String>>>> 
                         .to_string(),
                 );
             } else {
-                for i in vec!["q", "e", "l"] {
-                    if let Some(v) = dict_item.get(i) {
+                for i in &["q", "e", "l"] {
+                    if let Some(v) = dict_item.get(&i.to_string()) {
                         let item_list = v
                             .as_array()
                             .ok_or_else(|| anyhow!("This item is not arrays!"))?;
