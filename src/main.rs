@@ -48,7 +48,8 @@ fn format_result(result: String) -> Result<Vec<HashMap<String, Vec<Vec<String>>>
             .ok_or_else(|| anyhow!("Cannot find d!"))?
             .as_array()
             .ok_or_else(|| anyhow!("d is not array!"))?;
-        for (dict_item_index, dict_item) in dicts_item.iter().enumerate() {
+        let mut count: usize = 0;
+        for dict_item in dicts_item {
             let dict_item = dict_item
                 .as_object()
                 .ok_or_else(|| anyhow!("d item is not object!"))?;
@@ -62,11 +63,12 @@ fn format_result(result: String) -> Result<Vec<HashMap<String, Vec<Vec<String>>>
             }
             if result[dict_index].get(t).is_none() {
                 result[dict_index].insert(t.to_string(), vec![Vec::new()]);
+                count = 0;
             } else {
                 result[dict_index].get_mut(t).unwrap().push(Vec::new());
             }
             if let Some(v) = dict_item.get("f") {
-                result[dict_index].get_mut(t).unwrap()[dict_item_index].push(
+                result[dict_index].get_mut(t).unwrap()[count].push(
                     v.as_str()
                         .ok_or_else(|| anyhow!("This item is not String!"))?
                         .to_string(),
@@ -79,11 +81,12 @@ fn format_result(result: String) -> Result<Vec<HashMap<String, Vec<Vec<String>>>
                         .ok_or_else(|| anyhow!("This item is not arrays!"))?;
                     for j in item_list {
                         if let Some(j) = j.as_str() {
-                            result[dict_index].get_mut(t).unwrap()[dict_item_index].push(j.to_string());
+                            result[dict_index].get_mut(t).unwrap()[count].push(j.to_string());
                         }
                     }
                 }
             }
+            count += 1;
         }
     }
     Ok(result)
