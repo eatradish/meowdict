@@ -5,6 +5,8 @@ use std::collections::HashMap;
 
 mod cli;
 
+type MoedictResult = HashMap<String, HashMap<String, Vec<Vec<String>>>>;
+
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
     let input: Vec<&str> = app.values_of("INPUT").unwrap().collect();
@@ -19,7 +21,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn request_moedict(keyword: &str) -> Result<HashMap<String, HashMap<String, Vec<Vec<String>>>>> {
+fn request_moedict(keyword: &str) -> Result<MoedictResult> {
     let response =
         reqwest::blocking::get(format!("https://www.moedict.tw/a/{}.json", keyword))?.text()?;
     let result = response.replace("~", "").replace("`", "");
@@ -31,7 +33,7 @@ fn request_moedict(keyword: &str) -> Result<HashMap<String, HashMap<String, Vec<
     Ok(result)
 }
 
-fn format_result(result: String) -> Result<HashMap<String, HashMap<String, Vec<Vec<String>>>>> {
+fn format_result(result: String) -> Result<MoedictResult> {
     let json: HashMap<String, Value> = serde_json::from_str(&result)?;
     let dict = json
         .get("h")
@@ -109,7 +111,7 @@ fn format_result(result: String) -> Result<HashMap<String, HashMap<String, Vec<V
     Ok(result)
 }
 
-fn format_output(moedict_result: HashMap<String, HashMap<String, Vec<Vec<String>>>>) -> String {
+fn format_output(moedict_result: MoedictResult) -> String {
     let mut result = Vec::new();
     for (pinyin, moedict_result_val) in moedict_result {
         result.push(
