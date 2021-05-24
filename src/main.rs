@@ -13,7 +13,7 @@ fn main() -> Result<()> {
     for entry in &input {
         let result = request_moedict(entry)?;
         if input.len() != 1 {
-            println!("{}：", entry.yellow());
+            println!("{}：", entry.fg_rgb::<178, 143, 206>());
         }
         println!("{}", format_output(result));
     }
