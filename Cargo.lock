@@ -385,7 +385,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
- "log",
+ "owo-colors",
  "reqwest",
  "serde",
  "serde_json",
@@ -494,6 +494,12 @@ dependencies = [
  "pkg-config",
  "vcpkg",
 ]
+
+[[package]]
+name = "owo-colors"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2fe43bf372b08cc9ccee5144715db59c79ab00168bbe4cf0d274dc0d5f64d7f"
 
 [[package]]
 name = "percent-encoding"
@@ -645,7 +651,6 @@ dependencies = [
  "percent-encoding",
  "pin-project-lite",
  "serde",
- "serde_json",
  "serde_urlencoded",
  "tokio",
  "tokio-native-tls",

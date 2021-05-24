@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Result};
+use owo_colors::OwoColorize;
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -7,14 +8,12 @@ mod cli;
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
     let input: Vec<&str> = app.values_of("INPUT").unwrap().collect();
-    if input.len() == 1 {
-        let result = request_moedict(input[0])?;
-        println!("{}", format_output(result));
-    } else {
-        for entry in app.values_of("INPUT").unwrap() {
-            let result = request_moedict(entry)?;
-            println!("{}:\n{}", entry, format_output(result));
+    for entry in &input {
+        let result = request_moedict(entry)?;
+        if input.len() != 1 {
+            println!("{}：", entry.yellow());
         }
+        println!("{}", format_output(result));
     }
 
     Ok(())
@@ -97,10 +96,17 @@ fn format_output(moedict_result: Vec<HashMap<String, Vec<Vec<String>>>>) -> Stri
     for i in moedict_result {
         for (k, v) in i {
             if k != "notype" {
-                result.push(k);
+                result.push(format!("{}：", k.fg_rgb::<168, 216, 165>()));
             }
-            for (i, value) in v.iter().enumerate() {
-                result.push(format!("{}.{}", i + 1, value.join("\n")));
+            for (index, value) in v.iter().enumerate() {
+                result.push(
+                    format!("{}.{}", index + 1, value[0].clone())
+                        .fg_rgb::<129, 199, 212>()
+                        .to_string(),
+                );
+                if !value[1..].is_empty() {
+                    result.push(value[1..].join("\n").fg_rgb::<220, 159, 180>().to_string())
+                }
             }
         }
     }
