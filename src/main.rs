@@ -19,7 +19,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn request_moedict(keyword: &str) -> Result<Vec<HashMap<String, Vec<Vec<String>>>>> {
+fn request_moedict(keyword: &str) -> Result<HashMap<String, HashMap<String, Vec<Vec<String>>>>> {
     let response =
         reqwest::blocking::get(format!("https://www.moedict.tw/a/{}.json", keyword))?.text()?;
     let result = response.replace("~", "").replace("`", "");
@@ -31,16 +31,15 @@ fn request_moedict(keyword: &str) -> Result<Vec<HashMap<String, Vec<Vec<String>>
     Ok(result)
 }
 
-fn format_result(result: String) -> Result<Vec<HashMap<String, Vec<Vec<String>>>>> {
+fn format_result(result: String) -> Result<HashMap<String, HashMap<String, Vec<Vec<String>>>>> {
     let json: HashMap<String, Value> = serde_json::from_str(&result)?;
     let dict = json
         .get("h")
         .ok_or_else(|| anyhow!("Failed to get dict!"))?
         .as_array()
         .ok_or_else(|| anyhow!("dict is not array!"))?;
-    let mut result = Vec::new();
-    for (dict_index, dict_val) in dict.iter().enumerate() {
-        result.push(HashMap::new());
+    let mut result = HashMap::new();
+    for dict_val in dict {
         let dicts_item = dict_val
             .as_object()
             .ok_or_else(|| anyhow!("dict item is not object!"))?
@@ -48,6 +47,16 @@ fn format_result(result: String) -> Result<Vec<HashMap<String, Vec<Vec<String>>>
             .ok_or_else(|| anyhow!("Cannot find d!"))?
             .as_array()
             .ok_or_else(|| anyhow!("d is not array!"))?;
+        let pinyin = dict_val
+            .as_object()
+            .ok_or_else(|| anyhow!("dict item is not object!"))?
+            .get("p")
+            .ok_or_else(|| anyhow!("Caanot get d!"))?
+            .as_str()
+            .ok_or_else(|| anyhow!("p is not String!"))?;
+        if result.get(pinyin).is_none() {
+            result.insert(pinyin.to_string(), HashMap::new());
+        }
         let mut count: usize = 0;
         for dict_item in dicts_item {
             let dict_item = dict_item
@@ -59,14 +68,22 @@ fn format_result(result: String) -> Result<Vec<HashMap<String, Vec<Vec<String>>>
             } else {
                 "notype"
             };
-            if result[dict_index].get(t).is_none() {
-                result[dict_index].insert(t.to_string(), vec![Vec::new()]);
+            if result.get(pinyin).unwrap().get(t).is_none() {
+                result
+                    .get_mut(&pinyin.to_string())
+                    .unwrap()
+                    .insert(t.to_string(), vec![Vec::new()]);
                 count = 0;
             } else {
-                result[dict_index].get_mut(t).unwrap().push(Vec::new());
+                result
+                    .get_mut(pinyin)
+                    .unwrap()
+                    .get_mut(t)
+                    .unwrap()
+                    .push(Vec::new());
             }
             if let Some(v) = dict_item.get("f") {
-                result[dict_index].get_mut(t).unwrap()[count].push(
+                result.get_mut(pinyin).unwrap().get_mut(t).unwrap()[count].push(
                     v.as_str()
                         .ok_or_else(|| anyhow!("This item is not String!"))?
                         .to_string(),
@@ -79,7 +96,8 @@ fn format_result(result: String) -> Result<Vec<HashMap<String, Vec<Vec<String>>>
                         .ok_or_else(|| anyhow!("This item is not arrays!"))?;
                     for j in item_list {
                         if let Some(j) = j.as_str() {
-                            result[dict_index].get_mut(t).unwrap()[count].push(j.to_string());
+                            result.get_mut(pinyin).unwrap().get_mut(t).unwrap()[count]
+                                .push(j.to_string());
                         }
                     }
                 }
@@ -91,10 +109,15 @@ fn format_result(result: String) -> Result<Vec<HashMap<String, Vec<Vec<String>>>
     Ok(result)
 }
 
-fn format_output(moedict_result: Vec<HashMap<String, Vec<Vec<String>>>>) -> String {
+fn format_output(moedict_result: HashMap<String, HashMap<String, Vec<Vec<String>>>>) -> String {
     let mut result = Vec::new();
-    for i in moedict_result {
-        for (k, v) in i {
+    for (pinyin, moedict_result_val) in moedict_result {
+        result.push(
+            format!("讀音：{}", pinyin)
+                .fg_rgb::<236, 184, 138>()
+                .to_string(),
+        );
+        for (k, v) in moedict_result_val {
             if k != "notype" {
                 result.push(format!("{}：", k.fg_rgb::<168, 216, 165>()));
             }
