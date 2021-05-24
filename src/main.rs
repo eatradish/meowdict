@@ -8,11 +8,11 @@ fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
     let input: Vec<&str> = app.values_of("INPUT").unwrap().collect();
     if input.len() == 1 {
-        let result = response_moedict(input[0])?;
+        let result = request_moedict(input[0])?;
         println!("{}", format_output(result));
     } else {
         for entry in app.values_of("INPUT").unwrap() {
-            let result = response_moedict(entry)?;
+            let result = request_moedict(entry)?;
             println!("{}:\n{}", entry, format_output(result));
         }
     }
@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn response_moedict(keyword: &str) -> Result<HashMap<String, Vec<Vec<String>>>> {
+fn request_moedict(keyword: &str) -> Result<Vec<HashMap<String, Vec<Vec<String>>>>> {
     let response =
         reqwest::blocking::get(format!("https://www.moedict.tw/a/{}.json", keyword))?.text()?;
     let result = response.replace("~", "").replace("`", "");
@@ -31,24 +31,24 @@ fn response_moedict(keyword: &str) -> Result<HashMap<String, Vec<Vec<String>>>> 
     Ok(result)
 }
 
-fn format_result(result: String) -> Result<HashMap<String, Vec<Vec<String>>>> {
+fn format_result(result: String) -> Result<Vec<HashMap<String, Vec<Vec<String>>>>> {
     let json: HashMap<String, Value> = serde_json::from_str(&result)?;
     let dict = json
         .get("h")
         .ok_or_else(|| anyhow!("Failed to get dict!"))?
         .as_array()
         .ok_or_else(|| anyhow!("dict is not array!"))?;
-    let mut result: HashMap<String, Vec<Vec<String>>> = HashMap::new();
-    for i in dict {
-        let dicts_item = i
+    let mut result = Vec::new();
+    for (dict_index, dict_val) in dict.iter().enumerate() {
+        result.push(HashMap::new());
+        let dicts_item = dict_val
             .as_object()
             .ok_or_else(|| anyhow!("dict item is not object!"))?
             .get("d")
             .ok_or_else(|| anyhow!("Cannot find d!"))?
             .as_array()
             .ok_or_else(|| anyhow!("d is not array!"))?;
-        let mut count: usize = 0;
-        for dict_item in dicts_item {
+        for (dict_item_index, dict_item) in dicts_item.iter().enumerate() {
             let dict_item = dict_item
                 .as_object()
                 .ok_or_else(|| anyhow!("d item is not object!"))?;
@@ -60,14 +60,13 @@ fn format_result(result: String) -> Result<HashMap<String, Vec<Vec<String>>>> {
             } else {
                 t = "notype";
             }
-            if result.get(t).is_none() {
-                result.insert(t.to_string(), vec![Vec::new()]);
-                count = 0;
+            if result[dict_index].get(t).is_none() {
+                result[dict_index].insert(t.to_string(), vec![Vec::new()]);
             } else {
-                result.get_mut(t).unwrap().push(Vec::new());
+                result[dict_index].get_mut(t).unwrap().push(Vec::new());
             }
             if let Some(v) = dict_item.get("f") {
-                result.get_mut(t).unwrap()[count].push(
+                result[dict_index].get_mut(t).unwrap()[dict_item_index].push(
                     v.as_str()
                         .ok_or_else(|| anyhow!("This item is not String!"))?
                         .to_string(),
@@ -80,27 +79,27 @@ fn format_result(result: String) -> Result<HashMap<String, Vec<Vec<String>>>> {
                         .ok_or_else(|| anyhow!("This item is not arrays!"))?;
                     for j in item_list {
                         if let Some(j) = j.as_str() {
-                            result.get_mut(t).unwrap()[count].push(j.to_string());
+                            result[dict_index].get_mut(t).unwrap()[dict_item_index].push(j.to_string());
                         }
                     }
                 }
             }
-            count += 1;
         }
     }
     Ok(result)
 }
 
-fn format_output(moedict_result: HashMap<String, Vec<Vec<String>>>) -> String {
+fn format_output(moedict_result: Vec<HashMap<String, Vec<Vec<String>>>>) -> String {
     let mut result = Vec::new();
-    for (k, v) in moedict_result {
-        if k != "notype" {
-            result.push(k);
-        }
-        for (i, value) in v.iter().enumerate() {
-            result.push(format!("{}.{}", i + 1, value.join("\n")));
+    for i in moedict_result {
+        for (k, v) in i {
+            if k != "notype" {
+                result.push(k);
+            }
+            for (i, value) in v.iter().enumerate() {
+                result.push(format!("{}.{}", i + 1, value.join("\n")));
+            }
         }
     }
-
     result.join("\n")
 }
