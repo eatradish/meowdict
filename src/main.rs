@@ -28,6 +28,7 @@ fn request_moedict(keyword: &str) -> Result<Vec<HashMap<String, Vec<Vec<String>>
         return Err(anyhow!("Could not find keyword: {}", keyword));
     }
     let result = format_result(result)?;
+
     Ok(result)
 }
 
@@ -53,14 +54,12 @@ fn format_result(result: String) -> Result<Vec<HashMap<String, Vec<Vec<String>>>
             let dict_item = dict_item
                 .as_object()
                 .ok_or_else(|| anyhow!("d item is not object!"))?;
-            let t;
-            if let Some(v) = dict_item.get("type") {
-                t = v
-                    .as_str()
-                    .ok_or_else(|| anyhow!("This item is not String!"))?;
+            let t = if let Some(v) = dict_item.get("type") {
+                v.as_str()
+                    .ok_or_else(|| anyhow!("This item is not String!"))?
             } else {
-                t = "notype";
-            }
+                "notype"
+            };
             if result[dict_index].get(t).is_none() {
                 result[dict_index].insert(t.to_string(), vec![Vec::new()]);
                 count = 0;
@@ -89,6 +88,7 @@ fn format_result(result: String) -> Result<Vec<HashMap<String, Vec<Vec<String>>>
             count += 1;
         }
     }
+
     Ok(result)
 }
 
@@ -104,5 +104,6 @@ fn format_output(moedict_result: Vec<HashMap<String, Vec<Vec<String>>>>) -> Stri
             }
         }
     }
+
     result.join("\n")
 }
