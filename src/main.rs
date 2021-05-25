@@ -22,8 +22,13 @@ fn format_output(moedict_result: Vec<api::MoedictItemResult>) -> String {
     let mut result = Vec::new();
     for i in moedict_result {
         result.push(
-            format!("讀音：{}", i.pinyin)
+            format!("拼音：{}", i.pinyin)
                 .fg_rgb::<236, 184, 138>()
+                .to_string(),
+        );
+        result.push(
+            format!("注音：{}", i.bopomofo)
+                .fg_rgb::<208, 90, 110>()
                 .to_string(),
         );
         for (k, v) in i.defination {
