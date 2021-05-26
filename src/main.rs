@@ -1,6 +1,7 @@
 use anyhow::Result;
 use console::{measure_text_width, truncate_str, Term};
 use owo_colors::OwoColorize;
+use rustyline::Editor;
 
 mod api;
 mod cli;
@@ -9,11 +10,30 @@ const LINE_LENGTH: usize = 80;
 
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
-    let input: Vec<&str> = app.values_of("INPUT").unwrap().collect();
-    for entry in &input {
-        let result = api::get_result(entry)?;
-        if input.len() != 1 {
-            println!("{}：", entry.fg_rgb::<178, 143, 206>());
+    if let Some(input) = app.values_of("INPUT") {
+        let input = input.collect::<Vec<&str>>();
+        print_result(input)?;
+    } else {
+        let mut reader = Editor::<()>::new();
+        while let Ok(words) = reader.readline("meowdict > ") {
+            let words = words
+                .trim()
+                .split(" ")
+                .collect::<Vec<&str>>();
+            if !words.is_empty() {
+                print_result(words)?;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn print_result(words: Vec<&str>) -> Result<()> {
+    for word in &words {
+        let result = api::get_result(&word)?;
+        if words.len() != 1 {
+            println!("{}：", word.fg_rgb::<178, 143, 206>());
         }
         println!("{}", format_output(result));
     }

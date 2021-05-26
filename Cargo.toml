@@ -15,3 +15,4 @@ serde = { version = "1.0", features = ["derive"] }
 owo-colors = "2"
 console = "0.14"
 indexmap = "1.6"
+rustyline = "^5.0"
