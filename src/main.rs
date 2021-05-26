@@ -60,7 +60,7 @@ fn string_split_new_line(s: String) -> String {
     let terminal_size: usize = term.size().1.into();
     let mut result_str = String::new();
     if terminal_size < LINE_LENGTH {
-        return result_str;
+        return s;
     } else {
         let mut ref_s = s.as_str();
         loop {
