@@ -19,9 +19,13 @@ fn main() -> Result<()> {
             let words = words
                 .trim()
                 .split(" ")
+                .filter(|x| x != &"")
                 .collect::<Vec<&str>>();
             if !words.is_empty() {
-                print_result(words)?;
+                let result = print_result(words);
+                if let Err(e) = result {
+                    println!("{}", e);
+                }
             }
         }
     }
