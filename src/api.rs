@@ -1,12 +1,13 @@
 use anyhow::{anyhow, Result};
 use serde_json::Value;
 use std::collections::HashMap;
+use indexmap::IndexMap;
 
 pub struct MoedictItemResult {
     pub pinyin: String,
     pub bopomofo: String,
-    pub translation: HashMap<String, Vec<String>>,
-    pub defination: HashMap<String, Vec<Vec<String>>>,
+    pub translation: IndexMap<String, Vec<String>>,
+    pub defination: IndexMap<String, Vec<Vec<String>>>,
 }
 
 fn format_result(result: String) -> Result<Vec<MoedictItemResult>> {
@@ -44,13 +45,13 @@ fn request_moedict(keyword: &str) -> Result<String> {
     Ok(result)
 }
 
-fn get_translations(json: HashMap<String, Value>) -> Result<HashMap<String, Vec<String>>, anyhow::Error> {
+fn get_translations(json: HashMap<String, Value>) -> Result<IndexMap<String, Vec<String>>, anyhow::Error> {
     let translation = json
         .get("translation")
         .ok_or_else(|| anyhow!("This item has no translation!"))?
         .as_object()
         .ok_or_else(|| anyhow!("translation is not Object!"))?;
-    let mut translation_hashmap: HashMap<String, Vec<String>> = HashMap::new();
+    let mut translation_indexmap: IndexMap<String, Vec<String>> = IndexMap::new();
     for (lang, lang_value) in translation {
         let lang_value = lang_value
             .as_array()
@@ -62,9 +63,9 @@ fn get_translations(json: HashMap<String, Value>) -> Result<HashMap<String, Vec<
                 .ok_or_else(|| anyhow!("lang_value item is not String!"))?;
             lang_vec.push(i.to_string());
         }
-        translation_hashmap.insert(lang.to_string(), lang_vec);
+        translation_indexmap.insert(lang.to_string(), lang_vec);
     }
-    Ok(translation_hashmap)
+    Ok(translation_indexmap)
 }
 
 fn get_pinyin(dict_val: &Value) -> Result<&str, anyhow::Error> {
@@ -79,8 +80,8 @@ fn get_pinyin(dict_val: &Value) -> Result<&str, anyhow::Error> {
     Ok(pinyin)
 }
 
-fn get_defination(dict_val: &Value) -> Result<HashMap<String, Vec<Vec<String>>>> {
-    let mut defination_item = HashMap::new();
+fn get_defination(dict_val: &Value) -> Result<IndexMap<String, Vec<Vec<String>>>> {
+    let mut defination_item = IndexMap::new();
     let dicts_item = dict_val
         .as_object()
         .ok_or_else(|| anyhow!("dict item is not object!"))?

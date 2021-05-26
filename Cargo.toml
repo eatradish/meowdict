@@ -14,3 +14,4 @@ reqwest = { version = "0.11", features = ["blocking"] }
 serde = { version = "1.0", features = ["derive"] }
 owo-colors = "2"
 terminal_size = "0.1"
+indexmap = "1.6"

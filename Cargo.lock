@@ -385,6 +385,7 @@ version = "0.3.0"
 dependencies = [
  "anyhow",
  "clap",
+ "indexmap",
  "owo-colors",
  "reqwest",
  "serde",
