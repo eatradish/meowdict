@@ -18,7 +18,7 @@ fn main() -> Result<()> {
         while let Ok(words) = reader.readline("meowdict > ") {
             let words = words
                 .trim()
-                .split(" ")
+                .split(' ')
                 .filter(|x| x != &"")
                 .collect::<Vec<&str>>();
             if !words.is_empty() {
