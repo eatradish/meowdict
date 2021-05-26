@@ -66,7 +66,7 @@ $ ./meowdict 這個 那個
 ## Installation
 ```
 $ cargo build --release
-# install -Dvm755 target/release/meowdict /usr/local/bin/meowdict
+# install -vm755 target/release/meowdict /usr/local/bin/meowdict
 ```
 
 ## Dependencies
