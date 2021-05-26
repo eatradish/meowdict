@@ -44,7 +44,9 @@ fn request_moedict(keyword: &str) -> Result<String> {
     Ok(result)
 }
 
-fn get_translations(json: HashMap<String, Value>) -> Result<HashMap<String, Vec<String>>, anyhow::Error> {
+fn get_translations(
+    json: HashMap<String, Value>,
+) -> Result<HashMap<String, Vec<String>>, anyhow::Error> {
     let translation = json
         .get("translation")
         .ok_or_else(|| anyhow!("This item has no translation!"))?
@@ -106,11 +108,12 @@ fn get_defination(dict_val: &Value) -> Result<HashMap<String, Vec<Vec<String>>>>
             defination_item.get_mut(t).unwrap().push(Vec::new());
         }
         if let Some(v) = dict_item.get("f") {
-            defination_item.get_mut(t).unwrap()[count].push(
+            let s = string_split_new_line(
                 v.as_str()
                     .ok_or_else(|| anyhow!("This item is not String!"))?
                     .to_string(),
             );
+            defination_item.get_mut(t).unwrap()[count].push(s);
         }
         for i in &["q", "e", "l"] {
             if let Some(v) = dict_item.get(&i.to_string()) {
@@ -119,7 +122,8 @@ fn get_defination(dict_val: &Value) -> Result<HashMap<String, Vec<Vec<String>>>>
                     .ok_or_else(|| anyhow!("This item is not arrays!"))?;
                 for j in item_list {
                     if let Some(j) = j.as_str() {
-                        defination_item.get_mut(t).unwrap()[count].push(j.to_string());
+                        let s = string_split_new_line(j.to_string());
+                        defination_item.get_mut(t).unwrap()[count].push(s);
                     }
                 }
             }
@@ -128,6 +132,38 @@ fn get_defination(dict_val: &Value) -> Result<HashMap<String, Vec<Vec<String>>>>
     }
 
     Ok(defination_item)
+}
+
+fn string_split_new_line(s: String) -> String {
+    let mut remaining = s
+        .split("")
+        .into_iter()
+        .map(|x| x.into())
+        .collect::<Vec<String>>();
+    let mut result = String::new();
+    while remaining.len() > 32 {
+        remaining.insert(32, "\n".to_string());
+        let split_string = remaining
+            .join("")
+            .split("\n")
+            .into_iter()
+            .map(|x| x.into())
+            .collect::<Vec<String>>();
+        result.push_str(&format!("{}\n", split_string[0]));
+        remaining = split_string[1]
+            .split("")
+            .into_iter()
+            .map(|x| x.into())
+            .collect::<Vec<String>>();
+        if remaining.len() < 32 {
+            result.push_str(&remaining.join(""));
+        }
+    }
+    if result.is_empty() {
+        result = s
+    }
+
+    result
 }
 
 fn get_bopomofo(dict_val: &Value) -> Result<&str> {
