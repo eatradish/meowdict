@@ -1,6 +1,6 @@
 use anyhow::Result;
+use console::{measure_text_width, truncate_str, Term};
 use owo_colors::OwoColorize;
-use console::{Term, measure_text_width};
 
 mod api;
 mod cli;
@@ -23,8 +23,6 @@ fn main() -> Result<()> {
 
 fn format_output(moedict_result: Vec<api::MoedictItemResult>) -> String {
     let mut result = Vec::new();
-    let term = Term::stdout();
-    let size: usize = term.size().1.into();
     for i in moedict_result {
         result.push(
             format!("拼音：{}", i.pinyin)
@@ -41,20 +39,13 @@ fn format_output(moedict_result: Vec<api::MoedictItemResult>) -> String {
                 result.push(format!("{}：", k.fg_rgb::<168, 216, 165>()));
             }
             for (index, value) in v.iter().enumerate() {
-                let mut s = format!("{}.{}", index + 1, value[0].clone())
-                    .fg_rgb::<129, 199, 212>()
-                    .to_string();
-                if size > LINE_LENGTH {
-                    s = string_split_new_line(s);
-                }
-                result.push(s);
+                let result_str =
+                    string_split_new_line(format!("{}.{}", index + 1, value[0].to_string()));
+                result.push(result_str.fg_rgb::<129, 199, 212>().to_string());
                 if !value[1..].is_empty() {
                     for s in &value[1..] {
-                        let mut s = s.fg_rgb::<220, 159, 180>().to_string();
-                        if size > LINE_LENGTH {
-                            s = string_split_new_line(s);
-                        }
-                        result.push(s);
+                        let result_str = string_split_new_line(s.to_string());
+                        result.push(result_str.fg_rgb::<220, 159, 180>().to_string());
                     }
                 }
             }
@@ -65,24 +56,22 @@ fn format_output(moedict_result: Vec<api::MoedictItemResult>) -> String {
 }
 
 fn string_split_new_line(s: String) -> String {
-    let mut remaining = s
-        .split("")
-        .into_iter()
-        .map(|x| x.into())
-        .collect::<Vec<String>>();
-    let mut remaining_count = measure_text_width(&s);
-    if remaining_count < LINE_LENGTH {
-        return s;
-    }
-    let mut result = String::new();
-    while remaining_count > LINE_LENGTH {
-        result.push_str(&format!("{}\n", remaining[..LINE_LENGTH].join("")));
-        remaining = remaining[LINE_LENGTH..].to_vec();
-        remaining_count = measure_text_width(&remaining.join(""));
-        if remaining_count < LINE_LENGTH {
-            result.push_str(&remaining.join(""));
+    let term = Term::stdout();
+    let terminal_size: usize = term.size().1.into();
+    let mut result_str = String::new();
+    if terminal_size < LINE_LENGTH {
+        return result_str;
+    } else {
+        let mut ref_s = s.as_str();
+        loop {
+            let truncate_string = truncate_str(ref_s, LINE_LENGTH, "\n").to_string();
+            result_str.push_str(&truncate_string);
+            if measure_text_width(&truncate_string) < LINE_LENGTH {
+                break;
+            }
+            ref_s = &ref_s[truncate_string.len() - 1..];
         }
     }
 
-    result
+    result_str
 }
