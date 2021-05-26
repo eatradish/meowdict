@@ -1,8 +1,8 @@
 use anyhow::Result;
 use owo_colors::OwoColorize;
 
-mod api;
 mod cli;
+mod api;
 
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
