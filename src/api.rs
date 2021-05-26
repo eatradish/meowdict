@@ -140,6 +140,9 @@ fn string_split_new_line(s: String) -> String {
         .into_iter()
         .map(|x| x.into())
         .collect::<Vec<String>>();
+    if remaining.len() <= 32 {
+        return s;
+    }
     let mut result = String::new();
     while remaining.len() > 32 {
         result.push_str(&format!("{}\n", remaining[..32].join("")));
@@ -147,9 +150,6 @@ fn string_split_new_line(s: String) -> String {
         if remaining.len() < 32 {
             result.push_str(&remaining.join(""));
         }
-    }
-    if result.is_empty() {
-        result = s
     }
 
     result
