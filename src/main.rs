@@ -45,9 +45,9 @@ fn print_result(words: Vec<&str>) -> Result<()> {
     Ok(())
 }
 
-fn format_output(moedict_result: Vec<api::MoedictItemResult>) -> String {
+fn format_output(moedict_result: api::MoedictResult) -> String {
     let mut result = Vec::new();
-    for i in moedict_result {
+    for i in moedict_result.moedict_item_result {
         if let Some(pinyin) = i.pinyin {
             result.push(
                 format!("拼音：{}", pinyin)

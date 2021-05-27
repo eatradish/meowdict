@@ -6,17 +6,24 @@ use std::collections::HashMap;
 pub struct MoedictItemResult {
     pub pinyin: Option<String>,
     pub bopomofo: Option<String>,
-    pub translation: Option<IndexMap<String, Vec<String>>>,
     pub defination: Option<IndexMap<String, Vec<Vec<String>>>>,
 }
 
-fn format_result(result: String) -> Result<Vec<MoedictItemResult>> {
-    let json: HashMap<String, Value> = serde_json::from_str(&result)?;
+pub struct MoedictResult {
+    pub moedict_item_result: Vec<MoedictItemResult>,
+    pub translation: Option<IndexMap<String, Vec<String>>>,
+}
+
+fn format_result(json: HashMap<String, Value>) -> MoedictResult {
     let dict = match get_h(&json) {
         Ok(v) => Some(v),
         Err(_) => None,
     };
-    let mut result = Vec::new();
+    let translation = match get_translations(&json) {
+        Ok(v) => Some(v),
+        Err(_) => None,
+    };
+    let mut moedict_item_result = Vec::new();
     if let Some(dict) = dict {
         for dict_val in dict {
             let defination = match get_defination(&dict_val) {
@@ -27,24 +34,23 @@ fn format_result(result: String) -> Result<Vec<MoedictItemResult>> {
                 Ok(v) => Some(v),
                 Err(_) => None,
             };
-            let translation = match get_translations(&json) {
-                Ok(v) => Some(v),
-                Err(_) => None,
-            };
             let bopomofo = match get_bopomofo(&dict_val) {
                 Ok(v) => Some(v),
                 Err(_) => None,
             };
-            result.push(MoedictItemResult {
+            moedict_item_result.push(MoedictItemResult {
                 pinyin,
                 bopomofo,
-                translation,
                 defination,
             })
         }
     }
+    let result = MoedictResult {
+        moedict_item_result,
+        translation,
+    };
 
-    Ok(result)
+    result
 }
 
 fn request_moedict(keyword: &str) -> Result<String> {
@@ -65,7 +71,7 @@ fn get_h(json: &HashMap<String, Value>) -> Result<Vec<Value>> {
         .as_array()
         .ok_or_else(|| anyhow!("dict is not array!"))?
         .to_owned();
-    
+
     Ok(h)
 }
 
@@ -171,9 +177,10 @@ fn get_bopomofo(dict_val: &Value) -> Result<String> {
     Ok(bopomofo)
 }
 
-pub fn get_result(keyword: &str) -> Result<Vec<MoedictItemResult>> {
+pub fn get_result(keyword: &str) -> Result<MoedictResult> {
     let resp = request_moedict(keyword)?;
-    let result = format_result(resp)?;
+    let json: HashMap<String, Value> = serde_json::from_str(&resp)?;
+    let result = format_result(json);
 
     Ok(result)
 }
