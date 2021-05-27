@@ -65,9 +65,9 @@ fn print_translation_result(words: Vec<&str>) -> Result<()> {
         let moedict_object = new_moedict_object(word)?;
         if let Some(translation) = moedict_object.get_translations() {
             for (k, v) in translation {
-                println!("{}:", k);
+                println!("{}:", k.fg_rgb::<168, 216, 165>());
                 for i in v {
-                    println!("{}", i);
+                    println!("{}", i.fg_rgb::<220, 159, 180>());
                 }
             }
         } else {
@@ -93,7 +93,11 @@ fn print_result(words: Vec<&str>) -> Result<()> {
 fn format_output(moedict_result: MoedictJson) -> String {
     let mut result = Vec::new();
     if let Some(english) = moedict_result.get_english() {
-        result.push(format!("英語：{}", english));
+        result.push(
+            format!("英語：{}", english)
+                .fg_rgb::<125, 187, 222>()
+                .to_string(),
+        );
     }
     let definations = moedict_result.get_moedict_item_result_vec();
     for i in definations {

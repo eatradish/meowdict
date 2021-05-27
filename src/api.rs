@@ -148,12 +148,10 @@ fn api_get_english(json: &HashMap<String, Value>) -> Result<String> {
 
 impl MoedictJson {
     pub fn get_translations(&self) -> Option<IndexMap<String, Vec<String>>> {
-        let result = match api_get_translations(&self.json) {
+        match api_get_translations(&self.json) {
             Ok(v) => Some(v),
             Err(_) => None,
-        };
-
-        result
+        }
     }
 
     pub fn get_moedict_item_result_vec(&self) -> Vec<MoedictItemResult> {
@@ -188,12 +186,10 @@ impl MoedictJson {
     }
 
     pub fn get_english(&self) -> Option<String> {
-        let result = match api_get_english(&self.json) {
+        match api_get_english(&self.json) {
             Ok(v) => Some(v),
             Err(_) => None,
-        };
-
-        result
+        }
     }
 }
 
