@@ -22,7 +22,8 @@ fn main() -> Result<()> {
                 .filter(|x| x != &"")
                 .collect::<Vec<&str>>();
             if !words.is_empty() {
-                if let Err(e) = print_result(words) {
+                let result = print_result(words);
+                if let Err(e) = result {
                     println!("{}", e);
                 }
             }
@@ -47,34 +48,28 @@ fn print_result(words: Vec<&str>) -> Result<()> {
 fn format_output(moedict_result: Vec<api::MoedictItemResult>) -> String {
     let mut result = Vec::new();
     for i in moedict_result {
-        if let Some(pinyin) = i.pinyin {
-            result.push(
-                format!("拼音：{}", pinyin)
-                    .fg_rgb::<236, 184, 138>()
-                    .to_string(),
-            );
-        }
-        if let Some(bopomofo) = i.bopomofo {
-            result.push(
-                format!("注音：{}", bopomofo)
-                    .fg_rgb::<208, 90, 110>()
-                    .to_string(),
-            );
-        }
-        if let Some(defination) = i.defination {
-            for (k, v) in defination {
-                if k != "notype" {
-                    result.push(format!("{}：", k.fg_rgb::<168, 216, 165>()));
-                }
-                for (index, value) in v.iter().enumerate() {
-                    let result_str =
-                        string_split_new_line(format!("{}.{}", index + 1, value[0].to_string()));
-                    result.push(result_str.fg_rgb::<129, 199, 212>().to_string());
-                    if !value[1..].is_empty() {
-                        for s in &value[1..] {
-                            let result_str = string_split_new_line(s.to_string());
-                            result.push(result_str.fg_rgb::<220, 159, 180>().to_string());
-                        }
+        result.push(
+            format!("拼音：{}", i.pinyin)
+                .fg_rgb::<236, 184, 138>()
+                .to_string(),
+        );
+        result.push(
+            format!("注音：{}", i.bopomofo)
+                .fg_rgb::<208, 90, 110>()
+                .to_string(),
+        );
+        for (k, v) in i.defination {
+            if k != "notype" {
+                result.push(format!("{}：", k.fg_rgb::<168, 216, 165>()));
+            }
+            for (index, value) in v.iter().enumerate() {
+                let result_str =
+                    string_split_new_line(format!("{}.{}", index + 1, value[0].to_string()));
+                result.push(result_str.fg_rgb::<129, 199, 212>().to_string());
+                if !value[1..].is_empty() {
+                    for s in &value[1..] {
+                        let result_str = string_split_new_line(s.to_string());
+                        result.push(result_str.fg_rgb::<220, 159, 180>().to_string());
                     }
                 }
             }

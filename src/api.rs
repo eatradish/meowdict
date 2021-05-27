@@ -4,10 +4,10 @@ use std::collections::HashMap;
 use indexmap::IndexMap;
 
 pub struct MoedictItemResult {
-    pub pinyin: Option<String>,
-    pub bopomofo: Option<String>,
-    pub translation: Option<IndexMap<String, Vec<String>>>,
-    pub defination: Option<IndexMap<String, Vec<Vec<String>>>>,
+    pub pinyin: String,
+    pub bopomofo: String,
+    pub translation: IndexMap<String, Vec<String>>,
+    pub defination: IndexMap<String, Vec<Vec<String>>>,
 }
 
 fn format_result(result: String) -> Result<Vec<MoedictItemResult>> {
@@ -24,10 +24,10 @@ fn format_result(result: String) -> Result<Vec<MoedictItemResult>> {
         let translation = get_translations(json.clone())?;
         let bopomofo = get_bopomofo(dict_val)?;
         result.push(MoedictItemResult {
-            pinyin: Some(pinyin.to_string()),
-            bopomofo: Some(bopomofo.to_string()),
-            translation: Some(translation),
-            defination: Some(defination_item),
+            pinyin: pinyin.to_string(),
+            bopomofo: bopomofo.to_string(),
+            translation,
+            defination: defination_item,
         })
     }
 
