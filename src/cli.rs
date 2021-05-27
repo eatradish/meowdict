@@ -11,4 +11,10 @@ pub fn build_cli() -> App<'static, 'static> {
                 .index(1)
                 .min_values(1),
         )
+        .arg(
+            Arg::with_name("translation")
+                .short("t")
+                .long("translation")
+                .help("Get all translation"),
+        )
 }

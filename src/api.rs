@@ -156,7 +156,7 @@ impl MoedictJson {
         result
     }
 
-    pub fn get_defination_vec(&self) -> Vec<MoedictItemResult> {
+    pub fn get_moedict_item_result_vec(&self) -> Vec<MoedictItemResult> {
         let mut moedict_item_result = Vec::new();
         let dict = match api_get_h(&self.json) {
             Ok(v) => Some(v),

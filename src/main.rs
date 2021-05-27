@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use console::{truncate_str, Term};
 use owo_colors::OwoColorize;
 use rustyline::Editor;
@@ -6,7 +6,7 @@ use rustyline::Editor;
 mod api;
 mod cli;
 
-use api::{MoedictJson, new_moedict_object};
+use api::{new_moedict_object, MoedictJson};
 
 const LINE_LENGTH: usize = 80;
 
@@ -14,21 +14,58 @@ fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
     if let Some(input) = app.values_of("INPUT") {
         let input = input.collect::<Vec<&str>>();
+        if app.occurrences_of("translation") != 0 {
+            if let Err(e) = print_translation_result(input) {
+                println!("{}", e);
+            }
+            return Ok(());
+        }
         print_result(input)?;
     } else {
         let mut reader = Editor::<()>::new();
-        while let Ok(words) = reader.readline("meowdict > ") {
-            let words = words
+        while let Ok(argument) = reader.readline("meowdict > ") {
+            let mut argument = argument
                 .trim()
                 .split(' ')
                 .filter(|x| x != &"")
                 .collect::<Vec<&str>>();
-            if !words.is_empty() {
-                let result = print_result(words);
+            if !argument.is_empty() {
+                if argument.contains(&"--translation") || argument.contains(&"-t") {
+                    if let Some(index) = argument
+                        .iter()
+                        .position(|v| v == &"--translation" || v == &"-t")
+                    {
+                        argument.remove(index);
+                    }
+                    print_translation_result(argument)?;
+                    continue;
+                }
+                let result = print_result(argument);
                 if let Err(e) = result {
                     println!("{}", e);
                 }
             }
+        }
+    }
+
+    Ok(())
+}
+
+fn print_translation_result(words: Vec<&str>) -> Result<()> {
+    for word in &words {
+        if words.len() != 1 {
+            println!("{}：", word.fg_rgb::<178, 143, 206>());
+        }
+        let moedict_object = new_moedict_object(word)?;
+        if let Some(translation) = moedict_object.get_translations() {
+            for (k, v) in translation {
+                println!("{}:", k);
+                for i in v {
+                    println!("{}", i);
+                }
+            }
+        } else {
+            return Err(anyhow!("Failed to get translation: {}", word));
         }
     }
 
@@ -52,7 +89,7 @@ fn format_output(moedict_result: MoedictJson) -> String {
     if let Some(english) = moedict_result.get_english() {
         result.push(format!("英語：{}", english));
     }
-    let definations = moedict_result.get_defination_vec();
+    let definations = moedict_result.get_moedict_item_result_vec();
     for i in definations {
         if let Some(pinyin) = i.pinyin {
             result.push(
