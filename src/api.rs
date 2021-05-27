@@ -10,47 +10,7 @@ pub struct MoedictItemResult {
 }
 
 pub struct MoedictResult {
-    pub moedict_item_result: Vec<MoedictItemResult>,
-    pub translation: Option<IndexMap<String, Vec<String>>>,
-}
-
-fn format_result(json: HashMap<String, Value>) -> MoedictResult {
-    let dict = match get_h(&json) {
-        Ok(v) => Some(v),
-        Err(_) => None,
-    };
-    let translation = match get_translations(&json) {
-        Ok(v) => Some(v),
-        Err(_) => None,
-    };
-    let mut moedict_item_result = Vec::new();
-    if let Some(dict) = dict {
-        for dict_val in dict {
-            let defination = match get_defination(&dict_val) {
-                Ok(v) => Some(v),
-                Err(_) => None,
-            };
-            let pinyin = match get_pinyin(&dict_val) {
-                Ok(v) => Some(v),
-                Err(_) => None,
-            };
-            let bopomofo = match get_bopomofo(&dict_val) {
-                Ok(v) => Some(v),
-                Err(_) => None,
-            };
-            moedict_item_result.push(MoedictItemResult {
-                pinyin,
-                bopomofo,
-                defination,
-            })
-        }
-    }
-    let result = MoedictResult {
-        moedict_item_result,
-        translation,
-    };
-
-    result
+    json: HashMap<String, Value>,
 }
 
 fn request_moedict(keyword: &str) -> Result<String> {
@@ -64,7 +24,7 @@ fn request_moedict(keyword: &str) -> Result<String> {
     Ok(result)
 }
 
-fn get_h(json: &HashMap<String, Value>) -> Result<Vec<Value>> {
+fn api_get_h(json: &HashMap<String, Value>) -> Result<Vec<Value>> {
     let h = json
         .get("h")
         .ok_or_else(|| anyhow!("Failed to get dict!"))?
@@ -75,9 +35,7 @@ fn get_h(json: &HashMap<String, Value>) -> Result<Vec<Value>> {
     Ok(h)
 }
 
-fn get_translations(
-    json: &HashMap<String, Value>,
-) -> Result<IndexMap<String, Vec<String>>, anyhow::Error> {
+fn api_get_translations(json: &HashMap<String, Value>) -> Result<IndexMap<String, Vec<String>>> {
     let translation = json
         .get("translation")
         .ok_or_else(|| anyhow!("This item has no translation!"))?
@@ -100,7 +58,7 @@ fn get_translations(
     Ok(translation_indexmap)
 }
 
-fn get_pinyin(dict_val: &Value) -> Result<String, anyhow::Error> {
+fn api_get_pinyin(dict_val: &Value) -> Result<String, anyhow::Error> {
     let pinyin = dict_val
         .as_object()
         .ok_or_else(|| anyhow!("dict item is not object!"))?
@@ -113,7 +71,7 @@ fn get_pinyin(dict_val: &Value) -> Result<String, anyhow::Error> {
     Ok(pinyin)
 }
 
-fn get_defination(dict_val: &Value) -> Result<IndexMap<String, Vec<Vec<String>>>> {
+fn api_get_defination(dict_val: &Value) -> Result<IndexMap<String, Vec<Vec<String>>>> {
     let mut defination_item = IndexMap::new();
     let dicts_item = dict_val
         .as_object()
@@ -164,7 +122,7 @@ fn get_defination(dict_val: &Value) -> Result<IndexMap<String, Vec<Vec<String>>>
     Ok(defination_item)
 }
 
-fn get_bopomofo(dict_val: &Value) -> Result<String> {
+fn api_get_bopomofo(dict_val: &Value) -> Result<String> {
     let bopomofo = dict_val
         .as_object()
         .ok_or_else(|| anyhow!("dict item is not object!"))?
@@ -177,10 +135,54 @@ fn get_bopomofo(dict_val: &Value) -> Result<String> {
     Ok(bopomofo)
 }
 
-pub fn get_result(keyword: &str) -> Result<MoedictResult> {
-    let resp = request_moedict(keyword)?;
-    let json: HashMap<String, Value> = serde_json::from_str(&resp)?;
-    let result = format_result(json);
+impl MoedictResult {
+    pub fn get_translations(&self) -> Option<IndexMap<String, Vec<String>>> {
+        let result = match api_get_translations(&self.json) {
+            Ok(v) => Some(v),
+            Err(_) => None,
+        };
 
-    Ok(result)
+        result
+    }
+
+    pub fn get_defination_vec(&self) -> Vec<MoedictItemResult> {
+        let mut moedict_item_result = Vec::new();
+        let dict = match api_get_h(&self.json) {
+            Ok(v) => Some(v),
+            Err(_) => None,
+        };
+        if let Some(dict) = dict {
+            for dict_val in dict {
+                let defination = match api_get_defination(&dict_val) {
+                    Ok(v) => Some(v),
+                    Err(_) => None,
+                };
+                let pinyin = match api_get_pinyin(&dict_val) {
+                    Ok(v) => Some(v),
+                    Err(_) => None,
+                };
+                let bopomofo = match api_get_bopomofo(&dict_val) {
+                    Ok(v) => Some(v),
+                    Err(_) => None,
+                };
+                moedict_item_result.push(MoedictItemResult {
+                    pinyin,
+                    bopomofo,
+                    defination,
+                })
+            }
+        }
+
+        moedict_item_result
+    }
+}
+
+pub fn new_moedict_object(keyword: &str) -> Result<MoedictResult> {
+    let resp = request_moedict(keyword)?;
+    let json = serde_json::from_str(&resp)?;
+    let moedict_object = MoedictResult {
+        json
+    };
+
+    Ok(moedict_object)
 }

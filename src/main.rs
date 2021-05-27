@@ -6,6 +6,8 @@ use rustyline::Editor;
 mod api;
 mod cli;
 
+use api::{MoedictResult, new_moedict_object};
+
 const LINE_LENGTH: usize = 80;
 
 fn main() -> Result<()> {
@@ -35,19 +37,20 @@ fn main() -> Result<()> {
 
 fn print_result(words: Vec<&str>) -> Result<()> {
     for word in &words {
-        let result = api::get_result(&word)?;
         if words.len() != 1 {
             println!("{}：", word.fg_rgb::<178, 143, 206>());
         }
-        println!("{}", format_output(result));
+        let moedict_object = new_moedict_object(word)?;
+        println!("{}", format_output(moedict_object));
     }
 
     Ok(())
 }
 
-fn format_output(moedict_result: api::MoedictResult) -> String {
+fn format_output(moedict_result: MoedictResult) -> String {
     let mut result = Vec::new();
-    for i in moedict_result.moedict_item_result {
+    let definations = moedict_result.get_defination_vec();
+    for i in definations {
         if let Some(pinyin) = i.pinyin {
             result.push(
                 format!("拼音：{}", pinyin)
