@@ -4,10 +4,10 @@ use std::collections::HashMap;
 use indexmap::IndexMap;
 
 pub struct MoedictItemResult {
-    pub pinyin: String,
-    pub bopomofo: String,
-    pub translation: IndexMap<String, Vec<String>>,
-    pub defination: IndexMap<String, Vec<Vec<String>>>,
+    pub pinyin: Option<String>,
+    pub bopomofo: Option<String>,
+    pub translation: Option<IndexMap<String, Vec<String>>>,
+    pub defination: Option<IndexMap<String, Vec<Vec<String>>>>,
 }
 
 fn format_result(result: String) -> Result<Vec<MoedictItemResult>> {
@@ -19,13 +19,25 @@ fn format_result(result: String) -> Result<Vec<MoedictItemResult>> {
         .ok_or_else(|| anyhow!("dict is not array!"))?;
     let mut result = Vec::new();
     for dict_val in dict {
-        let defination_item = get_defination(dict_val)?;
-        let pinyin = get_pinyin(dict_val)?;
-        let translation = get_translations(json.clone())?;
-        let bopomofo = get_bopomofo(dict_val)?;
+        let defination_item = match get_defination(dict_val) {
+            Ok(v) => Some(v),
+            Err(_) => None
+        };
+        let pinyin = match get_pinyin(dict_val) {
+            Ok(v) => Some(v),
+            Err(_) => None
+        };
+        let translation = match get_translations(json.clone()) {
+            Ok(v) => Some(v),
+            Err(_) => None
+        };
+        let bopomofo = match get_bopomofo(dict_val) {
+            Ok(v) => Some(v),
+            Err(_) => None
+        };
         result.push(MoedictItemResult {
-            pinyin: pinyin.to_string(),
-            bopomofo: bopomofo.to_string(),
+            pinyin,
+            bopomofo,
             translation,
             defination: defination_item,
         })
@@ -68,14 +80,15 @@ fn get_translations(json: HashMap<String, Value>) -> Result<IndexMap<String, Vec
     Ok(translation_indexmap)
 }
 
-fn get_pinyin(dict_val: &Value) -> Result<&str, anyhow::Error> {
+fn get_pinyin(dict_val: &Value) -> Result<String, anyhow::Error> {
     let pinyin = dict_val
         .as_object()
         .ok_or_else(|| anyhow!("dict item is not object!"))?
         .get("p")
         .ok_or_else(|| anyhow!("Caanot get d!"))?
         .as_str()
-        .ok_or_else(|| anyhow!("p is not String!"))?;
+        .ok_or_else(|| anyhow!("p is not String!"))?
+        .to_owned();
 
     Ok(pinyin)
 }
@@ -131,14 +144,15 @@ fn get_defination(dict_val: &Value) -> Result<IndexMap<String, Vec<Vec<String>>>
     Ok(defination_item)
 }
 
-fn get_bopomofo(dict_val: &Value) -> Result<&str> {
+fn get_bopomofo(dict_val: &Value) -> Result<String> {
     let bopomofo = dict_val
         .as_object()
         .ok_or_else(|| anyhow!("dict item is not object!"))?
         .get("b")
         .ok_or_else(|| anyhow!("Caanot get b!"))?
         .as_str()
-        .ok_or_else(|| anyhow!("b is not String!"))?;
+        .ok_or_else(|| anyhow!("b is not String!"))?
+        .to_owned();
 
     Ok(bopomofo)
 }
