@@ -137,11 +137,11 @@ fn api_get_bopomofo(dict_val: &Value) -> Result<String> {
 
 fn api_get_english(json: &HashMap<String, Value>) -> Result<String> {
     let english = json
-    .get("English")
-    .ok_or_else(|| anyhow!("This item has no English!"))?
-    .as_str()
-    .ok_or_else(|| anyhow!("English is not String!"))?
-    .to_owned();
+        .get("English")
+        .ok_or_else(|| anyhow!("This item has no English!"))?
+        .as_str()
+        .ok_or_else(|| anyhow!("English is not String!"))?
+        .to_owned();
 
     Ok(english)
 }

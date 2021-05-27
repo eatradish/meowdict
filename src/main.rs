@@ -22,28 +22,34 @@ fn main() -> Result<()> {
         }
         print_result(input)?;
     } else {
-        let mut reader = Editor::<()>::new();
-        while let Ok(argument) = reader.readline("meowdict > ") {
-            let mut argument = argument
-                .trim()
-                .split(' ')
-                .filter(|x| x != &"")
-                .collect::<Vec<&str>>();
-            if !argument.is_empty() {
-                if argument.contains(&"--translation") || argument.contains(&"-t") {
-                    if let Some(index) = argument
-                        .iter()
-                        .position(|v| v == &"--translation" || v == &"-t")
-                    {
-                        argument.remove(index);
-                    }
-                    print_translation_result(argument)?;
-                    continue;
+        meowdict_console()?;
+    }
+
+    Ok(())
+}
+
+fn meowdict_console() -> Result<()> {
+    let mut reader = Editor::<()>::new();
+    while let Ok(argument) = reader.readline("meowdict > ") {
+        let mut argument = argument
+            .trim()
+            .split(' ')
+            .filter(|x| x != &"")
+            .collect::<Vec<&str>>();
+        if !argument.is_empty() {
+            if argument.contains(&"--translation") || argument.contains(&"-t") {
+                if let Some(index) = argument
+                    .iter()
+                    .position(|v| v == &"--translation" || v == &"-t")
+                {
+                    argument.remove(index);
                 }
-                let result = print_result(argument);
-                if let Err(e) = result {
-                    println!("{}", e);
-                }
+                print_translation_result(argument)?;
+                continue;
+            }
+            let result = print_result(argument);
+            if let Err(e) = result {
+                println!("{}", e);
             }
         }
     }
