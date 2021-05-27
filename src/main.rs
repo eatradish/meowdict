@@ -44,7 +44,9 @@ fn meowdict_console() -> Result<()> {
                 {
                     argument.remove(index);
                 }
-                print_translation_result(argument)?;
+                if let Err(e) = print_translation_result(argument) {
+                    println!("{}", e)
+                }
                 continue;
             }
             let result = print_result(argument);
