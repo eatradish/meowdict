@@ -1,5 +1,5 @@
 use anyhow::Result;
-use console::{measure_text_width, truncate_str, Term};
+use console::{truncate_str, Term};
 use owo_colors::OwoColorize;
 use rustyline::Editor;
 
@@ -87,13 +87,15 @@ fn string_split_new_line(s: String) -> String {
         return s;
     } else {
         let mut ref_s = s.as_str();
+        let mut i = 0;
         loop {
             let truncate_string = truncate_str(ref_s, LINE_LENGTH, "\n").to_string();
             result_str.push_str(&truncate_string);
-            if measure_text_width(&truncate_string) < LINE_LENGTH {
+            if s.len() == result_str.len() - i {
                 break;
             }
             ref_s = &ref_s[truncate_string.len() - 1..];
+            i += 1;
         }
     }
 
