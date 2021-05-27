@@ -6,7 +6,7 @@ use rustyline::Editor;
 mod api;
 mod cli;
 
-use api::{MoedictResult, new_moedict_object};
+use api::{MoedictJson, new_moedict_object};
 
 const LINE_LENGTH: usize = 80;
 
@@ -47,8 +47,11 @@ fn print_result(words: Vec<&str>) -> Result<()> {
     Ok(())
 }
 
-fn format_output(moedict_result: MoedictResult) -> String {
+fn format_output(moedict_result: MoedictJson) -> String {
     let mut result = Vec::new();
+    if let Some(english) = moedict_result.get_english() {
+        result.push(format!("英語：{}", english));
+    }
     let definations = moedict_result.get_defination_vec();
     for i in definations {
         if let Some(pinyin) = i.pinyin {

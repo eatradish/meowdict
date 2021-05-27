@@ -9,7 +9,7 @@ pub struct MoedictItemResult {
     pub defination: Option<IndexMap<String, Vec<Vec<String>>>>,
 }
 
-pub struct MoedictResult {
+pub struct MoedictJson {
     json: HashMap<String, Value>,
 }
 
@@ -135,7 +135,18 @@ fn api_get_bopomofo(dict_val: &Value) -> Result<String> {
     Ok(bopomofo)
 }
 
-impl MoedictResult {
+fn api_get_english(json: &HashMap<String, Value>) -> Result<String> {
+    let english = json
+    .get("English")
+    .ok_or_else(|| anyhow!("This item has no English!"))?
+    .as_str()
+    .ok_or_else(|| anyhow!("English is not String!"))?
+    .to_owned();
+
+    Ok(english)
+}
+
+impl MoedictJson {
     pub fn get_translations(&self) -> Option<IndexMap<String, Vec<String>>> {
         let result = match api_get_translations(&self.json) {
             Ok(v) => Some(v),
@@ -175,14 +186,21 @@ impl MoedictResult {
 
         moedict_item_result
     }
+
+    pub fn get_english(&self) -> Option<String> {
+        let result = match api_get_english(&self.json) {
+            Ok(v) => Some(v),
+            Err(_) => None,
+        };
+
+        result
+    }
 }
 
-pub fn new_moedict_object(keyword: &str) -> Result<MoedictResult> {
+pub fn new_moedict_object(keyword: &str) -> Result<MoedictJson> {
     let resp = request_moedict(keyword)?;
     let json = serde_json::from_str(&resp)?;
-    let moedict_object = MoedictResult {
-        json
-    };
+    let moedict_object = MoedictJson { json };
 
     Ok(moedict_object)
 }
