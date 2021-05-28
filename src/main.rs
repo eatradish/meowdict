@@ -28,7 +28,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn meowdict_console() -> () {
+fn meowdict_console() {
     let mut reader = Editor::<()>::new();
     while let Ok(argument) = reader.readline("meowdict > ") {
         let argument = argument
@@ -40,12 +40,12 @@ fn meowdict_console() -> () {
             let args: Vec<&str> = argument
                 .clone()
                 .into_iter()
-                .filter(|x| x.starts_with("-"))
+                .filter(|x| x.starts_with('-'))
                 .collect();
             if !args.is_empty() {
                 let words: Vec<&str> = argument
                     .into_iter()
-                    .filter(|x| !x.starts_with("-"))
+                    .filter(|x| !x.starts_with('-'))
                     .collect();
                 if args.contains(&"--translation") || args.contains(&"-t") {
                     if let Err(e) = print_translation_result(words) {
@@ -62,8 +62,6 @@ fn meowdict_console() -> () {
             }
         }
     }
-
-    ()
 }
 
 fn print_translation_result(words: Vec<&str>) -> Result<()> {
