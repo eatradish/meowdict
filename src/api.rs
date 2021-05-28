@@ -60,6 +60,7 @@ fn api_get_translations(json: &HashMap<String, Value>) -> Result<IndexMap<String
         }
         translation_indexmap.insert(lang.to_string(), lang_vec);
     }
+
     Ok(translation_indexmap)
 }
 
@@ -68,7 +69,7 @@ fn api_get_pinyin(dict_val: &Value) -> Result<String, anyhow::Error> {
         .as_object()
         .ok_or_else(|| anyhow!("dict item is not object!"))?
         .get("p")
-        .ok_or_else(|| anyhow!("Caanot get d!"))?
+        .ok_or_else(|| anyhow!("Caanot get p!"))?
         .as_str()
         .ok_or_else(|| anyhow!("p is not String!"))?
         .to_owned();
