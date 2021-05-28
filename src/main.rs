@@ -40,10 +40,13 @@ fn meowdict_console() -> Result<()> {
             let args: Vec<&str> = argument
                 .clone()
                 .into_iter()
-                .filter(|x| x.contains("-"))
+                .filter(|x| x.starts_with("-"))
                 .collect();
             if !args.is_empty() {
-                let words: Vec<&str> = argument.into_iter().filter(|x| !x.contains("-")).collect();
+                let words: Vec<&str> = argument
+                    .into_iter()
+                    .filter(|x| !x.starts_with("-"))
+                    .collect();
                 if args.contains(&"--translation") || args.contains(&"-t") {
                     if let Err(e) = print_translation_result(words) {
                         println!("{}", e);
