@@ -73,7 +73,7 @@ fn api_get_pinyin(dict_val: &Value) -> Result<String, anyhow::Error> {
         .ok_or_else(|| anyhow!("p is not String!"))?
         .to_owned();
 
-    Ok(pinyin)
+    Ok(pinyin.replace("~", "").replace("`", ""))
 }
 
 fn api_get_defination(dict_val: &Value) -> Result<IndexMap<String, Vec<Vec<String>>>> {
@@ -93,20 +93,24 @@ fn api_get_defination(dict_val: &Value) -> Result<IndexMap<String, Vec<Vec<Strin
         let t = if let Some(v) = dict_item.get("type") {
             v.as_str()
                 .ok_or_else(|| anyhow!("This item is not String!"))?
+                .replace("~", "")
+                .replace("`", "")
         } else {
-            "notype"
+            "notype".to_string()
         };
-        if defination_item.get(t).is_none() {
+        if defination_item.get(&t).is_none() {
             defination_item.insert(t.to_string(), vec![Vec::new()]);
             count = 0;
         } else {
-            defination_item.get_mut(t).unwrap().push(Vec::new());
+            defination_item.get_mut(&t).unwrap().push(Vec::new());
         }
         if let Some(v) = dict_item.get("f") {
-            defination_item.get_mut(t).unwrap()[count].push(
+            defination_item.get_mut(&t).unwrap()[count].push(
                 v.as_str()
                     .ok_or_else(|| anyhow!("This item is not String!"))?
-                    .to_string(),
+                    .to_string()
+                    .replace("~", "")
+                    .replace("`", ""),
             );
         }
         for i in &["q", "e", "l"] {
@@ -116,7 +120,8 @@ fn api_get_defination(dict_val: &Value) -> Result<IndexMap<String, Vec<Vec<Strin
                     .ok_or_else(|| anyhow!("This item is not arrays!"))?;
                 for j in item_list {
                     if let Some(j) = j.as_str() {
-                        defination_item.get_mut(t).unwrap()[count].push(j.to_string());
+                        defination_item.get_mut(&t).unwrap()[count]
+                            .push(j.to_string().replace("~", "").replace("`", ""));
                     }
                 }
             }
@@ -137,7 +142,7 @@ fn api_get_bopomofo(dict_val: &Value) -> Result<String> {
         .ok_or_else(|| anyhow!("b is not String!"))?
         .to_owned();
 
-    Ok(bopomofo)
+    Ok(bopomofo.replace("`", "").replace("~", ""))
 }
 
 fn api_get_english(json: &HashMap<String, Value>) -> Result<String> {
@@ -183,7 +188,7 @@ impl MoedictJson {
                     pinyin,
                     bopomofo,
                     defination,
-                })
+                });
             }
         }
 
