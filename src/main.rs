@@ -6,7 +6,7 @@ use rustyline::Editor;
 mod api;
 mod cli;
 
-use api::{new_moedict_object, MoedictJson};
+use api::{request_moedict, MoedictJson};
 
 const LINE_LENGTH: usize = 80;
 
@@ -69,7 +69,7 @@ fn print_translation_result(words: Vec<&str>) -> Result<()> {
         if words.len() != 1 {
             println!("{}：", word.fg_rgb::<178, 143, 206>());
         }
-        let moedict_object = new_moedict_object(word)?;
+        let moedict_object = request_moedict(word)?;
         if let Some(translation) = moedict_object.get_translations() {
             for (k, v) in translation {
                 println!("{}:", k.fg_rgb::<168, 216, 165>());
@@ -90,7 +90,7 @@ fn print_result(words: Vec<&str>) -> Result<()> {
         if words.len() != 1 {
             println!("{}：", word.fg_rgb::<178, 143, 206>());
         }
-        let moedict_object = new_moedict_object(word)?;
+        let moedict_object = request_moedict(word)?;
         println!("{}", format_output(moedict_object));
     }
 

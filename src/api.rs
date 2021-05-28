@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Result};
 use indexmap::IndexMap;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -9,19 +10,23 @@ pub struct MoedictItemResult {
     pub defination: Option<IndexMap<String, Vec<Vec<String>>>>,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct MoedictJson {
+    #[serde(flatten)]
     json: HashMap<String, Value>,
 }
 
-fn request_moedict(keyword: &str) -> Result<String> {
+pub fn request_moedict(keyword: &str) -> Result<MoedictJson> {
     let response = reqwest::blocking::get(format!("https://www.moedict.tw/a/{}.json", keyword))?;
-    if response.status() == 200 {
-        return Ok(response.text()?.replace("~", "").replace("`", ""));
-    } else if response.status() == 404 {
-        return Err(anyhow!("Could not find keyword: {}", keyword));
-    }
 
-    Err(anyhow!("response status: {}", response.status()))
+    match response.status().into() {
+        200 => Ok(response.json::<MoedictJson>()?),
+        404 => Err(anyhow!("Could not find keyword: {}", keyword)),
+        _ => Err(anyhow!(
+            "Error: response status code: {}",
+            response.status()
+        )),
+    }
 }
 
 fn api_get_h(json: &HashMap<String, Value>) -> Result<Vec<Value>> {
@@ -191,12 +196,4 @@ impl MoedictJson {
             Err(_) => None,
         }
     }
-}
-
-pub fn new_moedict_object(keyword: &str) -> Result<MoedictJson> {
-    let resp = request_moedict(keyword)?;
-    let json = serde_json::from_str(&resp)?;
-    let moedict_object = MoedictJson { json };
-
-    Ok(moedict_object)
 }
