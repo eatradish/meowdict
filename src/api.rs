@@ -14,14 +14,14 @@ pub struct MoedictJson {
 }
 
 fn request_moedict(keyword: &str) -> Result<String> {
-    let response =
-        reqwest::blocking::get(format!("https://www.moedict.tw/a/{}.json", keyword))?.text()?;
-    let result = response.replace("~", "").replace("`", "");
-    if result.contains("<title>404 Not Found</title>") {
+    let response = reqwest::blocking::get(format!("https://www.moedict.tw/a/{}.json", keyword))?;
+    if response.status() == 200 {
+        return Ok(response.text()?.replace("~", "").replace("`", ""));
+    } else if response.status() == 404 {
         return Err(anyhow!("Could not find keyword: {}", keyword));
     }
 
-    Ok(result)
+    Err(anyhow!("response status: {}", response.status()))
 }
 
 fn api_get_h(json: &HashMap<String, Value>) -> Result<Vec<Value>> {
