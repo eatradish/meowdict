@@ -31,21 +31,21 @@ fn main() -> Result<()> {
 fn meowdict_console() -> Result<()> {
     let mut reader = Editor::<()>::new();
     while let Ok(argument) = reader.readline("meowdict > ") {
-        let mut argument = argument
+        let argument = argument
             .trim()
             .split(' ')
             .filter(|x| x != &"")
             .collect::<Vec<&str>>();
         if !argument.is_empty() {
-            if argument.contains(&"--translation") || argument.contains(&"-t") {
-                if let Some(index) = argument
-                    .iter()
-                    .position(|v| v == &"--translation" || v == &"-t")
-                {
-                    argument.remove(index);
-                }
-                if let Err(e) = print_translation_result(argument) {
-                    println!("{}", e)
+            let args: Vec<&str> = argument.clone().into_iter().filter(|x| x.contains("-")).collect();
+            if !args.is_empty() {
+                let words: Vec<&str> = argument.into_iter().filter(|x| !x.contains("-")).collect();
+                if args.contains(&"--translation") || args.contains(&"-t") {
+                    if let Err(e) = print_translation_result(words) {
+                        println!("{}", e)
+                    }
+                } else {
+                    println!("Error: invaild Argument!");
                 }
                 continue;
             }
