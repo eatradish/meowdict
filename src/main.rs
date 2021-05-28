@@ -142,7 +142,7 @@ fn format_output(moedict_result: MoedictJson) -> String {
         }
     }
 
-    result.join("\n")
+    result.join("\n").replace("~", "").replace("`", "")
 }
 
 fn string_split_new_line(s: String) -> String {
