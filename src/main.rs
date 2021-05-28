@@ -37,21 +37,25 @@ fn meowdict_console() -> Result<()> {
             .filter(|x| x != &"")
             .collect::<Vec<&str>>();
         if !argument.is_empty() {
-            let args: Vec<&str> = argument.clone().into_iter().filter(|x| x.contains("-")).collect();
+            let args: Vec<&str> = argument
+                .clone()
+                .into_iter()
+                .filter(|x| x.contains("-"))
+                .collect();
             if !args.is_empty() {
                 let words: Vec<&str> = argument.into_iter().filter(|x| !x.contains("-")).collect();
                 if args.contains(&"--translation") || args.contains(&"-t") {
                     if let Err(e) = print_translation_result(words) {
-                        println!("{}", e)
+                        println!("{}", e);
                     }
                 } else {
                     println!("Error: invaild Argument!");
                 }
-                continue;
-            }
-            let result = print_result(argument);
-            if let Err(e) = result {
-                println!("{}", e);
+            } else {
+                let result = print_result(argument);
+                if let Err(e) = result {
+                    println!("{}", e);
+                }
             }
         }
     }
