@@ -22,13 +22,13 @@ fn main() -> Result<()> {
         }
         print_result(input)?;
     } else {
-        meowdict_console()?;
+        meowdict_console();
     }
 
     Ok(())
 }
 
-fn meowdict_console() -> Result<()> {
+fn meowdict_console() -> () {
     let mut reader = Editor::<()>::new();
     while let Ok(argument) = reader.readline("meowdict > ") {
         let argument = argument
@@ -63,7 +63,7 @@ fn meowdict_console() -> Result<()> {
         }
     }
 
-    Ok(())
+    ()
 }
 
 fn print_translation_result(words: Vec<&str>) -> Result<()> {
