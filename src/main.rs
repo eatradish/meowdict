@@ -15,6 +15,9 @@ fn main() -> Result<()> {
     if let Some(input) = app.values_of("INPUT") {
         let input = input.collect::<Vec<&str>>();
         if app.occurrences_of("translation") != 0 {
+            if input.is_empty() {
+                return Err(anyhow!("Error: Require keyword is empty!"));
+            }
             if let Err(e) = print_translation_result(input) {
                 println!("{}", e);
             }
@@ -48,7 +51,9 @@ fn meowdict_console() {
                     .filter(|x| !x.starts_with('-'))
                     .collect();
                 if args.contains(&"--translation") || args.contains(&"-t") {
-                    if let Err(e) = print_translation_result(words) {
+                    if words.is_empty() {
+                        println!("Error: Require keyword is empty!");
+                    } else if let Err(e) = print_translation_result(words) {
                         println!("{}", e);
                     }
                 } else {
