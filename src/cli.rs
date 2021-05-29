@@ -17,4 +17,10 @@ pub fn build_cli() -> App<'static, 'static> {
                 .long("translation")
                 .help("Get all translation"),
         )
+        .arg(
+            Arg::with_name("inputs2t")
+            .short("i")
+            .long("input-s2t")
+            .help("Convert input to traditional Chinese and search"),
+        )
 }

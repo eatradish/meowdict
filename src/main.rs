@@ -2,6 +2,7 @@ use anyhow::{anyhow, Result};
 use console::{truncate_str, Term};
 use owo_colors::OwoColorize;
 use rustyline::Editor;
+use opencc_rust::*;
 
 mod api;
 mod cli;
@@ -13,21 +14,35 @@ const LINE_LENGTH: usize = 80;
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
     if let Some(input) = app.values_of("INPUT") {
-        let input = input.collect::<Vec<&str>>();
+        let mut input = input.into_iter().map(|x| x.into()).collect::<Vec<String>>();
+        if input.is_empty() {
+            return Err(anyhow!("Error: Require keyword is empty!"));
+        }
+        if app.occurrences_of("inputs2t") != 0 {
+            input = opencc_s2t(&input);
+        }
         if app.occurrences_of("translation") != 0 {
-            if input.is_empty() {
-                return Err(anyhow!("Error: Require keyword is empty!"));
-            } else if let Err(e) = print_translation_result(input) {
+            if let Err(e) = print_translation_result(&input) {
                 println!("{}", e);
             }
             return Ok(());
         }
-        print_result(input)?;
+        print_result(&input)?;
     } else {
         meowdict_console();
     }
 
     Ok(())
+}
+
+fn opencc_s2t(input: &Vec<String>) -> Vec<String> {
+    let mut result = Vec::new();
+    let opencc = OpenCC::new(DefaultConfig::S2TWP).unwrap();
+    for i in input {
+        result.push(opencc.convert(i));
+    }
+
+    result
 }
 
 fn meowdict_console() {
@@ -37,40 +52,50 @@ fn meowdict_console() {
             .trim()
             .split(' ')
             .filter(|x| x != &"")
-            .collect::<Vec<&str>>();
+            .map(|x| x.into())
+            .collect::<Vec<String>>();
         if !argument.is_empty() {
-            let args: Vec<&str> = argument
+            let args: Vec<String> = argument
                 .clone()
                 .into_iter()
                 .filter(|x| x.starts_with('-'))
                 .collect();
+            let mut words: Vec<String> = argument
+                .into_iter()
+                .filter(|x| !x.starts_with('-'))
+                .collect();
             if !args.is_empty() {
-                let words: Vec<&str> = argument
-                    .into_iter()
-                    .filter(|x| !x.starts_with('-'))
-                    .collect();
-                if args.contains(&"--translation") || args.contains(&"-t") {
-                    if words.is_empty() {
-                        println!("Error: Require keyword is empty!");
-                    } else if let Err(e) = print_translation_result(words) {
+                let mut has_argument = false;
+                if words.is_empty() {
+                    println!("Error: Require keyword is empty!");
+                    continue;
+                }
+                if args.contains(&"--input-s2t".to_string()) || args.contains(&"-i".to_string()) {
+                    has_argument = true;
+                    words = opencc_s2t(&words);
+                }
+                if args.contains(&"--translation".to_string()) || args.contains(&"-t".to_string()) {
+                    if let Err(e) = print_translation_result(&words) {
                         println!("{}", e);
                     }
-                } else {
+                    continue;
+                }
+                if !has_argument {
                     println!("Error: invaild Argument!");
+                    continue;
                 }
-            } else {
-                let result = print_result(argument);
-                if let Err(e) = result {
-                    println!("{}", e);
-                }
+            }
+            let result = print_result(&words);
+            if let Err(e) = result {
+                println!("{}", e);
             }
         }
     }
 }
 
-fn print_translation_result(words: Vec<&str>) -> Result<()> {
+fn print_translation_result(words: &Vec<String>) -> Result<()> {
     let words_len = words.len();
-    for word in &words {
+    for word in words {
         if words_len != 1 {
             println!("{}：", word.fg_rgb::<178, 143, 206>());
         }
@@ -90,9 +115,9 @@ fn print_translation_result(words: Vec<&str>) -> Result<()> {
     Ok(())
 }
 
-fn print_result(words: Vec<&str>) -> Result<()> {
+fn print_result(words: &Vec<String>) -> Result<()> {
     let words_len = words.len();
-    for word in &words {
+    for word in words {
         if words_len != 1 {
             println!("{}：", word.fg_rgb::<178, 143, 206>());
         }
