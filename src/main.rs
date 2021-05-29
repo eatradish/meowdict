@@ -69,8 +69,9 @@ fn meowdict_console() {
 }
 
 fn print_translation_result(words: Vec<&str>) -> Result<()> {
+    let words_len = words.len();
     for word in &words {
-        if words.len() != 1 {
+        if words_len != 1 {
             println!("{}：", word.fg_rgb::<178, 143, 206>());
         }
         let moedict_object = request_moedict(word)?;
@@ -90,8 +91,9 @@ fn print_translation_result(words: Vec<&str>) -> Result<()> {
 }
 
 fn print_result(words: Vec<&str>) -> Result<()> {
+    let words_len = words.len();
     for word in &words {
-        if words.len() != 1 {
+        if words_len != 1 {
             println!("{}：", word.fg_rgb::<178, 143, 206>());
         }
         let moedict_object = request_moedict(word)?;
