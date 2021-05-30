@@ -11,10 +11,10 @@ jobs:
         rust-version: stable
     - name: Install Dependency
       run: |
-        wget http://launchpadlibrarian.net/530734693/opencc_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
-        wget http://launchpadlibrarian.net/530734692/libopencc1.1_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
-        wget http://launchpadlibrarian.net/487184494/libopencc-data_1.1.1+git20200624+ds2-2_all.deb
-        sudo apt-get install -y ./libopencc-data_1.1.1+git20200624+ds2-2_all.deb \
+        wget https://launchpad.net/ubuntu/+archive/primary/+files/opencc_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
+        wget https://launchpad.net/ubuntu/+archive/primary/+files/libopencc1.1_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
+        wget https://launchpad.net/ubuntu/+archive/primary/+files/libopencc-data_1.1.1+git20200624+ds2-10ubuntu2_all.deb
+        sudo apt-get install -y ./libopencc-data_1.1.1+git20200624+ds2-10ubuntu2_all.deb \
           ./libopencc1.1_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb \
           ./opencc_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
     - uses: actions/checkout@v2
