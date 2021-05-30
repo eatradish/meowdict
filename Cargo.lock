@@ -529,9 +529,9 @@ checksum = "af8b08b04175473088b46763e51ee54da5f9a164bc162f615b91bc179dbf15a3"
 
 [[package]]
 name = "opencc-rust"
-version = "1.1.9"
+version = "1.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41475990a4ca73e9b3bb6f7fad2454a62ae1f7ca5ca36579139bfb1ba3d8193d"
+checksum = "7efbab195c441aa973d6b889d2b4f15c09f0131cb53281e77d48728260009834"
 dependencies = [
  "libc",
  "pkg-config",
