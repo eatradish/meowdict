@@ -10,7 +10,7 @@ jobs:
       with:
         rust-version: stable
     - name: Install Dependency
-      run: apt update && apt install -y opencc libssl-dev
+      run: sudo apt update && sudo apt install -y opencc libssl-dev
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build --verbose
