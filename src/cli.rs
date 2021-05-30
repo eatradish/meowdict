@@ -23,4 +23,10 @@ pub fn build_cli() -> App<'static, 'static> {
             .long("input-s2t")
             .help("Convert input to traditional Chinese and search"),
         )
+        .arg(
+            Arg::with_name("resultt2s")
+            .short("r")
+            .long("result-t2s")
+            .help("Convert result to Simplified Chinese to display")
+        )
 }
