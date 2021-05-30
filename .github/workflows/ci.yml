@@ -14,7 +14,8 @@ jobs:
         wget https://launchpad.net/ubuntu/+archive/primary/+files/opencc_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
         wget https://launchpad.net/ubuntu/+archive/primary/+files/libopencc1.1_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
         wget https://launchpad.net/ubuntu/+archive/primary/+files/libopencc-data_1.1.1+git20200624+ds2-10ubuntu2_all.deb
-        sudo apt-get install -y ./libopencc-data_1.1.1+git20200624+ds2-10ubuntu2_all.deb \
+        sudo apt-get install -y libmarisa \
+          ./libopencc-data_1.1.1+git20200624+ds2-10ubuntu2_all.deb \
           ./libopencc1.1_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb \
           ./opencc_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
     - uses: actions/checkout@v2
