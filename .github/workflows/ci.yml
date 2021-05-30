@@ -12,11 +12,13 @@ jobs:
     - name: Install Dependency
       run: |
         wget http://mirrors.kernel.org/ubuntu/pool/universe/m/marisa/libmarisa0_0.2.6-1_amd64.deb
+        wget https://launchpad.net/ubuntu/+archive/primary/+files/libopencc-dev_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
         wget https://launchpad.net/ubuntu/+archive/primary/+files/opencc_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
         wget https://launchpad.net/ubuntu/+archive/primary/+files/libopencc1.1_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
         wget https://launchpad.net/ubuntu/+archive/primary/+files/libopencc-data_1.1.1+git20200624+ds2-10ubuntu2_all.deb
         sudo apt update
         sudo apt-get install -y ./libmarisa0_0.2.6-1_amd64.deb \
+          ./libopencc-dev_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb \
           ./libopencc-data_1.1.1+git20200624+ds2-10ubuntu2_all.deb \
           ./libopencc1.1_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb \
           ./opencc_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
