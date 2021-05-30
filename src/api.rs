@@ -22,10 +22,7 @@ pub fn request_moedict(keyword: &str) -> Result<MoedictJson> {
     match response.status().into() {
         200 => Ok(response.json::<MoedictJson>()?),
         404 => Err(anyhow!("Could not find keyword: {}", keyword)),
-        _ => Err(anyhow!(
-            "Response status code: {}",
-            response.status()
-        )),
+        _ => Err(anyhow!("Response status code: {}", response.status())),
     }
 }
 

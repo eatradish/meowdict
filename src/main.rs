@@ -23,7 +23,7 @@ fn main() -> Result<()> {
         }
         if app.occurrences_of("resultt2s") != 0 {
             result_t2s = true;
-        } 
+        }
         if app.occurrences_of("translation") != 0 {
             if let Err(e) = print_translation_result(&input) {
                 println!("{}", e);
@@ -32,9 +32,17 @@ fn main() -> Result<()> {
         }
         print_result(&input, result_t2s)?;
     } else {
+        let mut input_s2t = false;
+        let mut result_t2s = false;
+        if app.occurrences_of("inputs2tmode") != 0 {
+            input_s2t = true;
+        }
+        if app.occurrences_of("resultt2smode") != 0 {
+            result_t2s = true;
+        }
         let mut console = MeowdictConsole {
-            input_s2t: false,
-            result_t2s: false,
+            input_s2t,
+            result_t2s,
         };
         console.create_console();
     }

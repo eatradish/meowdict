@@ -19,14 +19,24 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .arg(
             Arg::with_name("inputs2t")
-            .short("i")
-            .long("input-s2t")
-            .help("Convert input to traditional Chinese and search"),
+                .short("i")
+                .long("input-s2t")
+                .help("Convert input to traditional Chinese and search"),
         )
         .arg(
             Arg::with_name("resultt2s")
-            .short("r")
-            .long("result-t2s")
-            .help("Convert result to Simplified Chinese to display")
+                .short("r")
+                .long("result-t2s")
+                .help("Convert result to Simplified Chinese to display"),
+        )
+        .arg(
+            Arg::with_name("inputs2tmode")
+                .long("input-s2t-mode")
+                .help("Open console with input-s2t mode"),
+        )
+        .arg(
+            Arg::with_name("resultt2smode")
+                .long("result-t2s-mode")
+                .help("Open console with result-t2s mode"),
         )
 }

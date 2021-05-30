@@ -10,8 +10,6 @@ pub struct MeowdictConsole {
 
 impl MeowdictConsole {
     pub fn create_console(&mut self) {
-        self.input_s2t = false;
-        self.result_t2s = false;
         let mut reader = Editor::<()>::new();
         while let Ok(argument) = reader.readline("meowdict > ") {
             let argument = argument
