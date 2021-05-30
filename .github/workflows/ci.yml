@@ -11,9 +11,9 @@ jobs:
         rust-version: stable
     - name: Install Dependency
       run: |
-      wget http://launchpadlibrarian.net/530734693/opencc_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
-      wget http://launchpadlibrarian.net/530734692/libopencc1.1_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
-      sudo apt-get install -y ./libopencc1.1_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb ./opencc_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb 
+        wget http://launchpadlibrarian.net/530734693/opencc_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
+        wget http://launchpadlibrarian.net/530734692/libopencc1.1_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb
+        sudo apt-get install -y ./libopencc1.1_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb ./opencc_1.1.1+git20200624+ds2-10ubuntu2_amd64.deb 
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build --verbose
