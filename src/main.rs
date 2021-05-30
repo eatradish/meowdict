@@ -1,8 +1,8 @@
 use anyhow::{anyhow, Result};
 use console::{truncate_str, Term};
+use opencc_rust::*;
 use owo_colors::OwoColorize;
 use rustyline::Editor;
-use opencc_rust::*;
 
 mod api;
 mod cli;
