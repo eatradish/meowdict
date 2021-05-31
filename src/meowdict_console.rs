@@ -71,7 +71,7 @@ impl MeowdictConsole {
                     self.set_console_mode("unset-input-s2t")?;
                     self.set_console_mode("unset-result-t2s")?;
                 }
-                _ => continue,
+                _ => println!("Invaild argument: {}", i),
             };
         }
         if self.input_s2t || command_input_s2t {
