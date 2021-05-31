@@ -83,6 +83,52 @@ mignon
 adorable
 ```
 
+### Simplified Chinese <-> Traditional Chinese
+meowdict currently supports converting the input Simplified Chinese to Traditional Chinese for searching, to avoid the problem that the search does not include Simplified Chinese words in the MoeDict.
+
+e.g:
+```
+$ ./meowdict 老师
+Error: Could not find keyword: 老师
+$ ./meowdict 老师 --input-s2t
+英語：teacher
+拼音：lǎo shī
+注音：ㄌㄠˇ　ㄕ
+1.對傳授道業、學問或技藝者的尊稱。
+2.學生對先生的尊稱。
+3.科舉時代門生對座主的稱呼。
+```
+
+Similarly, meowdict also supports converting the search results into simplified Chinese:
+
+```
+$ ./meowdict 老師
+英語：teacher
+拼音：lǎo shī
+注音：ㄌㄠˇ　ㄕ
+1.對傳授道業、學問或技藝者的尊稱。
+2.學生對先生的尊稱。
+3.科舉時代門生對座主的稱呼。
+s$ ./meowdict 老師 --result-t2s
+英语：teacher
+拼音：lǎo shī
+注音：ㄌㄠˇ　ㄕ
+1.对传授道业、学问或技艺者的尊称。
+2.学生对先生的尊称。
+3.科举时代门生对座主的称呼。
+```
+
+Can be used simultaneously:
+
+```
+$ ./meowdict 老师 --input-s2t --result-t2s
+英语：teacher
+拼音：lǎo shī
+注音：ㄌㄠˇ　ㄕ
+1.对传授道业、学问或技艺者的尊称。
+2.学生对先生的尊称。
+3.科举时代门生对座主的称呼。
+```
 
 ## Installation
 ```
