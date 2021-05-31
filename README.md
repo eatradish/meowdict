@@ -109,7 +109,7 @@ $ ./meowdict 老師
 1.對傳授道業、學問或技藝者的尊稱。
 2.學生對先生的尊稱。
 3.科舉時代門生對座主的稱呼。
-s$ ./meowdict 老師 --result-t2s
+$ ./meowdict 老師 --result-t2s
 英语：teacher
 拼音：lǎo shī
 注音：ㄌㄠˇ　ㄕ
