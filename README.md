@@ -143,6 +143,30 @@ meowdict > 老师
 3.科舉時代門生對座主的稱呼。
 ```
 
+You can use `--help` to see the modes that can be set:
+
+```
+saki@Mag230 [ debug@master ] $ ./meowdict --help
+meowdict 0.5.3
+Mag Mell
+Check chinese keyword from moedict.tw
+
+USAGE:
+    meowdict [FLAGS] [INPUT]...
+
+FLAGS:
+    -h, --help               Prints help information
+    -i, --input-s2t          Convert input to traditional Chinese and search
+        --input-s2t-mode     Open console with input-s2t mode
+    -r, --result-t2s         Convert result to Simplified Chinese to display
+        --result-t2s-mode    Open console with result-t2s mode
+    -t, --translation        Get all translation
+    -V, --version            Prints version information
+
+ARGS:
+    <INPUT>...    Input the keyword to use
+```
+
 Similarly, it is possible to set the console:
 
 ```saki@Mag230 [ debug@master ] $ ./meowdict 
