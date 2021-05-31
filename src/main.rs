@@ -9,7 +9,7 @@ use meowdict_console::MeowdictConsole;
 
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
-    dbg!(&app.args);
+    let args: Vec<&str> = app.args.keys().map(|x| x.to_owned()).collect();
     if let Some(words) = app.values_of("INPUT") {
         let mut resultt2s = false;
         let mut words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
@@ -28,7 +28,13 @@ fn main() -> Result<()> {
             return Ok(());
         }
         print_result(&words, resultt2s)?;
-    } else if app.args.len() != 0 {
+    } else if args
+        .into_iter()
+        .filter(|x| !x.contains("mode"))
+        .collect::<Vec<&str>>()
+        .len()
+        != 0
+    {
         println!("Error: Require Keyword empty!");
     } else {
         let mut input_s2t_mode = false;
