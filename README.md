@@ -130,6 +130,21 @@ $ ./meowdict 老师 --input-s2t --result-t2s
 3.科举时代门生对座主的称呼。
 ```
 
+Similarly, the same parameters can be passed into the console:
+
+```
+$ ./meowdict
+meowdict > 老师
+Could not find keyword: 老师
+meowdict > 老师 --input-s2t
+英語：teacher
+拼音：lǎo shī
+注音：ㄌㄠˇ　ㄕ
+1.對傳授道業、學問或技藝者的尊稱。
+2.學生對先生的尊稱。
+3.科舉時代門生對座主的稱呼。
+```
+
 If you are using console mode, you can also pass in parameters like this during startup:
 
 ```
@@ -146,7 +161,7 @@ meowdict > 老师
 You can use `--help` to see the modes that can be set:
 
 ```
-saki@Mag230 [ debug@master ] $ ./meowdict --help
+$ ./meowdict --help
 meowdict 0.5.3
 Mag Mell
 Check chinese keyword from moedict.tw
@@ -169,7 +184,7 @@ ARGS:
 
 Similarly, it is possible to set the console:
 
-```saki@Mag230 [ debug@master ] $ ./meowdict 
+```$ ./meowdict 
 meowdict > 老师
 Could not find keyword: 老师
 meowdict > --set-mode-input-s2t
