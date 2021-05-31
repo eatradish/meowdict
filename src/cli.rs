@@ -15,19 +15,22 @@ pub fn build_cli() -> App<'static, 'static> {
             Arg::with_name("translation")
                 .short("t")
                 .long("translation")
-                .help("Get all translation"),
+                .help("Get all translation")
+                .requires("INPUT"),
         )
         .arg(
             Arg::with_name("inputs2t")
                 .short("i")
                 .long("input-s2t")
-                .help("Convert input to traditional Chinese and search"),
+                .help("Convert input to traditional Chinese and search")
+                .requires("INPUT"),
         )
         .arg(
             Arg::with_name("resultt2s")
                 .short("r")
                 .long("result-t2s")
-                .help("Convert result to Simplified Chinese to display"),
+                .help("Convert result to Simplified Chinese to display")
+                .requires("INPUT"),
         )
         .arg(
             Arg::with_name("inputs2tmode")
