@@ -130,6 +130,49 @@ $ ./meowdict 老师 --input-s2t --result-t2s
 3.科举时代门生对座主的称呼。
 ```
 
+If you are using console mode, you can also pass in parameters like this during startup:
+
+```
+$ ./meowdict --input-s2t-mode
+meowdict > 老师
+英語：teacher
+拼音：lǎo shī
+注音：ㄌㄠˇ　ㄕ
+1.對傳授道業、學問或技藝者的尊稱。
+2.學生對先生的尊稱。
+3.科舉時代門生對座主的稱呼。
+```
+
+Similarly, it is possible to set the console:
+
+```saki@Mag230 [ debug@master ] $ ./meowdict 
+meowdict > 老师
+Could not find keyword: 老师
+meowdict > --set-mode-input-s2t
+Setting input mode as s2t...
+meowdict > 老师
+英語：teacher
+拼音：lǎo shī
+注音：ㄌㄠˇ　ㄕ
+1.對傳授道業、學問或技藝者的尊稱。
+2.學生對先生的尊稱。
+3.科舉時代門生對座主的稱呼。
+meowdict > --set-mode-result-t2s
+Setting result mode as t2s...
+meowdict > 老师
+英语：teacher
+拼音：lǎo shī
+注音：ㄌㄠˇ　ㄕ
+1.对传授道业、学问或技艺者的尊称。
+2.学生对先生的尊称。
+3.科举时代门生对座主的称呼。
+meowdict > --unset-mode-all
+Unsetting input mode...
+Unsetting result mode...
+meowdict > 老师
+Could not find keyword: 老师
+```
+
 ## Installation
 ```
 $ cargo build --release
