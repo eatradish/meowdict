@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use console::{truncate_str, Term};
-use futures::future::join_all;
+use futures::future::try_join_all;
 use opencc_rust::*;
 use owo_colors::OwoColorize;
 
@@ -28,19 +28,16 @@ pub async fn print_result(words: &Vec<String>, result_t2s: bool) -> Result<()> {
     for word in words {
         tesk.push(request_moedict(word));
     }
-    let result = join_all(tesk).await;
-
+    let results = try_join_all(tesk).await?;
     for (index, word) in words.iter().enumerate() {
         if words_len != 1 {
             println!("{}：", word.fg_rgb::<178, 143, 206>());
         }
-        if let Ok(v) = &result[index] {
-            let result = format_output(v);
-            if result_t2s {
-                println!("{}", opencc_convert(&result, "t2s")?);
-            } else {
-                println!("{}", result);
-            }
+        let result = format_output(&results[index]);
+        if result_t2s {
+            println!("{}", opencc_convert(&result, "t2s")?);
+        } else {
+            println!("{}", result);
         }
     }
 
@@ -53,18 +50,16 @@ pub async fn print_translation_result(words: &Vec<String>) -> Result<()> {
     for word in words {
         tesk.push(request_moedict(word));
     }
-    let result = join_all(tesk).await;
+    let result = try_join_all(tesk).await?;
     for (index, word) in words.iter().enumerate() {
         if words_len != 1 {
             println!("{}：", word.fg_rgb::<178, 143, 206>());
         }
-        if let Ok(moedict_obj) = &result[index] {
-            if let Some(translation) = moedict_obj.get_translations() {
-                for (k, v) in translation {
-                    println!("{}:", k.fg_rgb::<168, 216, 165>());
-                    for i in v {
-                        println!("{}", i.fg_rgb::<220, 159, 180>());
-                    }
+        if let Some(translation) = result[index].get_translations() {
+            for (k, v) in translation {
+                println!("{}:", k.fg_rgb::<168, 216, 165>());
+                for i in v {
+                    println!("{}", i.fg_rgb::<220, 159, 180>());
                 }
             }
         } else {
