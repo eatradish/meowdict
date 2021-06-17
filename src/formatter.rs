@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Result};
 use console::{truncate_str, Term};
+use futures::future::join_all;
 use opencc_rust::*;
 use owo_colors::OwoColorize;
 
@@ -21,36 +22,49 @@ pub fn opencc_convert(input: &String, t: &str) -> Result<String> {
     Ok(result)
 }
 
-pub fn print_result(words: &Vec<String>, result_t2s: bool) -> Result<()> {
+pub async fn print_result(words: &Vec<String>, result_t2s: bool) -> Result<()> {
     let words_len = words.len();
+    let mut tesk = Vec::new();
     for word in words {
+        tesk.push(request_moedict(word));
+    }
+    let result = join_all(tesk).await;
+
+    for (index, word) in words.iter().enumerate() {
         if words_len != 1 {
             println!("{}：", word.fg_rgb::<178, 143, 206>());
         }
-        let moedict_object = request_moedict(word)?;
-        let result = format_output(moedict_object);
-        if result_t2s {
-            println!("{}", opencc_convert(&result, "t2s")?);
-        } else {
-            println!("{}", result);
+        if let Ok(v) = &result[index] {
+            let result = format_output(v);
+            if result_t2s {
+                println!("{}", opencc_convert(&result, "t2s")?);
+            } else {
+                println!("{}", result);
+            }
         }
     }
 
     Ok(())
 }
 
-pub fn print_translation_result(words: &Vec<String>) -> Result<()> {
+pub async fn print_translation_result(words: &Vec<String>) -> Result<()> {
     let words_len = words.len();
+    let mut tesk = Vec::new();
     for word in words {
+        tesk.push(request_moedict(word));
+    }
+    let result = join_all(tesk).await;
+    for (index, word) in words.iter().enumerate() {
         if words_len != 1 {
             println!("{}：", word.fg_rgb::<178, 143, 206>());
         }
-        let moedict_object = request_moedict(word)?;
-        if let Some(translation) = moedict_object.get_translations() {
-            for (k, v) in translation {
-                println!("{}:", k.fg_rgb::<168, 216, 165>());
-                for i in v {
-                    println!("{}", i.fg_rgb::<220, 159, 180>());
+        if let Ok(moedict_obj) = &result[index] {
+            if let Some(translation) = moedict_obj.get_translations() {
+                for (k, v) in translation {
+                    println!("{}:", k.fg_rgb::<168, 216, 165>());
+                    for i in v {
+                        println!("{}", i.fg_rgb::<220, 159, 180>());
+                    }
                 }
             }
         } else {
@@ -61,7 +75,7 @@ pub fn print_translation_result(words: &Vec<String>) -> Result<()> {
     Ok(())
 }
 
-fn format_output(moedict_result: MoedictJson) -> String {
+fn format_output(moedict_result: &MoedictJson) -> String {
     let mut result = Vec::new();
     if let Some(english) = moedict_result.get_english() {
         result.push(

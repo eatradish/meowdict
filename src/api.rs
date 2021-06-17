@@ -16,11 +16,12 @@ pub struct MoedictJson {
     json: HashMap<String, Value>,
 }
 
-pub fn request_moedict(keyword: &str) -> Result<MoedictJson> {
-    let response = reqwest::blocking::get(format!("https://www.moedict.tw/a/{}.json", keyword))?;
+pub async fn request_moedict(keyword: &str) -> Result<MoedictJson> {
+    let response = 
+        reqwest::get(format!("https://www.moedict.tw/a/{}.json", keyword)).await?;
 
     match response.status().into() {
-        200 => Ok(response.json::<MoedictJson>()?),
+        200 => Ok(response.json::<MoedictJson>().await?),
         404 => Err(anyhow!("Could not find keyword: {}", keyword)),
         _ => Err(anyhow!("Response status code: {}", response.status())),
     }
