@@ -9,7 +9,7 @@ pub struct MeowdictConsole {
 }
 
 impl MeowdictConsole {
-    pub async fn create_console(&mut self) {
+    pub fn create_console(&mut self) {
         let mut reader = Editor::<()>::new();
         while let Ok(argument) = reader.readline("meowdict > ") {
             let argument = argument
@@ -19,7 +19,7 @@ impl MeowdictConsole {
                 .collect::<Vec<&str>>();
             if !argument.is_empty() {
                 let (args, words) = argument_spliter(argument);
-                if let Err(e) = self.args_runner(args, words).await {
+                if let Err(e) = self.args_runner(args, words) {
                     println!("{}", e);
                 }
             }
@@ -50,7 +50,7 @@ impl MeowdictConsole {
         Ok(())
     }
 
-    async fn args_runner(&mut self, args: Vec<&str>, words: Vec<&str>) -> Result<()> {
+    fn args_runner(&mut self, args: Vec<&str>, words: Vec<&str>) -> Result<()> {
         let mut words_mut: Vec<String> = words.into_iter().map(|x| x.into()).collect();
         let mut command_result_t2s = false;
         let mut command_input_s2t = false;
@@ -80,9 +80,9 @@ impl MeowdictConsole {
             }
         }
         if !translation_mode {
-            print_result(&words_mut, self.result_t2s || command_result_t2s).await?;
+            print_result(&words_mut, self.result_t2s || command_result_t2s);
         } else {
-            print_translation_result(&words_mut).await?;
+            print_translation_result(&words_mut);
         }
 
         Ok(())

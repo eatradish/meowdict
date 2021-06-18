@@ -1,14 +1,15 @@
 use anyhow::{anyhow, Result};
 use console::{truncate_str, Term};
-use futures::future::try_join_all;
+use futures::future;
 use opencc_rust::*;
 use owo_colors::OwoColorize;
+use tokio::runtime::Builder;
 
 use crate::api::{request_moedict, MoedictJson};
 
 const LINE_LENGTH: usize = 80;
 
-pub fn opencc_convert(input: &String, t: &str) -> Result<String> {
+pub fn opencc_convert(input: &str, t: &str) -> Result<String> {
     if !&["s2t", "t2s"].contains(&t) {
         return Err(anyhow!("Unsupport this convert!"));
     }
@@ -22,52 +23,66 @@ pub fn opencc_convert(input: &String, t: &str) -> Result<String> {
     Ok(result)
 }
 
-pub async fn print_result(words: &Vec<String>, result_t2s: bool) -> Result<()> {
+pub fn print_result(words: &[String], result_t2s: bool) ->() {
+    let runtime = Builder::new_multi_thread()
+        .worker_threads(10)
+        .build()
+        .unwrap();
     let words_len = words.len();
-    let mut tesk = Vec::new();
-    for word in words {
-        tesk.push(request_moedict(word));
-    }
-    let results = try_join_all(tesk).await?;
-    for (index, word) in words.iter().enumerate() {
-        if words_len != 1 {
-            println!("{}：", word.fg_rgb::<178, 143, 206>());
+    runtime.block_on(async move {
+        let mut tesk = Vec::new();
+        for word in words {
+            tesk.push(request_moedict(word));
         }
-        let result = format_output(&results[index]);
-        if result_t2s {
-            println!("{}", opencc_convert(&result, "t2s")?);
-        } else {
-            println!("{}", result);
-        }
-    }
-
-    Ok(())
-}
-
-pub async fn print_translation_result(words: &Vec<String>) -> Result<()> {
-    let words_len = words.len();
-    let mut tesk = Vec::new();
-    for word in words {
-        tesk.push(request_moedict(word));
-    }
-    let result = try_join_all(tesk).await?;
-    for (index, word) in words.iter().enumerate() {
-        if words_len != 1 {
-            println!("{}：", word.fg_rgb::<178, 143, 206>());
-        }
-        if let Some(translation) = result[index].get_translations() {
-            for (k, v) in translation {
-                println!("{}:", k.fg_rgb::<168, 216, 165>());
-                for i in v {
-                    println!("{}", i.fg_rgb::<220, 159, 180>());
+        let results = future::try_join_all(tesk).await;
+        if let Ok(results) = results {
+            for (index, word) in words.iter().enumerate() {
+                if words_len != 1 {
+                    println!("{}：", word.fg_rgb::<178, 143, 206>());
+                }
+                let result = format_output(&results[index]);
+                if result_t2s {
+                    if let Ok(result) = opencc_convert(&result, "t2s") {
+                        println!("{}", result);
+                    }
+                } else {
+                    println!("{}", result);
                 }
             }
-        } else {
-            return Err(anyhow!("Failed to get translation: {}", word));
         }
-    }
+    });
+}
 
-    Ok(())
+pub fn print_translation_result(words: &[String]) -> () {
+    let words_len = words.len();
+    let runtime = Builder::new_multi_thread()
+        .worker_threads(10)
+        .build()
+        .unwrap();
+    runtime.block_on(async move {
+        let mut tesk = Vec::new();
+        for word in words {
+            tesk.push(request_moedict(word));
+        }
+        let results = future::try_join_all(tesk).await;
+        if let Ok(results) = results {
+            for (index, word) in words.iter().enumerate() {
+                if words_len != 1 {
+                    println!("{}：", word.fg_rgb::<178, 143, 206>());
+                }
+                if let Some(translation) = results[index].get_translations() {
+                    for (k, v) in translation {
+                        println!("{}:", k.fg_rgb::<168, 216, 165>());
+                        for i in v {
+                            println!("{}", i.fg_rgb::<220, 159, 180>());
+                        }
+                    }
+                } else {
+                    println!("Failed to get translation: {}", word);
+                }
+            }
+        }
+    });
 }
 
 fn format_output(moedict_result: &MoedictJson) -> String {

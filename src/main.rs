@@ -7,8 +7,7 @@ mod meowdict_console;
 use formatter::{opencc_convert, print_result, print_translation_result};
 use meowdict_console::MeowdictConsole;
 
-#[tokio::main]
-async fn main() -> Result<()> {
+fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
     if let Some(words) = app.values_of("INPUT") {
         let mut resultt2s = false;
@@ -22,12 +21,10 @@ async fn main() -> Result<()> {
             resultt2s = true;
         }
         if app.occurrences_of("translation") != 0 {
-            if let Err(e) = print_translation_result(&words).await {
-                println!("{}", e);
-            }
+            print_translation_result(&words);
             return Ok(());
         }
-        print_result(&words, resultt2s).await?;
+        print_result(&words, resultt2s);
     } else {
         let mut input_s2t_mode = false;
         let mut result_t2s_mode = false;
@@ -41,7 +38,7 @@ async fn main() -> Result<()> {
             input_s2t: input_s2t_mode,
             result_t2s: result_t2s_mode,
         };
-        console.create_console().await;
+        console.create_console();
     }
 
     Ok(())
