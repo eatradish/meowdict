@@ -25,6 +25,8 @@ pub fn opencc_convert(input: &str, t: &str) -> Result<String> {
 
 pub fn print_result(words: &[String], result_t2s: bool) ->() {
     let runtime = Builder::new_multi_thread()
+        .enable_time()
+        .enable_io()
         .worker_threads(10)
         .build()
         .unwrap();
@@ -56,6 +58,8 @@ pub fn print_result(words: &[String], result_t2s: bool) ->() {
 pub fn print_translation_result(words: &[String]) -> () {
     let words_len = words.len();
     let runtime = Builder::new_multi_thread()
+        .enable_time()
+        .enable_io()
         .worker_threads(10)
         .build()
         .unwrap();
