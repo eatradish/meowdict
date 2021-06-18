@@ -24,6 +24,7 @@ pub fn opencc_convert(input: &str, t: &str) -> Result<String> {
 }
 
 pub fn print_result(words: &[String], result_t2s: bool) ->() {
+    let client = reqwest::Client::new();
     let runtime = Builder::new_multi_thread()
         .enable_time()
         .enable_io()
@@ -34,7 +35,7 @@ pub fn print_result(words: &[String], result_t2s: bool) ->() {
     runtime.block_on(async move {
         let mut tesk = Vec::new();
         for word in words {
-            tesk.push(request_moedict(word));
+            tesk.push(request_moedict(word, &client));
         }
         let results = future::try_join_all(tesk).await;
         if let Ok(results) = results {
@@ -63,10 +64,11 @@ pub fn print_translation_result(words: &[String]) -> () {
         .worker_threads(10)
         .build()
         .unwrap();
+    let client = reqwest::Client::new();
     runtime.block_on(async move {
         let mut tesk = Vec::new();
         for word in words {
-            tesk.push(request_moedict(word));
+            tesk.push(request_moedict(word, &client));
         }
         let results = future::try_join_all(tesk).await;
         if let Ok(results) = results {

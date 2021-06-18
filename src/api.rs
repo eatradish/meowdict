@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Result};
 use indexmap::IndexMap;
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -16,9 +17,11 @@ pub struct MoedictJson {
     json: HashMap<String, Value>,
 }
 
-pub async fn request_moedict(keyword: &str) -> Result<MoedictJson> {
-    let response = 
-        reqwest::get(format!("https://www.moedict.tw/a/{}.json", keyword)).await?;
+pub async fn request_moedict(keyword: &str, client: &Client) -> Result<MoedictJson> {
+    let response = client
+        .get(format!("https://www.moedict.tw/a/{}.json", keyword))
+        .send()
+        .await?;
 
     match response.status().into() {
         200 => Ok(response.json::<MoedictJson>().await?),
