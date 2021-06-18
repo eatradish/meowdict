@@ -13,9 +13,13 @@ fn main() -> Result<()> {
         let mut resultt2s = false;
         let mut words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
         if app.occurrences_of("inputs2t") != 0 {
-            for i in 0..words.len() {
-                words[i] = opencc_convert(&words[i], "s2t")?;
-            }
+            words = words.into_iter().map(|x| {
+                if let Ok(v) = opencc_convert(&x, "s2t") {
+                    v
+                } else {
+                    x
+                }
+            }).collect::<Vec<_>>();
         }
         if app.occurrences_of("resultt2s") != 0 {
             resultt2s = true;

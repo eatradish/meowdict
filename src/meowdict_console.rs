@@ -75,9 +75,13 @@ impl MeowdictConsole {
             };
         }
         if self.input_s2t || command_input_s2t {
-            for i in 0..words_mut.len() {
-                words_mut[i] = opencc_convert(&words_mut[i], "s2t")?;
-            }
+            words_mut = words_mut.into_iter().map(|x| {
+                if let Ok(v) = opencc_convert(&x, "s2t") {
+                    v
+                } else {
+                    x
+                }
+            }).collect::<Vec<_>>();
         }
         if !translation_mode {
             print_result(&words_mut, self.result_t2s || command_result_t2s);

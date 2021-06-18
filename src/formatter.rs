@@ -23,7 +23,7 @@ pub fn opencc_convert(input: &str, t: &str) -> Result<String> {
     Ok(result)
 }
 
-pub fn print_result(words: &[String], result_t2s: bool) ->() {
+pub fn print_result(words: &[String], result_t2s: bool) {
     let client = reqwest::Client::new();
     let runtime = Builder::new_multi_thread()
         .enable_time()
@@ -56,7 +56,7 @@ pub fn print_result(words: &[String], result_t2s: bool) ->() {
     });
 }
 
-pub fn print_translation_result(words: &[String]) -> () {
+pub fn print_translation_result(words: &[String]) {
     let words_len = words.len();
     let runtime = Builder::new_multi_thread()
         .enable_time()
