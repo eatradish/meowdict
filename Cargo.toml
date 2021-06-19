@@ -1,6 +1,6 @@
 [package]
 name = "meowdict"
-version = "0.6.3"
+version = "0.6.4"
 authors = ["eatradish <sakiiily@aosc.io>"]
 edition = "2018"
 
