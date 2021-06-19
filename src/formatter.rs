@@ -38,22 +38,25 @@ pub fn print_result(words: &[String], result_t2s: bool) {
             tesk.push(request_moedict(word, &client));
         }
         let results = future::try_join_all(tesk).await;
-        if let Ok(results) = results {
-            for (index, word) in words.iter().enumerate() {
-                if words_len != 1 {
-                    println!("{}：", word.fg_rgb::<178, 143, 206>());
-                }
-                let result = format_output(&results[index]);
-                if result_t2s {
-                    if let Ok(result) = opencc_convert(&result, "t2s") {
+        match results {
+            Ok(results) => {
+                for (index, word) in words.iter().enumerate() {
+                    if words_len != 1 {
+                        println!("{}：", word.fg_rgb::<178, 143, 206>());
+                    }
+                    let result = format_output(&results[index]);
+                    if result_t2s {
+                        if let Ok(result) = opencc_convert(&result, "t2s") {
+                            println!("{}", result);
+                        }
+                    } else {
                         println!("{}", result);
                     }
-                } else {
-                    println!("{}", result);
                 }
             }
+            Err(e) => println!("{}", e)
         }
-    });
+    })
 }
 
 pub fn print_translation_result(words: &[String]) {
@@ -71,22 +74,25 @@ pub fn print_translation_result(words: &[String]) {
             tesk.push(request_moedict(word, &client));
         }
         let results = future::try_join_all(tesk).await;
-        if let Ok(results) = results {
-            for (index, word) in words.iter().enumerate() {
-                if words_len != 1 {
-                    println!("{}：", word.fg_rgb::<178, 143, 206>());
-                }
-                if let Some(translation) = results[index].get_translations() {
-                    for (k, v) in translation {
-                        println!("{}:", k.fg_rgb::<168, 216, 165>());
-                        for i in v {
-                            println!("{}", i.fg_rgb::<220, 159, 180>());
-                        }
+        match results {
+            Ok(results) => {
+                for (index, word) in words.iter().enumerate() {
+                    if words_len != 1 {
+                        println!("{}：", word.fg_rgb::<178, 143, 206>());
                     }
-                } else {
-                    println!("Failed to get translation: {}", word);
+                    if let Some(translation) = results[index].get_translations() {
+                        for (k, v) in translation {
+                            println!("{}:", k.fg_rgb::<168, 216, 165>());
+                            for i in v {
+                                println!("{}", i.fg_rgb::<220, 159, 180>());
+                            }
+                        }
+                    } else {
+                        println!("Failed to get translation: {}", word);
+                    }
                 }
             }
+            Err(e) => println!("{}", e)
         }
     });
 }
