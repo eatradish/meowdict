@@ -31,7 +31,6 @@ pub fn print_result(words: &[String], result_t2s: bool) {
         .worker_threads(10)
         .build()
         .unwrap();
-    let words_len = words.len();
     runtime.block_on(async move {
         let mut tesk = Vec::new();
         for word in words {
@@ -41,9 +40,7 @@ pub fn print_result(words: &[String], result_t2s: bool) {
         match results {
             Ok(results) => {
                 for (index, word) in words.iter().enumerate() {
-                    if words_len != 1 {
-                        println!("{}：", word.fg_rgb::<178, 143, 206>());
-                    }
+                    println!("{}：", word.fg_rgb::<178, 143, 206>());
                     let result = format_output(&results[index]);
                     if result_t2s {
                         if let Ok(result) = opencc_convert(&result, "t2s") {
@@ -60,7 +57,6 @@ pub fn print_result(words: &[String], result_t2s: bool) {
 }
 
 pub fn print_translation_result(words: &[String]) {
-    let words_len = words.len();
     let runtime = Builder::new_multi_thread()
         .enable_time()
         .enable_io()
@@ -77,9 +73,7 @@ pub fn print_translation_result(words: &[String]) {
         match results {
             Ok(results) => {
                 for (index, word) in words.iter().enumerate() {
-                    if words_len != 1 {
-                        println!("{}：", word.fg_rgb::<178, 143, 206>());
-                    }
+                    println!("{}：", word.fg_rgb::<178, 143, 206>());
                     if let Some(translation) = results[index].get_translations() {
                         for (k, v) in translation {
                             println!("{}:", k.fg_rgb::<168, 216, 165>());
