@@ -53,7 +53,7 @@ pub fn print_result(words: &[String], result_t2s: bool, translation_mode: bool) 
                     }
                 }
             }
-            Err(e) => println!("{}", e)
+            Err(e) => println!("{}", e),
         }
     })
 }
