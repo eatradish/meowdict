@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use rustyline::Editor;
 
-use crate::formatter::{opencc_convert, print_result, print_translation_result};
+use crate::formatter::{opencc_convert, print_result};
 
 pub struct MeowdictConsole {
     pub input_s2t: bool,
@@ -83,11 +83,7 @@ impl MeowdictConsole {
                 }
             }).collect::<Vec<_>>();
         }
-        if !translation_mode {
-            print_result(&words_mut, self.result_t2s || command_result_t2s);
-        } else {
-            print_translation_result(&words_mut);
-        }
+        print_result(&words_mut, self.result_t2s || command_result_t2s, translation_mode);
 
         Ok(())
     }

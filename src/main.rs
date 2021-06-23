@@ -4,13 +4,14 @@ mod cli;
 pub mod formatter;
 mod meowdict_console;
 
-use formatter::{opencc_convert, print_result, print_translation_result};
+use formatter::{opencc_convert, print_result};
 use meowdict_console::MeowdictConsole;
 
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
     if let Some(words) = app.values_of("INPUT") {
         let mut resultt2s = false;
+        let mut translation_mode = false;
         let mut words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
         if app.occurrences_of("inputs2t") != 0 {
             words = words
@@ -28,10 +29,9 @@ fn main() -> Result<()> {
             resultt2s = true;
         }
         if app.occurrences_of("translation") != 0 {
-            print_translation_result(&words);
-            return Ok(());
+            translation_mode = true;
         }
-        print_result(&words, resultt2s);
+        print_result(&words, resultt2s, translation_mode);
     } else {
         let mut input_s2t_mode = false;
         let mut result_t2s_mode = false;

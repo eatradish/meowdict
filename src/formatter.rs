@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Result};
 use console::{truncate_str, Term};
 use futures::future;
+use indexmap::IndexMap;
 use opencc_rust::*;
 use owo_colors::OwoColorize;
 use tokio::runtime::Builder;
@@ -17,7 +18,7 @@ pub fn opencc_convert(input: &str, t: &str) -> Result<String> {
     }
 }
 
-pub fn print_result(words: &[String], result_t2s: bool) {
+pub fn print_result(words: &[String], result_t2s: bool, translation_mode: bool) {
     let client = reqwest::Client::new();
     let runtime = Builder::new_multi_thread()
         .enable_time()
@@ -35,7 +36,14 @@ pub fn print_result(words: &[String], result_t2s: bool) {
             Ok(results) => {
                 for (index, word) in words.iter().enumerate() {
                     println!("{}：", word.fg_rgb::<178, 143, 206>());
-                    let result = format_output(&results[index]);
+                    let result = if !translation_mode {
+                        format_defination_output(&results[index])
+                    } else {
+                        match &results[index].get_translations() {
+                            Some(translation) => format_translation_output(translation),
+                            None => continue,
+                        }
+                    };
                     if result_t2s {
                         if let Ok(result) = opencc_convert(&result, "t2s") {
                             println!("{}", result);
@@ -50,42 +58,7 @@ pub fn print_result(words: &[String], result_t2s: bool) {
     })
 }
 
-pub fn print_translation_result(words: &[String]) {
-    let runtime = Builder::new_multi_thread()
-        .enable_time()
-        .enable_io()
-        .worker_threads(10)
-        .build()
-        .unwrap();
-    let client = reqwest::Client::new();
-    runtime.block_on(async move {
-        let mut tesk = Vec::new();
-        for word in words {
-            tesk.push(request_moedict(word, &client));
-        }
-        let results = future::try_join_all(tesk).await;
-        match results {
-            Ok(results) => {
-                for (index, word) in words.iter().enumerate() {
-                    println!("{}：", word.fg_rgb::<178, 143, 206>());
-                    if let Some(translation) = results[index].get_translations() {
-                        for (k, v) in translation {
-                            println!("{}:", k.fg_rgb::<168, 216, 165>());
-                            for i in v {
-                                println!("{}", i.fg_rgb::<220, 159, 180>());
-                            }
-                        }
-                    } else {
-                        println!("Failed to get translation: {}", word);
-                    }
-                }
-            }
-            Err(e) => println!("{}", e)
-        }
-    });
-}
-
-fn format_output(moedict_result: &MoedictJson) -> String {
+fn format_defination_output(moedict_result: &MoedictJson) -> String {
     let mut result = Vec::new();
     if let Some(english) = moedict_result.get_english() {
         result.push(
@@ -127,6 +100,18 @@ fn format_output(moedict_result: &MoedictJson) -> String {
                     }
                 }
             }
+        }
+    }
+
+    result.join("\n")
+}
+
+fn format_translation_output(translation: &IndexMap<String, Vec<String>>) -> String {
+    let mut result = Vec::new();
+    for (k, v) in translation {
+        result.push(format!("{}:", k.fg_rgb::<168, 216, 165>()));
+        for i in v {
+            result.push(format!("{}", i.fg_rgb::<220, 159, 180>()));
         }
     }
 
