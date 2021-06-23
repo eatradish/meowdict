@@ -10,17 +10,11 @@ use crate::api::{request_moedict, MoedictJson};
 const LINE_LENGTH: usize = 80;
 
 pub fn opencc_convert(input: &str, t: &str) -> Result<String> {
-    if !&["s2t", "t2s"].contains(&t) {
-        return Err(anyhow!("Unsupport this convert!"));
+    match t {
+        "s2t" => Ok(OpenCC::new(DefaultConfig::S2TWP).unwrap().convert(input)),
+        "t2s" => Ok(OpenCC::new(DefaultConfig::TW2S).unwrap().convert(input)),
+        _ => Err(anyhow!("Unsupport this convert!")),
     }
-    let opencc = match t {
-        "s2t" => OpenCC::new(DefaultConfig::S2TWP).unwrap(),
-        "t2s" => OpenCC::new(DefaultConfig::TW2S).unwrap(),
-        _ => unreachable!(),
-    };
-    let result = opencc.convert(input);
-
-    Ok(result)
 }
 
 pub fn print_result(words: &[String], result_t2s: bool) {
