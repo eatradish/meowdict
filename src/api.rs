@@ -7,24 +7,33 @@ use serde::Deserialize;
 pub struct MoedictDefinition {
     #[serde(rename(deserialize = "type"))]
     pub word_type: Option<String>,
-    pub q: Option<Vec<String>>,
-    pub e: Option<Vec<String>>,
-    pub f: Option<String>,
-    pub l: Option<Vec<String>>,
+    #[serde(rename(deserialize = "q"))]
+    pub quote: Option<Vec<String>>,
+    #[serde(rename(deserialize = "e"))]
+    pub example: Option<Vec<String>>,
+    #[serde(rename(deserialize = "f"))]
+    pub def: Option<String>,
+    #[serde(rename(deserialize = "l"))]
+    pub link: Option<Vec<String>>,
 }
 
 #[derive(Deserialize)]
 pub struct MoedictHeteronym {
-    pub p: Option<String>,
-    pub b: Option<String>,
-    pub d: Option<Vec<MoedictDefinition>>,
+    #[serde(rename(deserialize = "p"))]
+    pub pinyin: Option<String>,
+    #[serde(rename(deserialize = "b"))]
+    pub bopomofo: Option<String>,
+    #[serde(rename(deserialize = "d"))]
+    pub definitions: Option<Vec<MoedictDefinition>>,
 }
 
 #[derive(Deserialize)]
 pub struct MoedictRawResult {
-    pub t: String,
+    #[serde(rename(deserialize = "t"))]
+    pub title: String,
     pub translation: Option<IndexMap<String, Vec<String>>>,
-    pub h: Option<Vec<MoedictHeteronym>>,
+    #[serde(rename(deserialize = "h"))]
+    pub heteronyms: Option<Vec<MoedictHeteronym>>,
     #[serde(rename(deserialize = "English"))]
     pub english: Option<String>,
 }

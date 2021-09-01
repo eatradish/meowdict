@@ -67,23 +67,23 @@ fn format_defination_output(moedict_result: &MoedictRawResult) -> String {
                 .to_string(),
         );
     }
-    if let Some(heteronyms) = &moedict_result.h {
+    if let Some(heteronyms) = &moedict_result.heteronyms {
         for i in heteronyms {
-            if let Some(pinyin) = &i.p {
+            if let Some(pinyin) = &i.pinyin {
                 result.push(
                     format!("  拼音：{}", pinyin)
                         .fg_rgb::<236, 184, 138>()
                         .to_string(),
                 );
             }
-            if let Some(bopomofo) = &i.b {
+            if let Some(bopomofo) = &i.bopomofo {
                 result.push(
                     format!("  注音：{}", bopomofo)
                         .fg_rgb::<208, 90, 110>()
                         .to_string(),
                 );
             }
-            if let Some(definition) = &i.d {
+            if let Some(definition) = &i.definitions {
                 let definition = definition_formatter(definition);
                 for (k, v) in definition {
                     if k != "notype" {
@@ -128,20 +128,20 @@ fn definition_formatter(
         } else {
             result.get_mut(&t).unwrap().push(Vec::new());
         }
-        if let Some(f) = &i.f {
+        if let Some(f) = &i.def {
             result.get_mut(&t).unwrap()[count].push(f.to_owned());
         }
-        if let Some(q) = &i.q {
+        if let Some(q) = &i.quote {
             for i in q {
                 result.get_mut(&t).unwrap()[count].push(i.to_owned());
             }
         }
-        if let Some(e) = &i.e {
+        if let Some(e) = &i.example {
             for i in e {
                 result.get_mut(&t).unwrap()[count].push(i.to_owned());
             }
         }
-        if let Some(l) = &i.l {
+        if let Some(l) = &i.link {
             for i in l {
                 result.get_mut(&t).unwrap()[count].push(i.to_owned());
             }
