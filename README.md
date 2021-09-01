@@ -1,6 +1,10 @@
 # meowdict
 CLI Web client for moedict.tw
 
+## Screenshot
+
+![screenshot](https://raw.githubusercontent.com/eatradish/meowdict/67c109554b60a43940b03ee408598536dfb1afe7/screenshot/Screenshot_20210902_004622.png)
+
 ## Usage
 
 ### Console Mode
