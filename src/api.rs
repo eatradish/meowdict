@@ -3,12 +3,6 @@ use indexmap::IndexMap;
 use reqwest::Client;
 use serde::Deserialize;
 
-pub struct MoedictItemResult {
-    pub pinyin: Option<String>,
-    pub bopomofo: Option<String>,
-    pub defination: Option<IndexMap<String, Vec<Vec<String>>>>,
-}
-
 #[derive(Deserialize)]
 pub struct MoedictDefinition {
     #[serde(rename(deserialize = "type"))]
