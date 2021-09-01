@@ -6,7 +6,7 @@ use opencc_rust::*;
 use owo_colors::OwoColorize;
 use tokio::runtime::Builder;
 
-use crate::api::{MoedictDefinition, MoedictRawResult, request_moedict};
+use crate::api::{request_moedict, MoedictDefinition, MoedictRawResult};
 
 const LINE_LENGTH: usize = 80;
 
@@ -62,7 +62,7 @@ fn format_defination_output(moedict_result: &MoedictRawResult) -> String {
     let mut result = Vec::new();
     if let Some(english) = moedict_result.english.to_owned() {
         result.push(
-            format!("  英語：{}", english)
+            string_split_new_line(format!("  英語：{}", english), 2)
                 .fg_rgb::<125, 187, 222>()
                 .to_string(),
         );
@@ -111,7 +111,9 @@ fn format_defination_output(moedict_result: &MoedictRawResult) -> String {
     result.join("\n")
 }
 
-fn definition_formatter(definitions: &Vec<MoedictDefinition>) -> IndexMap<String, Vec<Vec<String>>> {
+fn definition_formatter(
+    definitions: &Vec<MoedictDefinition>,
+) -> IndexMap<String, Vec<Vec<String>>> {
     let mut result = IndexMap::new();
     let mut count: usize = 0;
     for i in definitions {
