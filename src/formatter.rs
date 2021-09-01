@@ -112,7 +112,7 @@ fn format_defination_output(moedict_result: &MoedictRawResult) -> String {
 }
 
 fn definition_formatter(
-    definitions: &Vec<MoedictDefinition>,
+    definitions: &[MoedictDefinition],
 ) -> IndexMap<String, Vec<Vec<String>>> {
     let mut result = IndexMap::new();
     let mut count: usize = 0;
