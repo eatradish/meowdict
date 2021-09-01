@@ -90,14 +90,14 @@ fn format_defination_output(moedict_result: &MoedictJson) -> String {
                 }
                 for (index, value) in v.iter().enumerate() {
                     let result_str = string_split_new_line(
-                        format!("{:>5}.{}", index + 1, value[0].to_string()),
-                        4,
+                        format!("{:>3}.{}", index + 1, value[0].to_string()),
+                        2,
                     );
                     result.push(result_str.fg_rgb::<129, 199, 212>().to_string());
                     if !value[1..].is_empty() {
                         for s in &value[1..] {
                             let result_str =
-                                string_split_new_line(format!("      {}", s.to_string()), 6);
+                                string_split_new_line(format!("    {}", s.to_string()), 4);
                             result.push(result_str.fg_rgb::<220, 159, 180>().to_string());
                         }
                     }
