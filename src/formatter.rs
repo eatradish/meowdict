@@ -89,11 +89,13 @@ fn format_defination_output(moedict_result: &MoedictJson) -> String {
                     result.push(format!("{}：", k.fg_rgb::<168, 216, 165>()));
                 }
                 for (index, value) in v.iter().enumerate() {
-                    let s = format!("{}.{}", index + 1, value[0].to_string());
-                    result.push(s.fg_rgb::<129, 199, 212>().to_string());
+                    let result_str =
+                        string_split_new_line(format!("{}.{}", index + 1, value[0].to_string()));
+                    result.push(result_str.fg_rgb::<129, 199, 212>().to_string());
                     if !value[1..].is_empty() {
                         for s in &value[1..] {
-                            result.push(s.fg_rgb::<220, 159, 180>().to_string());
+                            let result_str = string_split_new_line(s.to_string());
+                            result.push(result_str.fg_rgb::<220, 159, 180>().to_string());
                         }
                     }
                 }
@@ -101,10 +103,6 @@ fn format_defination_output(moedict_result: &MoedictJson) -> String {
         }
     }
 
-    let result = result
-        .into_iter()
-        .map(|x| string_split_new_line(x))
-        .collect::<Vec<_>>();
 
     result.join("\n")
 }
