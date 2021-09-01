@@ -130,7 +130,6 @@ fn api_get_defination(dict_val: &Value) -> Result<IndexMap<String, Vec<Vec<Strin
         }
         count += 1;
     }
-
     Ok(defination_item)
 }
 
