@@ -86,10 +86,7 @@ fn format_defination_output(moedict_result: &MoedictJson) -> String {
         if let Some(defination) = i.defination {
             for (k, v) in defination {
                 if k != "notype" {
-                    result.push(format!(
-                        "{:>3}：",
-                        k
-                    ).fg_rgb::<168, 216, 165>().to_string());
+                    result.push(format!("{:>3}：", k).fg_rgb::<168, 216, 165>().to_string());
                 }
                 for (index, value) in v.iter().enumerate() {
                     let result_str = string_split_new_line(
