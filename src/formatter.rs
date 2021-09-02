@@ -10,6 +10,16 @@ use crate::api::{request_moedict, MoedictDefinition, MoedictRawResult};
 
 const LINE_LENGTH: usize = 80;
 
+macro_rules! get_qel {
+    ($qel:expr, $result:ident, $count:ident, $t:ident) => {
+        if let Some(q) = &$qel{
+            for i in q {
+                $result.get_mut(&$t).unwrap()[$count].push(i);
+            }
+        }
+    };
+}
+
 pub fn opencc_convert(input: &str, t: &str) -> Result<String> {
     match t {
         "s2t" => Ok(OpenCC::new(DefaultConfig::S2TWP).unwrap().convert(input)),
@@ -113,39 +123,27 @@ fn format_defination_output(moedict_result: &MoedictRawResult) -> String {
 
 fn definition_formatter(
     definitions: &[MoedictDefinition],
-) -> IndexMap<String, Vec<Vec<String>>> {
+) -> IndexMap<&str, Vec<Vec<&str>>> {
     let mut result = IndexMap::new();
     let mut count: usize = 0;
     for i in definitions {
-        let t = if let Some(word_type) = i.word_type.to_owned() {
+        let t = if let Some(ref word_type) = i.word_type {
             word_type
         } else {
-            "notype".to_string()
+            "notype"
         };
         if result.get(&t).is_none() {
-            result.insert(t.to_owned(), vec![Vec::new()]);
+            result.insert(t, vec![Vec::new()]);
             count = 0;
         } else {
             result.get_mut(&t).unwrap().push(Vec::new());
         }
         if let Some(f) = &i.def {
-            result.get_mut(&t).unwrap()[count].push(f.to_owned());
+            result.get_mut(&t).unwrap()[count].push(f.as_str());
         }
-        if let Some(q) = &i.quote {
-            for i in q {
-                result.get_mut(&t).unwrap()[count].push(i.to_owned());
-            }
-        }
-        if let Some(e) = &i.example {
-            for i in e {
-                result.get_mut(&t).unwrap()[count].push(i.to_owned());
-            }
-        }
-        if let Some(l) = &i.link {
-            for i in l {
-                result.get_mut(&t).unwrap()[count].push(i.to_owned());
-            }
-        }
+        get_qel!(i.quote, result, count, t);
+        get_qel!(i.example, result, count, t);
+        get_qel!(i.link, result, count, t);
         count += 1;
     }
 
