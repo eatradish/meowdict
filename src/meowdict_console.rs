@@ -77,13 +77,7 @@ impl MeowdictConsole {
         if self.input_s2t || command_input_s2t {
             words_mut = words_mut
                 .into_iter()
-                .map(|x| {
-                    if let Ok(v) = opencc_convert(&x, "s2t") {
-                        v
-                    } else {
-                        x
-                    }
-                })
+                .map(|x| opencc_convert(&x, "s2t").unwrap_or(x))
                 .collect::<Vec<_>>();
         }
         print_result(
