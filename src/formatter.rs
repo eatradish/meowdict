@@ -10,7 +10,7 @@ use crate::api::{request_moedict, MoedictDefinition, MoedictRawResult};
 
 const LINE_LENGTH: usize = 80;
 
-macro_rules! get_qel {
+macro_rules! push_qel {
     ($qel:expr, $result:ident, $count:ident, $t:ident) => {
         if let Some(qel) = &$qel {
             for i in qel {
@@ -139,9 +139,9 @@ fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<&str, Vec
         if let Some(f) = &i.def {
             result.get_mut(&t).unwrap()[count].push(f.as_str());
         }
-        get_qel!(i.quote, result, count, t);
-        get_qel!(i.example, result, count, t);
-        get_qel!(i.link, result, count, t);
+        push_qel!(i.quote, result, count, t);
+        push_qel!(i.example, result, count, t);
+        push_qel!(i.link, result, count, t);
         count += 1;
     }
 
