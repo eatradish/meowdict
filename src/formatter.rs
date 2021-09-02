@@ -45,7 +45,7 @@ pub fn print_result(words: &[String], result_t2s: bool, translation_mode: bool) 
         match results {
             Ok(results) => {
                 for (index, word) in words.iter().enumerate() {
-                    println!("{}：", format!("{}", word).fg_rgb::<178, 143, 206>());
+                    println!("{}", format!("{}：", word).fg_rgb::<178, 143, 206>());
                     let result = if !translation_mode {
                         format_dict_output(&results[index])
                     } else {
