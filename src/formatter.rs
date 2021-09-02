@@ -12,8 +12,8 @@ const LINE_LENGTH: usize = 80;
 
 macro_rules! get_qel {
     ($qel:expr, $result:ident, $count:ident, $t:ident) => {
-        if let Some(q) = &$qel{
-            for i in q {
+        if let Some(qel) = &$qel {
+            for i in qel {
                 $result.get_mut(&$t).unwrap()[$count].push(i);
             }
         }
@@ -121,9 +121,7 @@ fn format_defination_output(moedict_result: &MoedictRawResult) -> String {
     result.join("\n")
 }
 
-fn definition_formatter(
-    definitions: &[MoedictDefinition],
-) -> IndexMap<&str, Vec<Vec<&str>>> {
+fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<&str, Vec<Vec<&str>>> {
     let mut result = IndexMap::new();
     let mut count: usize = 0;
     for i in definitions {
