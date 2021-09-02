@@ -47,7 +47,7 @@ pub fn print_result(words: &[String], result_t2s: bool, translation_mode: bool) 
                 for (index, word) in words.iter().enumerate() {
                     println!("{}：", word.fg_rgb::<178, 143, 206>());
                     let result = if !translation_mode {
-                        format_defination_output(&results[index])
+                        format_dict_output(&results[index])
                     } else {
                         match &results[index].translation {
                             Some(translation) => format_translation_output(translation),
@@ -68,7 +68,7 @@ pub fn print_result(words: &[String], result_t2s: bool, translation_mode: bool) 
     })
 }
 
-fn format_defination_output(moedict_result: &MoedictRawResult) -> String {
+fn format_dict_output(moedict_result: &MoedictRawResult) -> String {
     let mut result = Vec::new();
     if let Some(english) = moedict_result.english.to_owned() {
         result.push(
