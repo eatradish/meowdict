@@ -16,13 +16,7 @@ fn main() -> Result<()> {
         if app.occurrences_of("inputs2t") != 0 {
             words = words
                 .into_iter()
-                .map(|x| {
-                    if let Ok(v) = opencc_convert(&x, "s2t") {
-                        v
-                    } else {
-                        x
-                    }
-                })
+                .map(|x| opencc_convert(&x, "s2t").unwrap_or(x))
                 .collect::<Vec<_>>();
         }
         if app.occurrences_of("resultt2s") != 0 {
