@@ -31,8 +31,7 @@ pub fn opencc_convert(input: &str, t: &str) -> Result<String> {
 pub fn print_result(words: &[String], result_t2s: bool, translation_mode: bool) {
     let client = reqwest::Client::new();
     let runtime = Builder::new_multi_thread()
-        .enable_time()
-        .enable_io()
+        .enable_all()
         .worker_threads(10)
         .build()
         .unwrap();
