@@ -2,10 +2,10 @@ use anyhow::Result;
 pub mod api;
 mod cli;
 pub mod formatter;
-mod meowdict_console;
+pub mod console;
 
 use formatter::{opencc_convert, print_result};
-use meowdict_console::MeowdictConsole;
+use crate::console::MeowdictConsole;
 
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
@@ -27,17 +27,17 @@ fn main() -> Result<()> {
         }
         print_result(&words, resultt2s, translation_mode);
     } else {
-        let mut input_s2t_mode = false;
-        let mut result_t2s_mode = false;
+        let mut input_s2t = false;
+        let mut result_t2s = false;
         if app.occurrences_of("inputs2tmode") != 0 {
-            input_s2t_mode = true;
+            input_s2t = true;
         }
         if app.occurrences_of("resultt2smode") != 0 {
-            result_t2s_mode = true;
+            result_t2s = true;
         }
         let mut console = MeowdictConsole {
-            input_s2t: input_s2t_mode,
-            result_t2s: result_t2s_mode,
+            input_s2t,
+            result_t2s,
         };
         console.create_console();
     }
