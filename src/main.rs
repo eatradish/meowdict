@@ -1,11 +1,11 @@
 use anyhow::Result;
 pub mod api;
 mod cli;
-pub mod formatter;
 pub mod console;
+pub mod formatter;
 
-use formatter::{opencc_convert, print_result};
 use crate::console::MeowdictConsole;
+use formatter::{opencc_convert, print_result};
 
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
