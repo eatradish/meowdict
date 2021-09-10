@@ -13,7 +13,8 @@ const LINE_LENGTH: usize = 80;
 macro_rules! push_qel {
     ($qel:expr, $result:ident, $count:ident, $t:ident) => {
         if let Some(qel) = &$qel {
-            qel.into_iter().for_each(|x| $result.get_mut(&$t).unwrap()[$count].push(x))
+            qel.into_iter()
+                .for_each(|x| $result.get_mut(&$t).unwrap()[$count].push(x))
         }
     };
 }
