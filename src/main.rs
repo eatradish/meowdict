@@ -9,32 +9,19 @@ use formatter::{opencc_convert, print_result};
 
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
+    let input_s2t = app.is_present("inputs2tmode");
+    let result_t2s = app.is_present("resultt2smode");
+    let translation_mode = app.is_present("translation");
     if let Some(words) = app.values_of("INPUT") {
-        let mut resultt2s = false;
-        let mut translation_mode = false;
         let mut words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
-        if app.occurrences_of("inputs2t") != 0 {
+        if input_s2t {
             words = words
                 .into_iter()
                 .map(|x| opencc_convert(&x, "s2t").unwrap_or(x))
                 .collect::<Vec<_>>();
         }
-        if app.occurrences_of("resultt2s") != 0 {
-            resultt2s = true;
-        }
-        if app.occurrences_of("translation") != 0 {
-            translation_mode = true;
-        }
-        print_result(&words, resultt2s, translation_mode);
+        print_result(&words, result_t2s, translation_mode);
     } else {
-        let mut input_s2t = false;
-        let mut result_t2s = false;
-        if app.occurrences_of("inputs2tmode") != 0 {
-            input_s2t = true;
-        }
-        if app.occurrences_of("resultt2smode") != 0 {
-            result_t2s = true;
-        }
         let mut console = MeowdictConsole {
             input_s2t,
             result_t2s,
