@@ -7,9 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     container: aosc/aosc-os
     steps:
-    - uses: hecrj/setup-rust-action@master
-      with:
-        rust-version: stable
     - name: Install Dependency
       run: |
         sudo apt update
