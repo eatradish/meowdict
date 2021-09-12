@@ -9,8 +9,8 @@ jobs:
     steps:
     - name: Install Dependency
       run: |
-        sudo apt update
-        sudo apt-get install -y rustc opencc
+        apt update
+        apt-get install -y rustc opencc
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build --verbose
