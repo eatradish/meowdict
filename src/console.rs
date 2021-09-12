@@ -72,7 +72,7 @@ impl MeowdictConsole {
         if self.input_s2t || command_input_s2t {
             words_mut = words_mut
                 .into_iter()
-                .map(|x| opencc_convert(&x, OpenccConvertMode::S2T).unwrap_or(x))
+                .map(|x| opencc_convert(&x, OpenccConvertMode::S2T))
                 .collect::<Vec<_>>();
         }
         print_result(

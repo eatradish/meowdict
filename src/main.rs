@@ -16,7 +16,7 @@ fn main() {
         if input_s2t {
             words = words
                 .into_iter()
-                .map(|x| opencc_convert(&x, OpenccConvertMode::S2T).unwrap_or(x))
+                .map(|x| opencc_convert(&x, OpenccConvertMode::S2T))
                 .collect::<Vec<_>>();
         }
         print_result(&words, result_t2s, translation_mode);

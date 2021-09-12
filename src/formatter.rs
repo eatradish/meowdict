@@ -1,4 +1,3 @@
-use anyhow::Result;
 use console::{truncate_str, Term};
 use futures::future;
 use indexmap::IndexMap;
@@ -24,10 +23,10 @@ macro_rules! push_qel {
     };
 }
 
-pub fn opencc_convert(input: &str, t: OpenccConvertMode) -> Result<String> {
+pub fn opencc_convert(input: &str, t: OpenccConvertMode) -> String {
     match t {
-        OpenccConvertMode::S2T => Ok(OpenCC::new(DefaultConfig::S2TWP).unwrap().convert(input)),
-        OpenccConvertMode::T2S => Ok(OpenCC::new(DefaultConfig::TW2S).unwrap().convert(input)),
+        OpenccConvertMode::S2T => OpenCC::new(DefaultConfig::S2TWP).unwrap().convert(input),
+        OpenccConvertMode::T2S => OpenCC::new(DefaultConfig::TW2S).unwrap().convert(input),
     }
 }
 
@@ -52,7 +51,7 @@ pub fn print_result(words: &[String], result_t2s: bool, translation_mode: bool) 
                         format!(
                             "{}：",
                             if result_t2s {
-                                opencc_convert(word, OpenccConvertMode::T2S).unwrap()
+                                opencc_convert(word, OpenccConvertMode::T2S)
                             } else {
                                 word.to_string()
                             }
@@ -68,9 +67,7 @@ pub fn print_result(words: &[String], result_t2s: bool, translation_mode: bool) 
                         }
                     };
                     if result_t2s {
-                        if let Ok(result) = opencc_convert(&result, OpenccConvertMode::T2S) {
-                            println!("{}", result);
-                        }
+                        println!("{}", opencc_convert(&result, OpenccConvertMode::T2S));
                     } else {
                         println!("{}", result);
                     }
