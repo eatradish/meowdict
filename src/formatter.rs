@@ -24,10 +24,12 @@ macro_rules! push_qel {
 }
 
 pub fn opencc_convert(input: &str, t: OpenccConvertMode) -> String {
-    match t {
-        OpenccConvertMode::S2T => OpenCC::new(DefaultConfig::S2TWP).unwrap().convert(input),
-        OpenccConvertMode::T2S => OpenCC::new(DefaultConfig::TW2S).unwrap().convert(input),
-    }
+    OpenCC::new(match t {
+        OpenccConvertMode::S2T => DefaultConfig::S2TWP,
+        OpenccConvertMode::T2S => DefaultConfig::TW2S,
+    })
+    .unwrap()
+    .convert(input)
 }
 
 pub fn print_result(words: &[String], result_t2s: bool, translation_mode: bool) {
