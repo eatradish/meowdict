@@ -233,4 +233,4 @@ Building:
 Runtime:
 - Glibc
 - OpenSSL
-- OpenCC (>= 1.1.0)
+- OpenCC (>= 1.1.2)
