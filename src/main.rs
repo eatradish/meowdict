@@ -1,4 +1,3 @@
-use anyhow::Result;
 pub mod api;
 mod cli;
 pub mod console;
@@ -7,7 +6,7 @@ pub mod formatter;
 use crate::console::MeowdictConsole;
 use formatter::{opencc_convert, print_result};
 
-fn main() -> Result<()> {
+fn main() {
     let app = cli::build_cli().get_matches();
     let input_s2t = app.is_present("inputs2tmode");
     let result_t2s = app.is_present("resultt2smode");
@@ -28,6 +27,4 @@ fn main() -> Result<()> {
         };
         console.create_console();
     }
-
-    Ok(())
 }
