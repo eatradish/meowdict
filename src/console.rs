@@ -1,12 +1,7 @@
 use anyhow::Result;
 use rustyline::Editor;
 
-use crate::formatter::{opencc_convert, print_result};
-
-enum ConsoleMode {
-    S2T,
-    T2S,
-}
+use crate::formatter::{opencc_convert, print_result, OpenccConvertMode};
 
 pub struct MeowdictConsole {
     pub input_s2t: bool,
@@ -31,16 +26,16 @@ impl MeowdictConsole {
         }
     }
 
-    fn set_console_mode(&mut self, t: &ConsoleMode, enable: bool) {
+    fn set_console_mode(&mut self, t: &OpenccConvertMode, enable: bool) {
         match t {
-            ConsoleMode::S2T => {
+            OpenccConvertMode::S2T => {
                 println!(
                     "{} input mode...",
                     if enable { "Setting" } else { "Unsetting" }
                 );
                 self.input_s2t = enable;
             }
-            ConsoleMode::T2S => {
+            OpenccConvertMode::T2S => {
                 println!(
                     "{} result mode...",
                     if enable { "Setting" } else { "Unsetting" }
@@ -63,13 +58,13 @@ impl MeowdictConsole {
                 "-r" => command_result_t2s = true,
                 "--translation" => translation_mode = true,
                 "-t" => translation_mode = true,
-                "--set-mode-input-s2t" => self.set_console_mode(&ConsoleMode::S2T, true),
-                "--set-mode-result-t2s" => self.set_console_mode(&ConsoleMode::T2S, true),
-                "--unset-mode-input-s2t" => self.set_console_mode(&ConsoleMode::S2T, false),
-                "--unset-mode-result-t2s" => self.set_console_mode(&ConsoleMode::T2S, false),
+                "--set-mode-input-s2t" => self.set_console_mode(&OpenccConvertMode::S2T, true),
+                "--set-mode-result-t2s" => self.set_console_mode(&OpenccConvertMode::T2S, true),
+                "--unset-mode-input-s2t" => self.set_console_mode(&OpenccConvertMode::S2T, false),
+                "--unset-mode-result-t2s" => self.set_console_mode(&OpenccConvertMode::T2S, false),
                 "--unset-mode-all" => {
-                    self.set_console_mode(&ConsoleMode::S2T, false);
-                    self.set_console_mode(&ConsoleMode::T2S, false)
+                    self.set_console_mode(&OpenccConvertMode::S2T, false);
+                    self.set_console_mode(&OpenccConvertMode::T2S, false)
                 }
                 _ => println!("Invaild argument: {}", i),
             };
@@ -77,7 +72,7 @@ impl MeowdictConsole {
         if self.input_s2t || command_input_s2t {
             words_mut = words_mut
                 .into_iter()
-                .map(|x| opencc_convert(&x, "s2t").unwrap_or(x))
+                .map(|x| opencc_convert(&x, OpenccConvertMode::S2T).unwrap_or(x))
                 .collect::<Vec<_>>();
         }
         print_result(

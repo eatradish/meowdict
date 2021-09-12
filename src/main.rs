@@ -4,7 +4,7 @@ pub mod console;
 pub mod formatter;
 
 use crate::console::MeowdictConsole;
-use formatter::{opencc_convert, print_result};
+use formatter::{opencc_convert, print_result, OpenccConvertMode};
 
 fn main() {
     let app = cli::build_cli().get_matches();
@@ -16,7 +16,7 @@ fn main() {
         if input_s2t {
             words = words
                 .into_iter()
-                .map(|x| opencc_convert(&x, "s2t").unwrap_or(x))
+                .map(|x| opencc_convert(&x, OpenccConvertMode::S2T).unwrap_or(x))
                 .collect::<Vec<_>>();
         }
         print_result(&words, result_t2s, translation_mode);

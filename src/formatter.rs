@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use console::{truncate_str, Term};
 use futures::future;
 use indexmap::IndexMap;
@@ -10,6 +10,11 @@ use crate::api::{request_moedict, MoedictDefinition, MoedictRawResult};
 
 const LINE_LENGTH: usize = 80;
 
+pub enum OpenccConvertMode {
+    S2T,
+    T2S,
+}
+
 macro_rules! push_qel {
     ($qel:expr, $result:ident, $count:ident, $t:ident) => {
         if let Some(qel) = &$qel {
@@ -19,11 +24,10 @@ macro_rules! push_qel {
     };
 }
 
-pub fn opencc_convert(input: &str, t: &str) -> Result<String> {
+pub fn opencc_convert(input: &str, t: OpenccConvertMode) -> Result<String> {
     match t {
-        "s2t" => Ok(OpenCC::new(DefaultConfig::S2TWP).unwrap().convert(input)),
-        "t2s" => Ok(OpenCC::new(DefaultConfig::TW2S).unwrap().convert(input)),
-        _ => Err(anyhow!("Unsupport this convert!")),
+        OpenccConvertMode::S2T => Ok(OpenCC::new(DefaultConfig::S2TWP).unwrap().convert(input)),
+        OpenccConvertMode::T2S => Ok(OpenCC::new(DefaultConfig::TW2S).unwrap().convert(input)),
     }
 }
 
@@ -48,7 +52,7 @@ pub fn print_result(words: &[String], result_t2s: bool, translation_mode: bool) 
                         format!(
                             "{}：",
                             if result_t2s {
-                                opencc_convert(word, "t2s").unwrap()
+                                opencc_convert(word, OpenccConvertMode::T2S).unwrap()
                             } else {
                                 word.to_string()
                             }
@@ -64,7 +68,7 @@ pub fn print_result(words: &[String], result_t2s: bool, translation_mode: bool) 
                         }
                     };
                     if result_t2s {
-                        if let Ok(result) = opencc_convert(&result, "t2s") {
+                        if let Ok(result) = opencc_convert(&result, OpenccConvertMode::T2S) {
                             println!("{}", result);
                         }
                     } else {
