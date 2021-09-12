@@ -19,3 +19,7 @@ rustyline = "9.0"
 opencc-rust = "1.1.9"
 tokio = {version = "1.7", features = ["rt-multi-thread", "rt", "time"]}
 futures = "0.3"
+
+[features]
+default = []
+static-opencc = ["opencc-rust/static-dictionaries"]
