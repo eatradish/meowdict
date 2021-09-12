@@ -13,7 +13,7 @@ jobs:
     - name: Install Dependency
       run: |
         sudo apt update
-        sudo apt-get install -y opencc
+        sudo apt-get install -y rustc opencc
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build --verbose
