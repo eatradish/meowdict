@@ -43,7 +43,18 @@ pub fn print_result(words: &[String], result_t2s: bool, translation_mode: bool) 
         match results {
             Ok(results) => {
                 for (index, word) in words.iter().enumerate() {
-                    println!("{}", format!("{}：", word).fg_rgb::<178, 143, 206>());
+                    println!(
+                        "{}",
+                        format!(
+                            "{}：",
+                            if result_t2s {
+                                opencc_convert(word, "t2s").unwrap()
+                            } else {
+                                word.to_string()
+                            }
+                        )
+                        .fg_rgb::<178, 143, 206>()
+                    );
                     let result = if !translation_mode {
                         format_dict_output(&results[index])
                     } else {
