@@ -10,7 +10,7 @@ edition = "2018"
 clap = "2.33"
 serde_json = "1.0"
 anyhow = "1.0"
-reqwest = { version = "0.11", features = ["json"] }
+reqwest = { version = "0.11", features = ["json"], default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 owo-colors = "2"
 console = "0.14"
@@ -21,5 +21,6 @@ tokio = {version = "1.7", features = ["rt-multi-thread", "rt", "time"]}
 futures = "0.3"
 
 [features]
-default = []
+default = ["reqwest/default-tls"]
 static-opencc = ["opencc-rust/static-dictionaries"]
+rust-tls = ["reqwest/rustls-tls"]
