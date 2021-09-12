@@ -1,7 +1,12 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use rustyline::Editor;
 
 use crate::formatter::{opencc_convert, print_result};
+
+enum ConsoleMode {
+    S2T,
+    T2S,
+}
 
 pub struct MeowdictConsole {
     pub input_s2t: bool,
@@ -26,28 +31,23 @@ impl MeowdictConsole {
         }
     }
 
-    fn set_console_mode(&mut self, t: &str) -> Result<()> {
+    fn set_console_mode(&mut self, t: &ConsoleMode, enable: bool) {
         match t {
-            "unset-input-s2t" => {
-                println!("Unsetting input mode...");
-                self.input_s2t = false;
+            ConsoleMode::S2T => {
+                println!(
+                    "{} input mode...",
+                    if enable { "Setting" } else { "Unsetting" }
+                );
+                self.input_s2t = enable;
             }
-            "unset-result-t2s" => {
-                println!("Unsetting result mode...");
-                self.result_t2s = false;
+            ConsoleMode::T2S => {
+                println!(
+                    "{} result mode...",
+                    if enable { "Setting" } else { "Unsetting" }
+                );
+                self.result_t2s = enable;
             }
-            "input-s2t" => {
-                println!("Setting input mode as s2t...");
-                self.input_s2t = true;
-            }
-            "result-t2s" => {
-                println!("Setting result mode as t2s...");
-                self.result_t2s = true
-            }
-            _ => return Err(anyhow!("Unsupport this mode!")),
         };
-
-        Ok(())
     }
 
     fn args_runner(&mut self, args: Vec<&str>, words: Vec<&str>) -> Result<()> {
@@ -63,13 +63,13 @@ impl MeowdictConsole {
                 "-r" => command_result_t2s = true,
                 "--translation" => translation_mode = true,
                 "-t" => translation_mode = true,
-                "--set-mode-input-s2t" => self.set_console_mode("input-s2t")?,
-                "--set-mode-result-t2s" => self.set_console_mode("result-t2s")?,
-                "--unset-mode-input-s2t" => self.set_console_mode("unset-input-s2t")?,
-                "--unset-mode-result-t2s" => self.set_console_mode("unset-result-t2s")?,
+                "--set-mode-input-s2t" => self.set_console_mode(&ConsoleMode::S2T, true),
+                "--set-mode-result-t2s" => self.set_console_mode(&ConsoleMode::T2S, true),
+                "--unset-mode-input-s2t" => self.set_console_mode(&ConsoleMode::S2T, false),
+                "--unset-mode-result-t2s" => self.set_console_mode(&ConsoleMode::T2S, false),
                 "--unset-mode-all" => {
-                    self.set_console_mode("unset-input-s2t")?;
-                    self.set_console_mode("unset-result-t2s")?;
+                    self.set_console_mode(&ConsoleMode::S2T, false);
+                    self.set_console_mode(&ConsoleMode::T2S, false)
                 }
                 _ => println!("Invaild argument: {}", i),
             };
