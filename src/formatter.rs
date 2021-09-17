@@ -3,7 +3,8 @@ use futures::future;
 use indexmap::IndexMap;
 use opencc_rust::*;
 use owo_colors::OwoColorize;
-use tokio::runtime::Builder;
+use reqwest::Client;
+use tokio::runtime::{Builder, Runtime};
 
 use crate::api::{request_moedict, request_wordshk, MoedictDefinition, MoedictRawResult};
 
@@ -45,15 +46,96 @@ pub fn print_result(
         .build()
         .unwrap();
     if !jyutping_mode {
-        runtime.block_on(async move {
-            let mut tesk = Vec::new();
-            for word in words {
-                tesk.push(request_moedict(word, &client));
+        if !translation_mode {
+            print_dict_result(&runtime, words, &client, result_t2s)
+        } else {
+            print_translation_result(&runtime, words, &client, result_t2s)
+        }
+    } else {
+        print_jyutping_result(&runtime, words, &client, result_t2s)
+    }
+}
+
+fn print_dict_result(runtime: &Runtime, words: &[String], client: &Client, result_t2s: bool) {
+    runtime.block_on(async move {
+        let mut tesk = Vec::new();
+        for word in words {
+            tesk.push(request_moedict(word, &client));
+        }
+        let results = future::try_join_all(tesk).await;
+        match results {
+            Ok(results) => {
+                for (index, word) in words.iter().enumerate() {
+                    println!(
+                        "{}",
+                        format!(
+                            "{}：",
+                            if result_t2s {
+                                opencc_convert(word, OpenccConvertMode::T2S)
+                            } else {
+                                word.to_string()
+                            }
+                        )
+                        .fg_rgb::<178, 143, 206>()
+                    );
+                    let result = format_dict_output(&results[index]);
+                    if result_t2s {
+                        println!("{}", opencc_convert(&result, OpenccConvertMode::T2S));
+                    } else {
+                        println!("{}", result);
+                    }
+                }
             }
-            let results = future::try_join_all(tesk).await;
-            match results {
-                Ok(results) => {
-                    for (index, word) in words.iter().enumerate() {
+            Err(e) => println!("{}", e),
+        }
+    })
+}
+
+fn print_translation_result(runtime: &Runtime, words: &[String], client: &Client, result_t2s: bool) {
+    runtime.block_on(async move {
+        let mut tesk = Vec::new();
+        for word in words {
+            tesk.push(request_moedict(word, &client));
+        }
+        let results = future::try_join_all(tesk).await;
+        match results {
+            Ok(results) => {
+                for (index, word) in words.iter().enumerate() {
+                    println!(
+                        "{}",
+                        format!(
+                            "{}：",
+                            if result_t2s {
+                                opencc_convert(word, OpenccConvertMode::T2S)
+                            } else {
+                                word.to_string()
+                            }
+                        )
+                        .fg_rgb::<178, 143, 206>()
+                    );
+                    let result = match &results[index].translation {
+                        Some(translation) => format_translation_output(translation),
+                        None => continue,
+                    };
+                    if result_t2s {
+                        println!("{}", opencc_convert(&result, OpenccConvertMode::T2S));
+                    } else {
+                        println!("{}", result);
+                    }
+                }
+            }
+            Err(e) => println!("{}", e),
+        }
+    })
+}
+
+fn print_jyutping_result(runtime: &Runtime, words: &[String], client: &Client, result_t2s: bool) {
+    runtime.block_on(async move {
+        let jyutping_map = request_wordshk(&client).await;
+        match jyutping_map {
+            Ok(jyutping_map) => {
+                for word in words {
+                    if jyutping_map.get(word).is_some() {
                         println!(
                             "{}",
                             format!(
@@ -66,61 +148,24 @@ pub fn print_result(
                             )
                             .fg_rgb::<178, 143, 206>()
                         );
-                        let result = if translation_mode {
-                            match &results[index].translation {
-                                Some(translation) => format_translation_output(translation),
-                                None => continue,
-                            }
-                        } else {
-                            format_dict_output(&results[index])
-                        };
-                        if result_t2s {
-                            println!("{}", opencc_convert(&result, OpenccConvertMode::T2S));
-                        } else {
-                            println!("{}", result);
-                        }
+                        println!(
+                            "{}",
+                            jyutping_map
+                                .get(word)
+                                .unwrap()
+                                .join("\n")
+                                .fg_rgb::<168, 216, 165>()
+                        );
+                    } else {
+                        println!("Could find keywords: {}", word);
                     }
                 }
-                Err(e) => println!("{}", e),
             }
-        })
-    } else {
-        runtime.block_on(async move {
-            let jyutping_map = request_wordshk(&client).await;
-            match jyutping_map {
-                Ok(jyutping_map) => {
-                    for word in words {
-                        if jyutping_map.get(word).is_some() {
-                            println!(
-                                "{}",
-                                format!(
-                                    "{}：",
-                                    if result_t2s {
-                                        opencc_convert(word, OpenccConvertMode::T2S)
-                                    } else {
-                                        word.to_string()
-                                    }
-                                )
-                                .fg_rgb::<178, 143, 206>()
-                            );
-                            println!(
-                                "{}",
-                                jyutping_map
-                                    .get(word)
-                                    .unwrap()
-                                    .join("\n")
-                                    .fg_rgb::<168, 216, 165>()
-                            );
-                        } else {
-                            println!("Could find keywords: {}", word);
-                        }
-                    }
-                }
-                Err(e) => println!("{}", e),
-            }
-        })
-    }
+            Err(e) => println!("{}", e),
+        }
+    })
 }
+
 
 fn format_dict_output(moedict_result: &MoedictRawResult) -> String {
     let mut result = Vec::new();

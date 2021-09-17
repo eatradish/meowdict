@@ -84,7 +84,6 @@ pub async fn request_wordshk(client: &Client) -> Result<HashMap<String, Vec<Stri
         },
     }?;
 
-
     let charlist: HashMap<String, Vec<String>> = response_charlist
         .into_iter()
         .map(|(word, jyutping_map)| (word, jyutping_map.keys().map(|x| x.to_string()).collect()))
