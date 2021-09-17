@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use rustyline::Editor;
 
 use crate::formatter::{opencc_convert, print_result, OpenccConvertMode};
@@ -50,6 +50,7 @@ impl MeowdictConsole {
         let mut command_result_t2s = false;
         let mut command_input_s2t = false;
         let mut translation_mode = false;
+        let mut jyutping_mode = false;
         for i in args {
             match i {
                 "--input-s2t" => command_input_s2t = true,
@@ -58,6 +59,8 @@ impl MeowdictConsole {
                 "-r" => command_result_t2s = true,
                 "--translation" => translation_mode = true,
                 "-t" => translation_mode = true,
+                "--jyutping" => jyutping_mode = true,
+                "-j" => jyutping_mode = true,
                 "--set-mode-input-s2t" => self.set_console_mode(&OpenccConvertMode::S2T, true),
                 "--set-mode-result-t2s" => self.set_console_mode(&OpenccConvertMode::T2S, true),
                 "--unset-mode-input-s2t" => self.set_console_mode(&OpenccConvertMode::S2T, false),
@@ -66,7 +69,7 @@ impl MeowdictConsole {
                     self.set_console_mode(&OpenccConvertMode::S2T, false);
                     self.set_console_mode(&OpenccConvertMode::T2S, false)
                 }
-                _ => println!("Invaild argument: {}", i),
+                _ => return Err(anyhow!("Invaild argument: {}", i)),
             };
         }
         if self.input_s2t || command_input_s2t {
@@ -79,6 +82,7 @@ impl MeowdictConsole {
             &words_mut,
             self.result_t2s || command_result_t2s,
             translation_mode,
+            jyutping_mode
         );
 
         Ok(())

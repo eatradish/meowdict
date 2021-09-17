@@ -11,6 +11,7 @@ fn main() {
     let input_s2t = app.is_present("inputs2tmode");
     let result_t2s = app.is_present("resultt2smode");
     let translation_mode = app.is_present("translation");
+    let jyutping_mode = app.is_present("jyutping");
     if let Some(words) = app.values_of("INPUT") {
         let mut words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
         if input_s2t {
@@ -19,7 +20,7 @@ fn main() {
                 .map(|x| opencc_convert(&x, OpenccConvertMode::S2T))
                 .collect::<Vec<_>>();
         }
-        print_result(&words, result_t2s, translation_mode);
+        print_result(&words, result_t2s, translation_mode, jyutping_mode);
     } else {
         let mut console = MeowdictConsole {
             input_s2t,

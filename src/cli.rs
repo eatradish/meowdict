@@ -19,6 +19,14 @@ pub fn build_cli() -> App<'static, 'static> {
                 .requires("INPUT"),
         )
         .arg(
+            Arg::with_name("jyutping")
+                .short("j")
+                .long("jyutping")
+                .help("Get jyutping")
+                .requires("INPUT")
+                .conflicts_with("translation")
+        )
+        .arg(
             Arg::with_name("inputs2t")
                 .short("i")
                 .long("input-s2t")

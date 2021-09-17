@@ -1,4 +1,6 @@
-use anyhow::{anyhow, Result};
+use std::collections::HashMap;
+
+use anyhow::{anyhow, Error, Result};
 use indexmap::IndexMap;
 use reqwest::Client;
 use serde::Deserialize;
@@ -60,4 +62,36 @@ pub async fn request_moedict(keyword: &str, client: &Client) -> Result<MoedictRa
         404 => Err(anyhow!("Could not find keyword: {}", keyword)),
         _ => Err(anyhow!("Response status code: {}", response.status())),
     }
+}
+
+pub async fn request_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
+    let (response_charlist, response_wordlist) = tokio::try_join! {
+        async {
+            Ok::<_, Error>(client
+                .get("https://words.hk/faiman/analysis/charlist.json")
+                .send()
+                .await?
+                .json::<HashMap<String, HashMap<String, usize>>>()
+                .await?)
+        },
+        async {
+            Ok(client
+                .get("https://words.hk/faiman/analysis/wordslist.json")
+                .send()
+                .await?
+                .json::<HashMap<String, Vec<String>>>()
+                .await?)
+        },
+    }?;
+
+
+    let charlist: HashMap<String, Vec<String>> = response_charlist
+        .into_iter()
+        .map(|(word, jyutping_map)| (word, jyutping_map.keys().map(|x| x.to_string()).collect()))
+        .collect();
+
+    Ok(charlist
+        .into_iter()
+        .chain(response_wordlist.into_iter())
+        .collect())
 }
