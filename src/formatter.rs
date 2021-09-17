@@ -90,26 +90,30 @@ pub fn print_result(
             match jyutping_map {
                 Ok(jyutping_map) => {
                     for word in words {
-                        println!(
-                            "{}",
-                            format!(
-                                "{}：",
-                                if result_t2s {
-                                    opencc_convert(word, OpenccConvertMode::T2S)
-                                } else {
-                                    word.to_string()
-                                }
-                            )
-                            .fg_rgb::<178, 143, 206>()
-                        );
-                        println!(
-                            "{}",
-                            jyutping_map
-                                .get(word)
-                                .unwrap()
-                                .join("\n")
-                                .fg_rgb::<168, 216, 165>()
-                        );
+                        if jyutping_map.get(word).is_some() {
+                            println!(
+                                "{}",
+                                format!(
+                                    "{}：",
+                                    if result_t2s {
+                                        opencc_convert(word, OpenccConvertMode::T2S)
+                                    } else {
+                                        word.to_string()
+                                    }
+                                )
+                                .fg_rgb::<178, 143, 206>()
+                            );
+                            println!(
+                                "{}",
+                                jyutping_map
+                                    .get(word)
+                                    .unwrap()
+                                    .join("\n")
+                                    .fg_rgb::<168, 216, 165>()
+                            );
+                        } else {
+                            println!("Could find keywords: {}", word);
+                        }
                     }
                 }
                 Err(e) => println!("{}", e),
