@@ -60,7 +60,7 @@ fn print_dict_result(runtime: &Runtime, words: &[String], client: &Client, resul
     runtime.block_on(async move {
         let mut tesk = Vec::new();
         for word in words {
-            tesk.push(request_moedict(word, &client));
+            tesk.push(request_moedict(word, client));
         }
         let results = future::try_join_all(tesk).await;
         match results {
@@ -95,7 +95,7 @@ fn print_translation_result(runtime: &Runtime, words: &[String], client: &Client
     runtime.block_on(async move {
         let mut tesk = Vec::new();
         for word in words {
-            tesk.push(request_moedict(word, &client));
+            tesk.push(request_moedict(word, client));
         }
         let results = future::try_join_all(tesk).await;
         match results {
@@ -131,7 +131,7 @@ fn print_translation_result(runtime: &Runtime, words: &[String], client: &Client
 
 fn print_jyutping_result(runtime: &Runtime, words: &[String], client: &Client, result_t2s: bool) {
     runtime.block_on(async move {
-        let jyutping_map = get_wordshk(&client).await;
+        let jyutping_map = get_wordshk(client).await;
         match jyutping_map {
             Ok(jyutping_map) => {
                 for word in words {
@@ -252,7 +252,7 @@ fn format_translation_output(translation: &IndexMap<String, Vec<String>>) -> Str
     for (k, v) in translation {
         result.push(format!("{}:", k).fg_rgb::<168, 216, 165>().to_string());
         for i in v {
-            result.push(format!("{}", i).fg_rgb::<220, 159, 180>().to_string());
+            result.push(i.fg_rgb::<220, 159, 180>().to_string());
         }
     }
 
