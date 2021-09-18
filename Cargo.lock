@@ -561,6 +561,7 @@ dependencies = [
  "anyhow",
  "clap",
  "console",
+ "dirs-next",
  "futures",
  "indexmap",
  "opencc-rust",

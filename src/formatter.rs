@@ -6,7 +6,7 @@ use owo_colors::OwoColorize;
 use reqwest::Client;
 use tokio::runtime::{Builder, Runtime};
 
-use crate::api::{request_moedict, request_wordshk, MoedictDefinition, MoedictRawResult};
+use crate::api::{request_moedict, get_wordshk, MoedictDefinition, MoedictRawResult};
 
 const LINE_LENGTH: usize = 80;
 
@@ -131,7 +131,7 @@ fn print_translation_result(runtime: &Runtime, words: &[String], client: &Client
 
 fn print_jyutping_result(runtime: &Runtime, words: &[String], client: &Client, result_t2s: bool) {
     runtime.block_on(async move {
-        let jyutping_map = request_wordshk(&client).await;
+        let jyutping_map = get_wordshk(&client).await;
         match jyutping_map {
             Ok(jyutping_map) => {
                 for word in words {

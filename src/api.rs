@@ -1,4 +1,9 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    fs::{self, File},
+    io::Write,
+    time::SystemTime,
+};
 
 use anyhow::{anyhow, Error, Result};
 use indexmap::IndexMap;
@@ -64,33 +69,55 @@ pub async fn request_moedict(keyword: &str, client: &Client) -> Result<MoedictRa
     }
 }
 
-pub async fn request_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
-    let (response_charlist, response_wordlist) = tokio::try_join! {
-        async {
-            Ok::<_, Error>(client
-                .get("https://words.hk/faiman/analysis/charlist.json")
-                .send()
-                .await?
-                .json::<HashMap<String, HashMap<String, usize>>>()
-                .await?)
-        },
-        async {
-            Ok(client
-                .get("https://words.hk/faiman/analysis/wordslist.json")
-                .send()
-                .await?
-                .json::<HashMap<String, Vec<String>>>()
-                .await?)
-        },
-    }?;
+pub async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
+    let cache_path = dirs_next::cache_dir()
+        .ok_or_else(|| anyhow!("Cannot find cache dir!"))?
+        .join("jyutping.json");
+    if !cache_path.exists()
+        || (cache_path.exists()
+            && (SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)?
+                .as_secs()
+                - fs::metadata(&cache_path)?
+                    .created()?
+                    .duration_since(SystemTime::UNIX_EPOCH)?
+                    .as_secs()
+                >= 86400))
+    {
+        let (response_charlist, response_wordlist) = tokio::try_join! {
+            async {
+                Ok::<_, Error>(client
+                    .get("https://words.hk/faiman/analysis/charlist.json")
+                    .send()
+                    .await?
+                    .json::<HashMap<String, HashMap<String, usize>>>()
+                    .await?)
+            },
+            async {
+                Ok(client
+                    .get("https://words.hk/faiman/analysis/wordslist.json")
+                    .send()
+                    .await?
+                    .json::<HashMap<String, Vec<String>>>()
+                    .await?)
+            },
+        }?;
 
-    let charlist: HashMap<String, Vec<String>> = response_charlist
-        .into_iter()
-        .map(|(word, jyutping_map)| (word, jyutping_map.keys().map(|x| x.to_string()).collect()))
-        .collect();
+        let charlist: HashMap<String, Vec<String>> = response_charlist
+            .into_iter()
+            .map(|(word, jyutping_map)| {
+                (word, jyutping_map.keys().map(|x| x.to_string()).collect())
+            })
+            .collect();
+        let mut f = fs::File::create(&cache_path)?;
+        let json: HashMap<String, Vec<String>> = charlist
+            .into_iter()
+            .chain(response_wordlist.into_iter())
+            .collect();
+        f.write_all(serde_json::to_string(&json)?.as_bytes())?;
+    }
 
-    Ok(charlist
-        .into_iter()
-        .chain(response_wordlist.into_iter())
-        .collect())
+    let f = File::open(&cache_path)?;
+
+    Ok(serde_json::from_reader(&f)?)
 }
