@@ -161,11 +161,9 @@ pub fn to_meowdict_obj(moedict_obj: MoedictRawResult) -> MeowdictResult {
     let meowdict_heteronyms = if let Some(heteronyms) = moedict_obj.heteronyms {
         let mut result = Vec::new();
         for item in heteronyms {
-            let word_type = if let Some(definition) = item.definitions {
-                Some(definition_formatter(&definition))
-            } else {
-                None
-            };
+            let word_type = item
+                .definitions
+                .map(|definition| definition_formatter(&definition));
             result.push(MeowdictHeteronym {
                 pinyin: item.pinyin,
                 bopomofo: item.bopomofo,
@@ -222,7 +220,7 @@ pub fn get_dict_result(
         let mut result = Vec::new();
         let mut tesk = Vec::new();
         for word in &words {
-            tesk.push(request_moedict(&word, client));
+            tesk.push(request_moedict(word, client));
         }
         let response_results = future::try_join_all(tesk).await?;
         for i in response_results {
@@ -240,7 +238,7 @@ pub fn get_jyutping_result(
 ) -> Result<Vec<MeowdictJyutPingResult>> {
     runtime.block_on(async {
         let mut result = Vec::new();
-        let jyutping_map = get_wordshk(&client).await?;
+        let jyutping_map = get_wordshk(client).await?;
         for word in &words {
             result.push(MeowdictJyutPingResult {
                 word: word.to_owned(),

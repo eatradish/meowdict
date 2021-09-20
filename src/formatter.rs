@@ -1,3 +1,4 @@
+use anyhow::Result;
 use console::{strip_ansi_codes, truncate_str, Term};
 use opencc_rust::*;
 use owo_colors::OwoColorize;
@@ -110,14 +111,14 @@ pub fn gen_jyutping_str(jyutping_result: Vec<MeowdictJyutPingResult>) -> String 
                 .fg_rgb::<178, 143, 206>()
                 .to_string(),
         );
-        result.push(
-            format!("{}", i.jyutping.join("\n"))
-                .fg_rgb::<168, 216, 165>()
-                .to_string(),
-        );
+        result.push(i.jyutping.join("\n").fg_rgb::<168, 216, 165>().to_string());
     }
 
     result.join("\n")
+}
+
+pub fn gen_dict_json_str(meowdict_results: Vec<MeowdictResult>) -> Result<String> {
+    Ok(serde_json::to_string(&meowdict_results)?)
 }
 
 pub fn gen_str_no_color(str: String) -> String {

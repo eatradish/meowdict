@@ -1,7 +1,7 @@
 use crate::api::{get_dict_result, get_jyutping_result};
 use crate::formatter::{
-    gen_dict_result_str, gen_jyutping_str, gen_str_no_color, gen_translation_str, opencc_convert,
-    OpenccConvertMode,
+    gen_dict_json_str, gen_dict_result_str, gen_jyutping_str, gen_str_no_color,
+    gen_translation_str, opencc_convert, OpenccConvertMode,
 };
 use anyhow::Result;
 use reqwest::Client;
@@ -60,7 +60,7 @@ pub fn search_word_to_jyutping_result(
     client: &Client,
     runtime: &Runtime,
     no_color: bool,
-    result_t2s: bool
+    result_t2s: bool,
 ) -> Result<()> {
     let jyutping_results = get_jyutping_result(client, runtime, words)?;
     let jyutping_results_str_with_color = gen_jyutping_str(jyutping_results);
@@ -76,6 +76,17 @@ pub fn search_word_to_jyutping_result(
         opencc_convert(result.as_str(), OpenccConvertMode::T2S)
     };
     println!("{}", result);
+
+    Ok(())
+}
+
+pub fn search_word_to_json_result(
+    words: Vec<String>,
+    client: &Client,
+    runtime: &Runtime,
+) -> Result<()> {
+    let meowdict_results = get_dict_result(runtime, client, words)?;
+    println!("{}", gen_dict_json_str(meowdict_results)?);
 
     Ok(())
 }

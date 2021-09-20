@@ -104,16 +104,14 @@ impl MeowdictConsole {
             ) {
                 println!("{}", e);
             }
-        } else {
-            if let Err(e) = search_word_to_dict_result(
-                words_mut,
-                &self.client,
-                &self.runtime,
-                self.no_color_output,
-                command_result_t2s || self.result_t2s,
-            ) {
-                println!("{}", e);
-            }
+        } else if let Err(e) = search_word_to_dict_result(
+            words_mut,
+            &self.client,
+            &self.runtime,
+            self.no_color_output,
+            command_result_t2s || self.result_t2s,
+        ) {
+            println!("{}", e);
         }
 
         Ok(())

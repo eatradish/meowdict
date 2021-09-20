@@ -56,4 +56,11 @@ pub fn build_cli() -> App<'static, 'static> {
                 .help("Print result with no color")
                 .requires("INPUT"),
         )
+        .arg(
+            Arg::with_name("json")
+                .short("J")
+                .long("json")
+                .help("Print result to JSON output")
+                .requires("INPUT"),
+        )
 }

@@ -17,6 +17,7 @@ fn main() -> Result<()> {
     let translation_mode = app.is_present("translation");
     let jyutping_mode = app.is_present("jyutping");
     let no_color_output = app.is_present("no-color-output");
+    let json_mode = app.is_present("json");
     let client = reqwest::Client::new();
     let runtime = Builder::new_multi_thread()
         .enable_all()
@@ -32,9 +33,17 @@ fn main() -> Result<()> {
                 .collect::<Vec<_>>();
         }
         if translation_mode {
-            search_word_to_translation_result(words, &client, &runtime, no_color_output, result_t2s)?;
+            search_word_to_translation_result(
+                words,
+                &client,
+                &runtime,
+                no_color_output,
+                result_t2s,
+            )?;
         } else if jyutping_mode {
             search_word_to_jyutping_result(words, &client, &runtime, no_color_output, result_t2s)?;
+        } else if json_mode {
+            search_word_to_json_result(words, &client, &runtime)?;
         } else {
             search_word_to_dict_result(words, &client, &runtime, no_color_output, result_t2s)?;
         }
