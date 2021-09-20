@@ -6,9 +6,11 @@ use std::{
 };
 
 use anyhow::{anyhow, Error, Result};
+use futures::future;
 use indexmap::IndexMap;
 use reqwest::Client;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use tokio::runtime::Runtime;
 
 #[derive(Deserialize)]
 pub struct MoedictDefinition {
@@ -45,7 +47,37 @@ pub struct MoedictRawResult {
     pub english: Option<String>,
 }
 
-pub async fn request_moedict(keyword: &str, client: &Client) -> Result<MoedictRawResult> {
+#[derive(Serialize)]
+pub struct MeowdictResult {
+    pub name: String,
+    pub english: Option<String>,
+    pub translation: Option<IndexMap<String, Vec<String>>>,
+    pub heteronyms: Option<Vec<MeowdictHeteronym>>,
+}
+
+#[derive(Serialize)]
+pub struct MeowdictHeteronym {
+    pub pinyin: Option<String>,
+    pub bopomofo: Option<String>,
+    pub definitions: Option<IndexMap<String, Vec<Vec<String>>>>,
+}
+
+#[derive(Serialize)]
+pub struct MeowdictJyutPingResult {
+    pub word: String,
+    pub jyutping: Vec<String>,
+}
+
+macro_rules! push_qel {
+    ($qel:expr, $result:ident, $count:ident, $t:ident) => {
+        if let Some(qel) = &$qel {
+            qel.into_iter()
+                .for_each(|x| $result.get_mut(&$t).unwrap()[$count].push(x.to_owned()))
+        }
+    };
+}
+
+async fn request_moedict(keyword: &str, client: &Client) -> Result<MoedictRawResult> {
     let response = client
         .get(format!("https://www.moedict.tw/a/{}.json", keyword))
         .send()
@@ -69,7 +101,7 @@ pub async fn request_moedict(keyword: &str, client: &Client) -> Result<MoedictRa
     }
 }
 
-pub async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
+async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
     let cache_path = dirs_next::cache_dir()
         .ok_or_else(|| anyhow!("Cannot find cache dir!"))?
         .join("jyutping.json");
@@ -120,4 +152,105 @@ pub async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>
     let f = File::open(&cache_path)?;
 
     Ok(serde_json::from_reader(&f)?)
+}
+
+pub fn to_meowdict_obj(moedict_obj: MoedictRawResult) -> MeowdictResult {
+    let name = moedict_obj.title;
+    let english = moedict_obj.english;
+    let translation = moedict_obj.translation;
+    let meowdict_heteronyms = if let Some(heteronyms) = moedict_obj.heteronyms {
+        let mut result = Vec::new();
+        for item in heteronyms {
+            let word_type = if let Some(definition) = item.definitions {
+                Some(definition_formatter(&definition))
+            } else {
+                None
+            };
+            result.push(MeowdictHeteronym {
+                pinyin: item.pinyin,
+                bopomofo: item.bopomofo,
+                definitions: word_type,
+            });
+        }
+
+        Some(result)
+    } else {
+        None
+    };
+
+    MeowdictResult {
+        name,
+        english,
+        translation,
+        heteronyms: meowdict_heteronyms,
+    }
+}
+
+fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<String, Vec<Vec<String>>> {
+    let mut result = IndexMap::new();
+    let mut count: usize = 0;
+    for i in definitions {
+        let t = if let Some(word_type) = i.word_type.to_owned() {
+            word_type
+        } else {
+            "notype".to_string()
+        };
+        if result.get(&t).is_none() {
+            result.insert(t.to_owned(), vec![Vec::new()]);
+            count = 0;
+        } else {
+            result.get_mut(&t).unwrap().push(Vec::new());
+        }
+        if let Some(f) = &i.def {
+            result.get_mut(&t).unwrap()[count].push(f.to_owned());
+        }
+        push_qel!(i.quote, result, count, t);
+        push_qel!(i.example, result, count, t);
+        push_qel!(i.link, result, count, t);
+        count += 1;
+    }
+
+    result
+}
+
+pub fn get_dict_result(
+    runtime: &Runtime,
+    client: &Client,
+    words: Vec<String>,
+) -> Result<Vec<MeowdictResult>> {
+    runtime.block_on(async {
+        let mut result = Vec::new();
+        let mut tesk = Vec::new();
+        for word in &words {
+            tesk.push(request_moedict(&word, client));
+        }
+        let response_results = future::try_join_all(tesk).await?;
+        for i in response_results {
+            result.push(to_meowdict_obj(i));
+        }
+
+        Ok(result)
+    })
+}
+
+pub fn get_jyutping_result(
+    client: &Client,
+    runtime: &Runtime,
+    words: Vec<String>,
+) -> Result<Vec<MeowdictJyutPingResult>> {
+    runtime.block_on(async {
+        let mut result = Vec::new();
+        let jyutping_map = get_wordshk(&client).await?;
+        for word in &words {
+            result.push(MeowdictJyutPingResult {
+                word: word.to_owned(),
+                jyutping: jyutping_map
+                    .get(word)
+                    .ok_or_else(|| anyhow!("Cannot find jyutping: {}", word))?
+                    .to_owned(),
+            });
+        }
+
+        Ok(result)
+    })
 }

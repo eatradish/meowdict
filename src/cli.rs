@@ -24,7 +24,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 .long("jyutping")
                 .help("Get jyutping")
                 .requires("INPUT")
-                .conflicts_with("translation")
+                .conflicts_with("translation"),
         )
         .arg(
             Arg::with_name("inputs2t")
@@ -49,5 +49,11 @@ pub fn build_cli() -> App<'static, 'static> {
             Arg::with_name("resultt2smode")
                 .long("result-t2s-mode")
                 .help("Open console with result-t2s mode"),
+        )
+        .arg(
+            Arg::with_name("no-color-output")
+                .long("no-color-output")
+                .help("Print result with no color")
+                .requires("INPUT"),
         )
 }
