@@ -13,7 +13,7 @@ use tokio::runtime::Builder;
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
     let input_s2t = app.is_present("inputs2tmode");
-    let result_t2s = app.is_present("resultt2smode");
+    let result_t2s = app.is_present("resultt2s");
     let translation_mode = app.is_present("translation");
     let jyutping_mode = app.is_present("jyutping");
     let no_color_output = app.is_present("no-color-output");
@@ -43,14 +43,16 @@ fn main() -> Result<()> {
         } else if jyutping_mode {
             search_word_to_jyutping_result(words, &client, &runtime, no_color_output, result_t2s)?;
         } else if json_mode {
-            search_word_to_json_result(words, &client, &runtime)?;
+            search_word_to_json_result(words, &client, &runtime, result_t2s)?;
         } else {
             search_word_to_dict_result(words, &client, &runtime, no_color_output, result_t2s)?;
         }
     } else {
+        let input_s2t_mode = app.is_present("inputs2tmode");
+        let result_t2s_mode = app.is_present("resultt2smode");
         let mut console = MeowdictConsole {
-            input_s2t,
-            result_t2s,
+            input_s2t: input_s2t_mode,
+            result_t2s: result_t2s_mode,
             client,
             runtime,
             no_color_output,

@@ -117,8 +117,12 @@ pub fn gen_jyutping_str(jyutping_result: Vec<MeowdictJyutPingResult>) -> String 
     result.join("\n")
 }
 
-pub fn gen_dict_json_str(meowdict_results: Vec<MeowdictResult>) -> Result<String> {
-    Ok(serde_json::to_string(&meowdict_results)?)
+pub fn gen_dict_json_str(meowdict_results: Vec<MeowdictResult>, result_t2s: bool) -> Result<String> {
+    let mut json = serde_json::to_string(&meowdict_results)?;
+    if result_t2s {
+        json = opencc_convert(&json, OpenccConvertMode::T2S);
+    }
+    Ok(json)
 }
 
 pub fn gen_str_no_color(str: String) -> String {
