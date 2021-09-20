@@ -12,8 +12,6 @@ use tokio::runtime::Builder;
 
 fn main() -> Result<()> {
     let app = cli::build_cli().get_matches();
-    let input_s2t = app.is_present("inputs2tmode");
-    let result_t2s = app.is_present("resultt2s");
     let translation_mode = app.is_present("translation");
     let jyutping_mode = app.is_present("jyutping");
     let no_color_output = app.is_present("no-color-output");
@@ -25,6 +23,8 @@ fn main() -> Result<()> {
         .build()
         .unwrap();
     if let Some(words) = app.values_of("INPUT") {
+        let input_s2t = app.is_present("inputs2t");
+        let result_t2s = app.is_present("resultt2s");
         let mut words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
         if input_s2t {
             words = words
