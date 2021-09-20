@@ -84,7 +84,7 @@ pub fn search_word_to_json_result(
     words: Vec<String>,
     client: &Client,
     runtime: &Runtime,
-    result_t2s: bool
+    result_t2s: bool,
 ) -> Result<()> {
     let meowdict_results = get_dict_result(runtime, client, words)?;
     println!("{}", gen_dict_json_str(meowdict_results, result_t2s)?);
