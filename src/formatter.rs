@@ -117,7 +117,10 @@ pub fn gen_jyutping_str(jyutping_result: Vec<MeowdictJyutPingResult>) -> String 
     result.join("\n")
 }
 
-pub fn gen_dict_json_str(meowdict_results: Vec<MeowdictResult>, result_t2s: bool) -> Result<String> {
+pub fn gen_dict_json_str(
+    meowdict_results: Vec<MeowdictResult>,
+    result_t2s: bool,
+) -> Result<String> {
     let mut json = serde_json::to_string(&meowdict_results)?;
     if result_t2s {
         json = opencc_convert(&json, OpenccConvertMode::T2S);
