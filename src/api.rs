@@ -1,9 +1,4 @@
-use std::{
-    collections::HashMap,
-    fs::{self, File},
-    io::Write,
-    time::SystemTime,
-};
+use std::{collections::HashMap, fs::{self, File}, io::Write, path::PathBuf, time::SystemTime};
 
 use anyhow::{anyhow, Error, Result};
 use futures::future;
@@ -103,7 +98,7 @@ async fn request_moedict(keyword: &str, client: &Client) -> Result<MoedictRawRes
 
 async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
     let cache_path = dirs_next::cache_dir()
-        .ok_or_else(|| anyhow!("Cannot find cache dir!"))?
+        .unwrap_or_else(|| PathBuf::from("."))
         .join("jyutping.json");
     if !cache_path.exists()
         || (cache_path.exists()
