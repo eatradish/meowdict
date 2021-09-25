@@ -1,4 +1,10 @@
-use std::{collections::HashMap, fs::{self, File}, io::Write, path::PathBuf, time::SystemTime};
+use std::{
+    collections::HashMap,
+    fs::{self, File},
+    io::Write,
+    path::PathBuf,
+    time::SystemTime,
+};
 
 use anyhow::{anyhow, Error, Result};
 use futures::future;

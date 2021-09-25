@@ -4,18 +4,23 @@ pub mod console;
 mod feat;
 pub mod formatter;
 
-use std::{fs::{File, create_dir_all}, io::{Read, Write}, path::PathBuf};
+use std::{
+    fs::{create_dir_all, File},
+    io::{Read, Write},
+    path::PathBuf,
+};
 
 use crate::console::MeowdictConsole;
 use crate::feat::*;
 use anyhow::Result;
 use formatter::{opencc_convert, OpenccConvertMode};
-use tokio::runtime::Builder;
-use serde::{Deserialize, Serialize};
 use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
+use tokio::runtime::Builder;
 
 lazy_static! {
-    static ref CONFTG_PATH_DIRECTORY: PathBuf = dirs_next::config_dir().unwrap_or_else(|| PathBuf::from("./config"));
+    static ref CONFTG_PATH_DIRECTORY: PathBuf =
+        dirs_next::config_dir().unwrap_or_else(|| PathBuf::from("./config"));
     static ref CONFIG_PATH: PathBuf = CONFTG_PATH_DIRECTORY.join("meowdict.toml");
 }
 
@@ -33,7 +38,7 @@ fn main() -> Result<()> {
             let mut buffer = Vec::new();
             f.read_to_end(&mut buffer)?;
             toml::from_slice(&buffer)?
-        },
+        }
         Err(_) => {
             let default_meowdict_config = MeowdictConfig {
                 input_s2t: false,
@@ -83,7 +88,7 @@ fn main() -> Result<()> {
             search_word_to_dict_result(words, &client, &runtime, no_color_output, result_t2s)?;
         }
     } else {
-        let input_s2t_mode =  config.input_s2t || app.is_present("inputs2tmode");
+        let input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
         let result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
         let mut console = MeowdictConsole {
             input_s2t: input_s2t_mode,
