@@ -156,7 +156,7 @@ fn create_jyutping_cache(
 }
 
 async fn request_wordshk(client: &Client) -> Result<(JyutPingCharList, JyutPingWordList)> {
-    let (response_charlist, response_wordlist) = tokio::try_join! {
+    tokio::try_join! {
         async {
             Ok::<_, Error>(client
                 .get("https://words.hk/faiman/analysis/charlist.json")
@@ -173,9 +173,7 @@ async fn request_wordshk(client: &Client) -> Result<(JyutPingCharList, JyutPingW
                 .json::<JyutPingWordList>()
                 .await?)
         },
-    }?;
-
-    Ok((response_charlist, response_wordlist))
+    }
 }
 
 pub fn to_meowdict_obj(moedict_obj: MoedictRawResult) -> MeowdictResult {
