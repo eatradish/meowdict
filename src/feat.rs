@@ -1,7 +1,7 @@
 use crate::api::{get_dict_result, get_jyutping_result};
 use crate::formatter::{
     gen_dict_json_str, gen_dict_result_str, gen_jyutping_str, gen_str_no_color,
-    gen_translation_str, opencc_convert, OpenccConvertMode,
+    gen_translation_str, opencc_convert, OpenccConvertMode, get_terminal_size
 };
 use anyhow::Result;
 use reqwest::Client;
@@ -14,8 +14,9 @@ pub fn search_word_to_dict_result(
     no_color: bool,
     result_t2s: bool,
 ) -> Result<()> {
+    let terminal_size = get_terminal_size();
     let meowdict_results = get_dict_result(runtime, client, words)?;
-    let result_with_color = gen_dict_result_str(meowdict_results);
+    let result_with_color = gen_dict_result_str(meowdict_results, terminal_size);
     let result = if !no_color {
         result_with_color
     } else {

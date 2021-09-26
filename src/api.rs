@@ -49,7 +49,7 @@ pub struct MoedictRawResult {
     pub english: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MeowdictResult {
     pub name: String,
     pub english: Option<String>,
@@ -57,14 +57,14 @@ pub struct MeowdictResult {
     pub heteronyms: Option<Vec<MeowdictHeteronym>>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MeowdictHeteronym {
     pub pinyin: Option<String>,
     pub bopomofo: Option<String>,
     pub definitions: Option<IndexMap<String, Vec<Vec<String>>>>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MeowdictJyutPingResult {
     pub word: String,
     pub jyutping: Vec<String>,

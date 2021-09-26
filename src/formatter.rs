@@ -21,7 +21,7 @@ pub fn opencc_convert(input: &str, t: OpenccConvertMode) -> String {
     .convert(input)
 }
 
-pub fn gen_dict_result_str(meowdict_results: Vec<MeowdictResult>) -> String {
+pub fn gen_dict_result_str(meowdict_results: Vec<MeowdictResult>, terminal_size: usize) -> String {
     let mut result = Vec::new();
 
     for i in meowdict_results {
@@ -32,7 +32,7 @@ pub fn gen_dict_result_str(meowdict_results: Vec<MeowdictResult>) -> String {
         );
         if let Some(english) = i.english {
             result.push(
-                string_split_new_line(format!("  英語：{}", english), 2)
+                string_split_new_line(format!("  英語：{}", english), 2, terminal_size)
                     .fg_rgb::<125, 187, 222>()
                     .to_string(),
             );
@@ -63,12 +63,16 @@ pub fn gen_dict_result_str(meowdict_results: Vec<MeowdictResult>) -> String {
                             let result_str = string_split_new_line(
                                 format!("{:>3}.{}", index + 1, value[0].to_string()),
                                 2,
+                                terminal_size,
                             );
                             result.push(result_str.fg_rgb::<129, 199, 212>().to_string());
                             if !value[1..].is_empty() {
                                 for s in &value[1..] {
-                                    let result_str =
-                                        string_split_new_line(format!("    {}", s.to_string()), 4);
+                                    let result_str = string_split_new_line(
+                                        format!("    {}", s.to_string()),
+                                        4,
+                                        terminal_size,
+                                    );
                                     result.push(result_str.fg_rgb::<220, 159, 180>().to_string());
                                 }
                             }
@@ -80,6 +84,12 @@ pub fn gen_dict_result_str(meowdict_results: Vec<MeowdictResult>) -> String {
     }
 
     result.join("\n")
+}
+
+pub fn get_terminal_size() -> usize {
+    let term = Term::stdout();
+
+    term.size().1.into()
 }
 
 pub fn gen_translation_str(meowdict_results: Vec<MeowdictResult>) -> String {
@@ -132,9 +142,7 @@ pub fn gen_str_no_color(str: String) -> String {
     strip_ansi_codes(&str).to_string()
 }
 
-fn string_split_new_line(s: String, tab: usize) -> String {
-    let term = Term::stdout();
-    let terminal_size: usize = term.size().1.into();
+fn string_split_new_line(s: String, tab: usize, terminal_size: usize) -> String {
     let mut result_str = String::new();
     let limit_length = if terminal_size < LINE_LENGTH {
         terminal_size
@@ -156,4 +164,71 @@ fn string_split_new_line(s: String, tab: usize) -> String {
     }
 
     result_str
+}
+
+#[test]
+fn test_opencc() {
+    let s = "老师";
+    let t = "老師";
+
+    assert_eq!(opencc_convert(s, OpenccConvertMode::S2T), t);
+    assert_eq!(opencc_convert(t, OpenccConvertMode::T2S), s);
+}
+
+#[test]
+fn test_result_str() {
+    let test_str = r#"{"name":"空穴來風","english":"lit. wind from an empty cave (idiom)","translation":{"English":["lit. wind from an empty cave (idiom)","fig. unfounded (story)","baseless (claim)"],"francais":["(expr. idiom.) les fissures laissent passer le vent","les faiblesses donnent prise à la médisance","prêter le flanc à la critique"]},"heteronyms":[{"pinyin":"kōng xuè lái fēng","bopomofo":"ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ","definitions":{"notype":[["有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞，不足以採信。」"]]}}]}"#;
+    let test_obj: MeowdictResult = serde_json::from_str(test_str).unwrap();
+    const LESS_80: usize = 79;
+    const MORE_80: usize = 81;
+    let result_with_less_80 = gen_str_no_color(gen_dict_result_str(vec![test_obj.clone()], LESS_80));
+    let right_result_with_less_80 = r#"空穴來風：
+  英語：lit. wind from an empty cave (idiom)
+  拼音：kōng xuè lái fēng
+  注音：ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ
+  1.有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空
+  穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的
+  傳聞，不足以採信。」"#;
+    let result_with_more_80 = gen_str_no_color(gen_dict_result_str(vec![test_obj], MORE_80));
+    let right_result_with_more_80 = r#"空穴來風：
+  英語：lit. wind from an empty cave (idiom)
+  拼音：kōng xuè lái fēng
+  注音：ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ
+  1.有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴
+  來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞
+  ，不足以採信。」"#;
+
+    assert_eq!(result_with_less_80, right_result_with_less_80);
+    assert_eq!(result_with_more_80, right_result_with_more_80);
+}
+
+#[test]
+fn test_transtation_str() {
+    let test_str = r#"{"name":"空穴來風","english":"lit. wind from an empty cave (idiom)","translation":{"English":["lit. wind from an empty cave (idiom)","fig. unfounded (story)","baseless (claim)"],"francais":["(expr. idiom.) les fissures laissent passer le vent","les faiblesses donnent prise à la médisance","prêter le flanc à la critique"]},"heteronyms":[{"pinyin":"kōng xuè lái fēng","bopomofo":"ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ","definitions":{"notype":[["有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞，不足以採信。」"]]}}]}"#;
+    let test_obj: MeowdictResult = serde_json::from_str(test_str).unwrap();
+    let result_str = gen_str_no_color(gen_translation_str(vec![test_obj]));
+    let right_str = r#"空穴來風：
+English:
+lit. wind from an empty cave (idiom)
+fig. unfounded (story)
+baseless (claim)
+francais:
+(expr. idiom.) les fissures laissent passer le vent
+les faiblesses donnent prise à la médisance
+prêter le flanc à la critique"#;
+    
+    assert_eq!(result_str, right_str);
+}
+
+#[test]
+fn test_jyutping_str() {
+    let test_obj = MeowdictJyutPingResult {
+        word: "我".to_string(),
+        jyutping: vec!["ngo5".to_string()]
+    };
+    let result_str = gen_str_no_color(gen_jyutping_str(vec![test_obj]));
+    let right_str = r#"我：
+ngo5"#;
+
+    assert_eq!(result_str, right_str);
 }
