@@ -13,4 +13,6 @@ jobs:
         apt-get install -y rustc opencc
     - uses: actions/checkout@v2
     - name: Build
-      run: cargo build --verbose
+      run: cargo build
+    - name: test
+      run: cargo test
