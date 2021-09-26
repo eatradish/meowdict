@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    fs::{self, File},
+    fs::{self, create_dir_all, File},
     io::Write,
     path::PathBuf,
     time::SystemTime,
@@ -9,6 +9,7 @@ use std::{
 use anyhow::{anyhow, Error, Result};
 use futures::future;
 use indexmap::IndexMap;
+use lazy_static::lazy_static;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use tokio::runtime::Runtime;
@@ -69,6 +70,12 @@ pub struct MeowdictJyutPingResult {
     pub jyutping: Vec<String>,
 }
 
+lazy_static! {
+    static ref CACHE_PATH_DIRECTORY: PathBuf =
+        dirs_next::cache_dir().unwrap_or_else(|| PathBuf::from("."));
+    static ref CACHE_PATH: PathBuf = CACHE_PATH_DIRECTORY.join("jyutping.json");
+}
+
 macro_rules! push_qel {
     ($qel:expr, $result:ident, $count:ident, $t:ident) => {
         if let Some(qel) = &$qel {
@@ -103,15 +110,12 @@ async fn request_moedict(keyword: &str, client: &Client) -> Result<MoedictRawRes
 }
 
 async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
-    let cache_path = dirs_next::cache_dir()
-        .unwrap_or_else(|| PathBuf::from("."))
-        .join("jyutping.json");
-    if !cache_path.exists()
-        || (cache_path.exists()
+    if !CACHE_PATH.exists()
+        || (CACHE_PATH.exists()
             && (SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)?
                 .as_secs()
-                - fs::metadata(&cache_path)?
+                - fs::metadata(&*CACHE_PATH)?
                     .created()?
                     .duration_since(SystemTime::UNIX_EPOCH)?
                     .as_secs()
@@ -142,7 +146,8 @@ async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
                 (word, jyutping_map.keys().map(|x| x.to_string()).collect())
             })
             .collect();
-        let mut f = fs::File::create(&cache_path)?;
+        create_dir_all(&*CACHE_PATH_DIRECTORY)?;
+        let mut f = fs::File::create(&*CACHE_PATH)?;
         let json: HashMap<String, Vec<String>> = charlist
             .into_iter()
             .chain(response_wordlist.into_iter())
@@ -150,7 +155,7 @@ async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
         f.write_all(serde_json::to_string(&json)?.as_bytes())?;
     }
 
-    let f = File::open(&cache_path)?;
+    let f = File::open(&*CACHE_PATH)?;
 
     Ok(serde_json::from_reader(&f)?)
 }
