@@ -87,9 +87,7 @@ pub fn gen_dict_result_str(meowdict_results: Vec<MeowdictResult>, terminal_size:
 }
 
 pub fn get_terminal_size() -> usize {
-    let term = Term::stdout();
-
-    term.size().1.into()
+    Term::stdout().size().1.into()
 }
 
 pub fn gen_translation_str(meowdict_results: Vec<MeowdictResult>) -> String {
