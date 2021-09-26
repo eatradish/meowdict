@@ -232,3 +232,16 @@ ngo5"#;
 
     assert_eq!(result_str, right_str);
 }
+
+#[test]
+fn test_json_output() {
+    let test_str = r#"{"name":"我","english":"I","translation":{"Deutsch":["ich (mir, mich) <Personalpronomen 1. Pers.&gt (Pron)"],"English":["I","me","my"],"francais":["je","moi"]},"heteronyms":[{"pinyin":"（語音）wǒ","bopomofo":"（語音）ㄨㄛˇ","definitions":{"代":[["自稱。","《易經．中孚卦．九二》：「我有好爵，吾與爾靡之。」","《詩經．小雅．采薇》：「昔我往矣，楊柳依依；今我來思，雨雪霏霏。」"],["自稱己方。","《左傳．莊公十年》：「春，齊師伐我。」","《漢書．卷五四．李廣傳》：「我軍雖煩擾，虜亦不得犯我。」"]],"形":[["表示親切之意的語詞。","《論語．述而》：「述而不作，信而好古，竊比於我老彭。」","漢．曹操〈步出夏門行〉：「經過至我碣石，心惆悵我東海。」"]],"名":[["私心、私意。","《論語．子罕》：「毋意，毋必，毋固，毋我。」","如：「大公無我」。"],["姓。如戰國時有我子。"]]}},{"pinyin":"（讀音）ě","bopomofo":"（讀音）ㄜˇ","definitions":{"notype":[["(一)之讀音。"]]}}]}"#;
+    let test_obj: MeowdictResult = serde_json::from_str(test_str).unwrap();
+    let result_str_with_no_t2s = gen_dict_json_str(vec![test_obj.clone()], false).unwrap();
+    let right_result_with_no_t2s = r#"[{"name":"我","english":"I","translation":{"Deutsch":["ich (mir, mich) <Personalpronomen 1. Pers.&gt (Pron)"],"English":["I","me","my"],"francais":["je","moi"]},"heteronyms":[{"pinyin":"（語音）wǒ","bopomofo":"（語音）ㄨㄛˇ","definitions":{"代":[["自稱。","《易經．中孚卦．九二》：「我有好爵，吾與爾靡之。」","《詩經．小雅．采薇》：「昔我往矣，楊柳依依；今我來思，雨雪霏霏。」"],["自稱己方。","《左傳．莊公十年》：「春，齊師伐我。」","《漢書．卷五四．李廣傳》：「我軍雖煩擾，虜亦不得犯我。」"]],"形":[["表示親切之意的語詞。","《論語．述而》：「述而不作，信而好古，竊比於我老彭。」","漢．曹操〈步出夏門行〉：「經過至我碣石，心惆悵我東海。」"]],"名":[["私心、私意。","《論語．子罕》：「毋意，毋必，毋固，毋我。」","如：「大公無我」。"],["姓。如戰國時有我子。"]]}},{"pinyin":"（讀音）ě","bopomofo":"（讀音）ㄜˇ","definitions":{"notype":[["(一)之讀音。"]]}}]}]"#;
+    let result_str_with_t2s = gen_dict_json_str(vec![test_obj], true).unwrap();
+    let right_result_with_t2s = r#"[{"name":"我","english":"I","translation":{"Deutsch":["ich (mir, mich) <Personalpronomen 1. Pers.&gt (Pron)"],"English":["I","me","my"],"francais":["je","moi"]},"heteronyms":[{"pinyin":"（语音）wǒ","bopomofo":"（语音）ㄨㄛˇ","definitions":{"代":[["自称。","《易经．中孚卦．九二》：「我有好爵，吾与尔靡之。」","《诗经．小雅．采薇》：「昔我往矣，杨柳依依；今我来思，雨雪霏霏。」"],["自称己方。","《左传．庄公十年》：「春，齐师伐我。」","《汉书．卷五四．李广传》：「我军虽烦扰，虏亦不得犯我。」"]],"形":[["表示亲切之意的语词。","《论语．述而》：「述而不作，信而好古，窃比于我老彭。」","汉．曹操〈步出夏门行〉：「经过至我碣石，心惆怅我东海。」"]],"名":[["私心、私意。","《论语．子罕》：「毋意，毋必，毋固，毋我。」","如：「大公无我」。"],["姓。如战国时有我子。"]]}},{"pinyin":"（读音）ě","bopomofo":"（读音）ㄜˇ","definitions":{"notype":[["(一)之读音。"]]}}]}]"#;
+
+    assert_eq!(result_str_with_no_t2s, right_result_with_no_t2s);
+    assert_eq!(result_str_with_t2s, right_result_with_t2s);
+}
