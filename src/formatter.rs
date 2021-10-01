@@ -1,4 +1,5 @@
 use anyhow::Result;
+use clap::crate_version;
 use console::{strip_ansi_codes, truncate_str, Term};
 use opencc_rust::*;
 use owo_colors::OwoColorize;
@@ -164,6 +165,14 @@ fn string_split_new_line(s: String, tab: usize, terminal_size: usize) -> String 
     result_str
 }
 
+pub fn display_meowdict_version(no_color: bool) {
+    let s = format!("Welcome to meowdict {}!", crate_version!())
+        .fg_rgb::<177, 180, 121>()
+        .to_string();
+    let result = if no_color { gen_str_no_color(s) } else { s };
+    println!("{}", result);
+}
+
 #[test]
 fn test_opencc() {
     let s = "老师";
@@ -179,7 +188,8 @@ fn test_result_str() {
     let test_obj: MeowdictResult = serde_json::from_str(test_str).unwrap();
     const LESS_80: usize = 79;
     const MORE_80: usize = 81;
-    let result_with_less_80 = gen_str_no_color(gen_dict_result_str(vec![test_obj.clone()], LESS_80));
+    let result_with_less_80 =
+        gen_str_no_color(gen_dict_result_str(vec![test_obj.clone()], LESS_80));
     let right_result_with_less_80 = r#"空穴來風：
   英語：lit. wind from an empty cave (idiom)
   拼音：kōng xuè lái fēng
@@ -214,7 +224,7 @@ francais:
 (expr. idiom.) les fissures laissent passer le vent
 les faiblesses donnent prise à la médisance
 prêter le flanc à la critique"#;
-    
+
     assert_eq!(result_str, right_str);
 }
 
@@ -222,7 +232,7 @@ prêter le flanc à la critique"#;
 fn test_jyutping_str() {
     let test_obj = MeowdictJyutPingResult {
         word: "我".to_string(),
-        jyutping: vec!["ngo5".to_string()]
+        jyutping: vec!["ngo5".to_string()],
     };
     let result_str = gen_str_no_color(gen_jyutping_str(vec![test_obj]));
     let right_str = r#"我：

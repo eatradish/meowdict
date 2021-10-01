@@ -4,7 +4,7 @@ use rustyline::Editor;
 use tokio::runtime::Runtime;
 
 use crate::feat::*;
-use crate::formatter::{opencc_convert, OpenccConvertMode};
+use crate::formatter::{OpenccConvertMode, display_meowdict_version, opencc_convert};
 
 pub struct MeowdictConsole {
     pub input_s2t: bool,
@@ -16,6 +16,7 @@ pub struct MeowdictConsole {
 
 impl MeowdictConsole {
     pub fn create_console(&mut self) {
+        display_meowdict_version(self.no_color_output);
         let mut reader = Editor::<()>::new();
         while let Ok(argument) = reader.readline("meowdict > ") {
             let argument = argument
