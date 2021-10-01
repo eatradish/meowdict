@@ -22,7 +22,27 @@ pub fn opencc_convert(input: &str, t: OpenccConvertMode) -> String {
     .convert(input)
 }
 
-pub fn gen_dict_result_str(meowdict_results: Vec<MeowdictResult>, terminal_size: usize) -> String {
+fn result_to_result(result_vec: Vec<String>, no_color: bool, result_t2s: bool) -> String {
+    let result = result_vec.join("\n");
+    let result = if no_color {
+        gen_str_no_color(result)
+    } else {
+        result
+    };
+
+    if result_t2s {
+        opencc_convert(&result, OpenccConvertMode::T2S)
+    } else {
+        result
+    }
+}
+
+pub fn gen_dict_result_str(
+    meowdict_results: Vec<MeowdictResult>,
+    terminal_size: usize,
+    no_color: bool,
+    result_t2s: bool,
+) -> String {
     let mut result = Vec::new();
 
     for i in meowdict_results {
@@ -83,15 +103,18 @@ pub fn gen_dict_result_str(meowdict_results: Vec<MeowdictResult>, terminal_size:
             }
         }
     }
-
-    result.join("\n")
+    result_to_result(result, no_color, result_t2s)
 }
 
 pub fn get_terminal_size() -> usize {
     Term::stdout().size().1.into()
 }
 
-pub fn gen_translation_str(meowdict_results: Vec<MeowdictResult>) -> String {
+pub fn gen_translation_str(
+    meowdict_results: Vec<MeowdictResult>,
+    no_color: bool,
+    result_t2s: bool,
+) -> String {
     let mut result = Vec::new();
     for i in meowdict_results {
         result.push(
@@ -109,10 +132,14 @@ pub fn gen_translation_str(meowdict_results: Vec<MeowdictResult>) -> String {
         }
     }
 
-    result.join("\n")
+    result_to_result(result, no_color, result_t2s)
 }
 
-pub fn gen_jyutping_str(jyutping_result: Vec<MeowdictJyutPingResult>) -> String {
+pub fn gen_jyutping_str(
+    jyutping_result: Vec<MeowdictJyutPingResult>,
+    no_color: bool,
+    result_t2s: bool,
+) -> String {
     let mut result = Vec::new();
     for i in jyutping_result {
         result.push(
@@ -123,7 +150,7 @@ pub fn gen_jyutping_str(jyutping_result: Vec<MeowdictJyutPingResult>) -> String 
         result.push(i.jyutping.join("\n").fg_rgb::<168, 216, 165>().to_string());
     }
 
-    result.join("\n")
+    result_to_result(result, no_color, result_t2s)
 }
 
 pub fn gen_dict_json_str(
@@ -137,7 +164,7 @@ pub fn gen_dict_json_str(
     Ok(json)
 }
 
-pub fn gen_str_no_color(str: String) -> String {
+fn gen_str_no_color(str: String) -> String {
     strip_ansi_codes(&str).to_string()
 }
 
@@ -187,8 +214,7 @@ fn test_result_str() {
     let test_obj: MeowdictResult = serde_json::from_str(test_str).unwrap();
     const LESS_80: usize = 79;
     const MORE_80: usize = 81;
-    let result_with_less_80 =
-        gen_str_no_color(gen_dict_result_str(vec![test_obj.clone()], LESS_80));
+    let result_with_less_80 = gen_dict_result_str(vec![test_obj.clone()], LESS_80, true, false);
     let right_result_with_less_80 = r#"空穴來風：
   英語：lit. wind from an empty cave (idiom)
   拼音：kōng xuè lái fēng
@@ -196,7 +222,7 @@ fn test_result_str() {
   1.有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空
   穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的
   傳聞，不足以採信。」"#;
-    let result_with_more_80 = gen_str_no_color(gen_dict_result_str(vec![test_obj], MORE_80));
+    let result_with_more_80 = gen_dict_result_str(vec![test_obj], MORE_80, true, false);
     let right_result_with_more_80 = r#"空穴來風：
   英語：lit. wind from an empty cave (idiom)
   拼音：kōng xuè lái fēng
@@ -213,7 +239,7 @@ fn test_result_str() {
 fn test_transtation_str() {
     let test_str = r#"{"name":"空穴來風","english":"lit. wind from an empty cave (idiom)","translation":{"English":["lit. wind from an empty cave (idiom)","fig. unfounded (story)","baseless (claim)"],"francais":["(expr. idiom.) les fissures laissent passer le vent","les faiblesses donnent prise à la médisance","prêter le flanc à la critique"]},"heteronyms":[{"pinyin":"kōng xuè lái fēng","bopomofo":"ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ","definitions":{"notype":[["有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞，不足以採信。」"]]}}]}"#;
     let test_obj: MeowdictResult = serde_json::from_str(test_str).unwrap();
-    let result_str = gen_str_no_color(gen_translation_str(vec![test_obj]));
+    let result_str = gen_translation_str(vec![test_obj], true, false);
     let right_str = r#"空穴來風：
 English:
 lit. wind from an empty cave (idiom)
@@ -233,7 +259,7 @@ fn test_jyutping_str() {
         word: "我".to_string(),
         jyutping: vec!["ngo5".to_string()],
     };
-    let result_str = gen_str_no_color(gen_jyutping_str(vec![test_obj]));
+    let result_str = gen_jyutping_str(vec![test_obj], true, false);
     let right_str = r#"我：
 ngo5"#;
 

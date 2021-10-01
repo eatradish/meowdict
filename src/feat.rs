@@ -1,7 +1,7 @@
 use crate::api::{get_dict_result, get_jyutping_result};
 use crate::formatter::{
-    gen_dict_json_str, gen_dict_result_str, gen_jyutping_str, gen_str_no_color,
-    gen_translation_str, get_terminal_size, opencc_convert, OpenccConvertMode,
+    gen_dict_json_str, gen_dict_result_str, gen_jyutping_str, gen_translation_str,
+    get_terminal_size,
 };
 use anyhow::Result;
 use reqwest::Client;
@@ -16,17 +16,7 @@ pub fn search_word_to_dict_result(
 ) -> Result<()> {
     let terminal_size = get_terminal_size();
     let meowdict_results = get_dict_result(runtime, client, words)?;
-    let result_with_color = gen_dict_result_str(meowdict_results, terminal_size);
-    let result = if !no_color {
-        result_with_color
-    } else {
-        gen_str_no_color(result_with_color)
-    };
-    let result = if !result_t2s {
-        result
-    } else {
-        opencc_convert(result.as_str(), OpenccConvertMode::T2S)
-    };
+    let result = gen_dict_result_str(meowdict_results, terminal_size, no_color, result_t2s);
     println!("{}", result);
 
     Ok(())
@@ -40,17 +30,7 @@ pub fn search_word_to_translation_result(
     result_t2s: bool,
 ) -> Result<()> {
     let meowdict_results = get_dict_result(runtime, client, words)?;
-    let translation_result_with_color = gen_translation_str(meowdict_results);
-    let result = if !no_color {
-        translation_result_with_color
-    } else {
-        gen_str_no_color(translation_result_with_color)
-    };
-    let result = if !result_t2s {
-        result
-    } else {
-        opencc_convert(result.as_str(), OpenccConvertMode::T2S)
-    };
+    let result = gen_translation_str(meowdict_results, no_color, result_t2s);
     println!("{}", result);
 
     Ok(())
@@ -64,18 +44,7 @@ pub fn search_word_to_jyutping_result(
     result_t2s: bool,
 ) -> Result<()> {
     let jyutping_results = get_jyutping_result(client, runtime, words)?;
-    let jyutping_results_str_with_color = gen_jyutping_str(jyutping_results);
-
-    let result = if !no_color {
-        jyutping_results_str_with_color
-    } else {
-        gen_str_no_color(jyutping_results_str_with_color)
-    };
-    let result = if !result_t2s {
-        result
-    } else {
-        opencc_convert(result.as_str(), OpenccConvertMode::T2S)
-    };
+    let result = gen_jyutping_str(jyutping_results, no_color, result_t2s);
     println!("{}", result);
 
     Ok(())
