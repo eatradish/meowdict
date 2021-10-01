@@ -1,7 +1,5 @@
 use anyhow::{anyhow, Result};
-use reqwest::Client;
 use rustyline::Editor;
-use tokio::runtime::Runtime;
 
 use crate::feat::*;
 use crate::formatter::{display_meowdict_version, opencc_convert, OpenccConvertMode};
@@ -9,14 +7,12 @@ use crate::formatter::{display_meowdict_version, opencc_convert, OpenccConvertMo
 pub struct MeowdictConsole {
     pub input_s2t: bool,
     pub result_t2s: bool,
-    pub client: Client,
-    pub runtime: Runtime,
-    pub no_color_output: bool,
+    pub meowdict_request: MeowdictRequest,
 }
 
 impl MeowdictConsole {
     pub fn create_console(&mut self) {
-        display_meowdict_version(self.no_color_output);
+        display_meowdict_version(self.meowdict_request.no_color);
         let mut reader = Editor::<()>::new();
         while let Ok(argument) = reader.readline("meowdict > ") {
             let argument = argument
@@ -85,33 +81,22 @@ impl MeowdictConsole {
                 .map(|x| opencc_convert(&x, OpenccConvertMode::S2T))
                 .collect::<Vec<_>>();
         }
+        let result_t2s = command_result_t2s || self.result_t2s;
         if translation_mode {
-            if let Err(e) = search_word_to_translation_result(
-                words_mut,
-                &self.client,
-                &self.runtime,
-                self.no_color_output,
-                command_result_t2s || self.result_t2s,
-            ) {
+            if let Err(e) = self
+                .meowdict_request
+                .search_word_to_translation_result(&words_mut, result_t2s)
+            {
                 println!("{}", e);
             }
         } else if jyutping_mode {
-            if let Err(e) = search_word_to_jyutping_result(
-                words_mut,
-                &self.client,
-                &self.runtime,
-                self.no_color_output,
-                command_result_t2s || self.result_t2s,
-            ) {
+            if let Err(e) = self
+                .meowdict_request
+                .search_word_to_jyutping_result(&words_mut, result_t2s)
+            {
                 println!("{}", e);
             }
-        } else if let Err(e) = search_word_to_dict_result(
-            words_mut,
-            &self.client,
-            &self.runtime,
-            self.no_color_output,
-            command_result_t2s || self.result_t2s,
-        ) {
+        } else if let Err(e) = self.meowdict_request.search_word_to_dict_result(&words_mut, result_t2s) {
             println!("{}", e);
         }
 

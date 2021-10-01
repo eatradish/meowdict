@@ -236,12 +236,12 @@ fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<String, V
 pub fn get_dict_result(
     runtime: &Runtime,
     client: &Client,
-    words: Vec<String>,
+    words: &Vec<String>,
 ) -> Result<Vec<MeowdictResult>> {
     runtime.block_on(async {
         let mut result = Vec::new();
         let mut tesk = Vec::new();
-        for word in &words {
+        for word in words {
             tesk.push(request_moedict(word, client));
         }
         let response_results = future::try_join_all(tesk).await?;
@@ -256,12 +256,12 @@ pub fn get_dict_result(
 pub fn get_jyutping_result(
     client: &Client,
     runtime: &Runtime,
-    words: Vec<String>,
+    words: &Vec<String>,
 ) -> Result<Vec<MeowdictJyutPingResult>> {
     runtime.block_on(async {
         let mut result = Vec::new();
         let jyutping_map = get_wordshk(client).await?;
-        for word in &words {
+        for word in words {
             result.push(MeowdictJyutPingResult {
                 word: word.to_owned(),
                 jyutping: jyutping_map
