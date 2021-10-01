@@ -169,8 +169,7 @@ pub fn display_meowdict_version(no_color: bool) {
     let s = format!("Welcome to meowdict {}!", crate_version!())
         .fg_rgb::<177, 180, 121>()
         .to_string();
-    let result = if no_color { gen_str_no_color(s) } else { s };
-    println!("{}", result);
+    println!("{}", if no_color { gen_str_no_color(s) } else { s });
 }
 
 #[test]

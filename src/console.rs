@@ -4,7 +4,7 @@ use rustyline::Editor;
 use tokio::runtime::Runtime;
 
 use crate::feat::*;
-use crate::formatter::{OpenccConvertMode, display_meowdict_version, opencc_convert};
+use crate::formatter::{display_meowdict_version, opencc_convert, OpenccConvertMode};
 
 pub struct MeowdictConsole {
     pub input_s2t: bool,

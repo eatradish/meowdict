@@ -1,7 +1,7 @@
 use crate::api::{get_dict_result, get_jyutping_result};
 use crate::formatter::{
     gen_dict_json_str, gen_dict_result_str, gen_jyutping_str, gen_str_no_color,
-    gen_translation_str, opencc_convert, OpenccConvertMode, get_terminal_size
+    gen_translation_str, get_terminal_size, opencc_convert, OpenccConvertMode,
 };
 use anyhow::Result;
 use reqwest::Client;
