@@ -84,7 +84,7 @@ fn main() -> Result<()> {
 }
 
 fn read_config() -> Result<MeowdictConfig> {
-    let config = match File::open(&*CONFIG_PATH) {
+    Ok(match File::open(&*CONFIG_PATH) {
         Ok(mut f) => {
             let mut buffer = Vec::new();
             f.read_to_end(&mut buffer)?;
@@ -101,7 +101,5 @@ fn read_config() -> Result<MeowdictConfig> {
 
             default_meowdict_config
         }
-    };
-    
-    Ok(config)
+    })
 }
