@@ -12,7 +12,6 @@ use indexmap::IndexMap;
 use lazy_static::lazy_static;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use tokio::runtime::Runtime;
 
 #[derive(Deserialize, Serialize)]
 pub struct MoedictDefinition {
@@ -230,46 +229,40 @@ fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<String, V
     result
 }
 
-pub fn get_dict_result(
-    runtime: &Runtime,
+pub async fn get_dict_result(
     client: &Client,
     words: &[String],
 ) -> Result<Vec<MeowdictResult>> {
-    runtime.block_on(async {
-        let mut result = Vec::new();
-        let mut tesk = Vec::new();
-        for word in words {
-            tesk.push(request_moedict(word, client));
-        }
-        let response_results = future::try_join_all(tesk).await?;
-        for i in response_results {
-            result.push(to_meowdict_obj(i));
-        }
+    let mut result = Vec::new();
+    let mut tesk = Vec::new();
+    for word in words {
+        tesk.push(request_moedict(word, client));
+    }
+    let response_results = future::try_join_all(tesk).await?;
+    for i in response_results {
+        result.push(to_meowdict_obj(i));
+    }
 
-        Ok(result)
-    })
+    Ok(result)
 }
 
-pub fn get_jyutping_result(
+pub async fn get_jyutping_result(
     client: &Client,
-    runtime: &Runtime,
     words: &[String],
 ) -> Result<Vec<MeowdictJyutPingResult>> {
-    runtime.block_on(async {
-        let mut result = Vec::new();
-        let jyutping_map = get_wordshk(client).await?;
-        for word in words {
-            result.push(MeowdictJyutPingResult {
-                word: word.to_owned(),
-                jyutping: jyutping_map
-                    .get(word)
-                    .ok_or_else(|| anyhow!("Cannot find jyutping: {}", word))?
-                    .to_owned(),
-            });
-        }
+    let mut result = Vec::new();
+    let jyutping_map = get_wordshk(client).await?;
+    for word in words {
+        result.push(MeowdictJyutPingResult {
+            word: word.to_owned(),
+            jyutping: jyutping_map
+                .get(word)
+                .ok_or_else(|| anyhow!("Cannot find jyutping: {}", word))?
+                .to_owned(),
+        });
+    }
 
-        Ok(result)
-    })
+    Ok(result)
 }
 
 #[test]

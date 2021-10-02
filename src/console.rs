@@ -82,23 +82,31 @@ impl MeowdictConsole {
                 .collect::<Vec<_>>();
         }
         let result_t2s = command_result_t2s || self.result_t2s;
-        if translation_mode {
-            if let Err(e) = self
+        self.meowdict_request.runtime.block_on(async {
+            if translation_mode {
+                if let Err(e) = self
+                    .meowdict_request
+                    .search_word_to_translation_result(&words_mut, result_t2s)
+                    .await
+                {
+                    println!("{}", e);
+                }
+            } else if jyutping_mode {
+                if let Err(e) = self
+                    .meowdict_request
+                    .search_word_to_jyutping_result(&words_mut, result_t2s)
+                    .await
+                {
+                    println!("{}", e);
+                }
+            } else if let Err(e) = self
                 .meowdict_request
-                .search_word_to_translation_result(&words_mut, result_t2s)
+                .search_word_to_dict_result(&words_mut, result_t2s)
+                .await
             {
                 println!("{}", e);
             }
-        } else if jyutping_mode {
-            if let Err(e) = self
-                .meowdict_request
-                .search_word_to_jyutping_result(&words_mut, result_t2s)
-            {
-                println!("{}", e);
-            }
-        } else if let Err(e) = self.meowdict_request.search_word_to_dict_result(&words_mut, result_t2s) {
-            println!("{}", e);
-        }
+        });
 
         Ok(())
     }
