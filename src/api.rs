@@ -126,11 +126,8 @@ async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
     {
         let (response_charlist, response_wordlist) = request_wordshk(client).await?;
         create_dir_all(&*CACHE_PATH_DIRECTORY)?;
-        Ok(create_jyutping_cache(
-            response_charlist,
-            response_wordlist,
-            &*CACHE_PATH,
-        )?)
+        
+        create_jyutping_cache(response_charlist, response_wordlist, &*CACHE_PATH)
     } else {
         Ok(serde_json::from_reader(&File::open(&*CACHE_PATH)?)?)
     }
@@ -236,7 +233,7 @@ fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<String, V
 pub fn get_dict_result(
     runtime: &Runtime,
     client: &Client,
-    words: &Vec<String>,
+    words: &[String],
 ) -> Result<Vec<MeowdictResult>> {
     runtime.block_on(async {
         let mut result = Vec::new();
@@ -256,7 +253,7 @@ pub fn get_dict_result(
 pub fn get_jyutping_result(
     client: &Client,
     runtime: &Runtime,
-    words: &Vec<String>,
+    words: &[String],
 ) -> Result<Vec<MeowdictJyutPingResult>> {
     runtime.block_on(async {
         let mut result = Vec::new();

@@ -14,7 +14,7 @@ pub struct MeowdictRequest {
 }
 
 impl MeowdictRequest {
-    pub fn search_word_to_dict_result(&self, words: &Vec<String>, result_t2s: bool) -> Result<()> {
+    pub fn search_word_to_dict_result(&self, words: &[String], result_t2s: bool) -> Result<()> {
         let terminal_size = get_terminal_size();
         let meowdict_results = get_dict_result(&self.runtime, &self.client, words)?;
         let result = gen_dict_result_str(meowdict_results, terminal_size, self.no_color, result_t2s);
@@ -23,7 +23,7 @@ impl MeowdictRequest {
         Ok(())
     }
     
-    pub fn search_word_to_translation_result(&self, words: &Vec<String>, result_t2s: bool) -> Result<()> {
+    pub fn search_word_to_translation_result(&self, words: &[String], result_t2s: bool) -> Result<()> {
         let meowdict_results = get_dict_result(&self.runtime, &self.client, words)?;
         let result = gen_translation_str(meowdict_results, self.no_color, result_t2s);
         println!("{}", result);
@@ -31,7 +31,7 @@ impl MeowdictRequest {
         Ok(())
     }
     
-    pub fn search_word_to_jyutping_result(&self, words: &Vec<String>, result_t2s: bool) -> Result<()> {
+    pub fn search_word_to_jyutping_result(&self, words: &[String], result_t2s: bool) -> Result<()> {
         let jyutping_results = get_jyutping_result(&self.client, &self.runtime, words)?;
         let result = gen_jyutping_str(jyutping_results, self.no_color, result_t2s);
         println!("{}", result);
@@ -39,7 +39,7 @@ impl MeowdictRequest {
         Ok(())
     }
     
-    pub fn search_word_to_json_result(&self, words: &Vec<String>, result_t2s: bool) -> Result<()> {
+    pub fn search_word_to_json_result(&self, words: &[String], result_t2s: bool) -> Result<()> {
         let meowdict_results = get_dict_result(&self.runtime, &self.client, words)?;
         println!("{}", gen_dict_json_str(meowdict_results, result_t2s)?);
     
