@@ -125,7 +125,7 @@ async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
     {
         let (response_charlist, response_wordlist) = request_wordshk(client).await?;
         create_dir_all(&*CACHE_PATH_DIRECTORY)?;
-        
+
         create_jyutping_cache(response_charlist, response_wordlist, &*CACHE_PATH)
     } else {
         Ok(serde_json::from_reader(&File::open(&*CACHE_PATH)?)?)
@@ -229,10 +229,7 @@ fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<String, V
     result
 }
 
-pub async fn get_dict_result(
-    client: &Client,
-    words: &[String],
-) -> Result<Vec<MeowdictResult>> {
+pub async fn get_dict_result(client: &Client, words: &[String]) -> Result<Vec<MeowdictResult>> {
     let mut result = Vec::new();
     let mut tesk = Vec::new();
     for word in words {

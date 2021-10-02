@@ -50,7 +50,7 @@ fn main() -> Result<()> {
         no_color,
     };
     if let Some(words) = app.values_of("INPUT") {
-        meowdict_request.runtime.block_on( async {
+        meowdict_request.runtime.block_on(async {
             let input_s2t = config.input_s2t || app.is_present("inputs2t");
             let result_t2s = config.result_t2s || app.is_present("resultt2s");
             let mut words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
@@ -61,13 +61,21 @@ fn main() -> Result<()> {
                     .collect::<Vec<_>>();
             }
             if translation_mode {
-                meowdict_request.search_word_to_translation_result(&words, result_t2s).await
+                meowdict_request
+                    .search_word_to_translation_result(&words, result_t2s)
+                    .await
             } else if jyutping_mode {
-                meowdict_request.search_word_to_jyutping_result(&words, result_t2s).await
+                meowdict_request
+                    .search_word_to_jyutping_result(&words, result_t2s)
+                    .await
             } else if json_mode {
-                meowdict_request.search_word_to_json_result(&words, result_t2s).await
+                meowdict_request
+                    .search_word_to_json_result(&words, result_t2s)
+                    .await
             } else {
-                meowdict_request.search_word_to_dict_result(&words, result_t2s).await
+                meowdict_request
+                    .search_word_to_dict_result(&words, result_t2s)
+                    .await
             }
         })?;
     } else {
