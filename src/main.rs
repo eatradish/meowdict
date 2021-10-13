@@ -53,20 +53,22 @@ fn main() -> Result<()> {
         meowdict_request.runtime.block_on(async {
             let input_s2t = config.input_s2t || app.is_present("inputs2t");
             let result_t2s = config.result_t2s || app.is_present("resultt2s");
-            let mut words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
-            if input_s2t {
-                words = words
+            let words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
+            let words = if input_s2t {
+                words
                     .into_iter()
                     .map(|x| opencc_convert(&x, OpenccConvertMode::S2T))
-                    .collect::<Vec<_>>();
-            }
+                    .collect::<Vec<_>>()
+            } else {
+                words
+            };
             if translation_mode {
                 meowdict_request
                     .search_word_to_translation_result(&words, result_t2s)
                     .await
             } else if jyutping_mode {
                 meowdict_request
-                    .search_word_to_jyutping_result(&words, result_t2s)
+                    .search_word_to_jyutping_result(words, result_t2s)
                     .await
             } else if json_mode {
                 meowdict_request
@@ -94,6 +96,7 @@ fn main() -> Result<()> {
 
 fn read_config() -> Result<MeowdictConfig> {
     create_dir_all(&*CONFTG_PATH_DIRECTORY)?;
+
     Ok(match File::open(&*CONFIG_PATH) {
         Ok(mut f) => {
             let mut buffer = Vec::new();

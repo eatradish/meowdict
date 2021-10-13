@@ -1,12 +1,22 @@
 use anyhow::Result;
 use clap::crate_version;
 use console::{strip_ansi_codes, truncate_str, Term};
+use indexmap::IndexMap;
 use opencc_rust::*;
 use owo_colors::OwoColorize;
 
-use crate::api::{MeowdictJyutPingResult, MeowdictResult};
+use crate::api::{MeowdictJyutPingResult, MoedictDefinition, MoedictRawResult};
 
 const LINE_LENGTH: usize = 80;
+
+macro_rules! push_qel {
+    ($qel:expr, $result:ident, $count:ident, $t:ident) => {
+        if let Some(qel) = &$qel {
+            qel.into_iter()
+                .for_each(|x| $result.get_mut(&$t).unwrap()[$count].push(x))
+        }
+    };
+}
 
 pub enum OpenccConvertMode {
     S2T,
@@ -38,16 +48,16 @@ fn result_to_result(result_vec: Vec<String>, no_color: bool, result_t2s: bool) -
 }
 
 pub fn gen_dict_result_str(
-    meowdict_results: Vec<MeowdictResult>,
+    moedict_result: Vec<MoedictRawResult>,
     terminal_size: usize,
     no_color: bool,
     result_t2s: bool,
 ) -> String {
     let mut result = Vec::new();
 
-    for i in meowdict_results {
+    for i in moedict_result {
         result.push(
-            format!("{}：", i.name)
+            format!("{}：", i.title)
                 .fg_rgb::<178, 143, 206>()
                 .to_string(),
         );
@@ -75,6 +85,7 @@ pub fn gen_dict_result_str(
                     );
                 }
                 if let Some(definitions) = j.definitions {
+                    let definitions = definition_formatter(&definitions);
                     for (k, v) in definitions {
                         if k != "notype" {
                             result
@@ -106,19 +117,46 @@ pub fn gen_dict_result_str(
     result_to_result(result, no_color, result_t2s)
 }
 
+fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<&str, Vec<Vec<&str>>> {
+    let mut result = IndexMap::new();
+    let mut count: usize = 0;
+    for i in definitions {
+        let t = if let Some(ref word_type) = i.word_type {
+            word_type
+        } else {
+            "notype"
+        };
+        if result.get(&t).is_none() {
+            result.insert(t, vec![Vec::new()]);
+            count = 0;
+        } else {
+            result.get_mut(&t).unwrap().push(Vec::new());
+        }
+        if let Some(f) = &i.def {
+            result.get_mut(&t).unwrap()[count].push(f.as_str());
+        }
+        push_qel!(i.quote, result, count, t);
+        push_qel!(i.example, result, count, t);
+        push_qel!(i.link, result, count, t);
+        count += 1;
+    }
+
+    result
+}
+
 pub fn get_terminal_size() -> usize {
     Term::stdout().size().1.into()
 }
 
 pub fn gen_translation_str(
-    meowdict_results: Vec<MeowdictResult>,
+    meowdict_results: Vec<MoedictRawResult>,
     no_color: bool,
     result_t2s: bool,
 ) -> String {
     let mut result = Vec::new();
     for i in meowdict_results {
         result.push(
-            format!("{}：", i.name)
+            format!("{}：", i.title)
                 .fg_rgb::<178, 143, 206>()
                 .to_string(),
         );
@@ -154,7 +192,7 @@ pub fn gen_jyutping_str(
 }
 
 pub fn gen_dict_json_str(
-    meowdict_results: Vec<MeowdictResult>,
+    meowdict_results: Vec<MoedictRawResult>,
     result_t2s: bool,
 ) -> Result<String> {
     let mut json = serde_json::to_string(&meowdict_results)?;
@@ -210,8 +248,8 @@ fn test_opencc() {
 
 #[test]
 fn test_result_str() {
-    let test_str = r#"{"name":"空穴來風","english":"lit. wind from an empty cave (idiom)","translation":{"English":["lit. wind from an empty cave (idiom)","fig. unfounded (story)","baseless (claim)"],"francais":["(expr. idiom.) les fissures laissent passer le vent","les faiblesses donnent prise à la médisance","prêter le flanc à la critique"]},"heteronyms":[{"pinyin":"kōng xuè lái fēng","bopomofo":"ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ","definitions":{"notype":[["有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞，不足以採信。」"]]}}]}"#;
-    let test_obj: MeowdictResult = serde_json::from_str(test_str).unwrap();
+    let test_str = r#"{"t":"空穴來風","translation":{"English":["lit. wind from an empty cave (idiom)","fig. unfounded (story)","baseless (claim)"],"francais":["(expr. idiom.) les fissures laissent passer le vent","les faiblesses donnent prise à la médisance","prêter le flanc à la critique"]},"h":[{"p":"kōng xuè lái fēng","b":"ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ","d":[{"type":null,"q":null,"e":null,"f":"有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞，不足以採信。」","l":null}]}],"English":"lit. wind from an empty cave (idiom)"}"#;
+    let test_obj: MoedictRawResult = serde_json::from_str(test_str).unwrap();
     const LESS_80: usize = 79;
     const MORE_80: usize = 81;
     let result_with_less_80 = gen_dict_result_str(vec![test_obj.clone()], LESS_80, true, false);
@@ -237,8 +275,8 @@ fn test_result_str() {
 
 #[test]
 fn test_transtation_str() {
-    let test_str = r#"{"name":"空穴來風","english":"lit. wind from an empty cave (idiom)","translation":{"English":["lit. wind from an empty cave (idiom)","fig. unfounded (story)","baseless (claim)"],"francais":["(expr. idiom.) les fissures laissent passer le vent","les faiblesses donnent prise à la médisance","prêter le flanc à la critique"]},"heteronyms":[{"pinyin":"kōng xuè lái fēng","bopomofo":"ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ","definitions":{"notype":[["有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞，不足以採信。」"]]}}]}"#;
-    let test_obj: MeowdictResult = serde_json::from_str(test_str).unwrap();
+    let test_str = r#"{"t":"空穴來風","translation":{"English":["lit. wind from an empty cave (idiom)","fig. unfounded (story)","baseless (claim)"],"francais":["(expr. idiom.) les fissures laissent passer le vent","les faiblesses donnent prise à la médisance","prêter le flanc à la critique"]},"h":[{"p":"kōng xuè lái fēng","b":"ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ","d":[{"type":null,"q":null,"e":null,"f":"有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞，不足以採信。」","l":null}]}],"English":"lit. wind from an empty cave (idiom)"}"#;
+    let test_obj: MoedictRawResult = serde_json::from_str(test_str).unwrap();
     let result_str = gen_translation_str(vec![test_obj], true, false);
     let right_str = r#"空穴來風：
 English:
@@ -264,17 +302,4 @@ fn test_jyutping_str() {
 ngo5"#;
 
     assert_eq!(result_str, right_str);
-}
-
-#[test]
-fn test_json_output() {
-    let test_str = r#"{"name":"我","english":"I","translation":{"Deutsch":["ich (mir, mich) <Personalpronomen 1. Pers.&gt (Pron)"],"English":["I","me","my"],"francais":["je","moi"]},"heteronyms":[{"pinyin":"（語音）wǒ","bopomofo":"（語音）ㄨㄛˇ","definitions":{"代":[["自稱。","《易經．中孚卦．九二》：「我有好爵，吾與爾靡之。」","《詩經．小雅．采薇》：「昔我往矣，楊柳依依；今我來思，雨雪霏霏。」"],["自稱己方。","《左傳．莊公十年》：「春，齊師伐我。」","《漢書．卷五四．李廣傳》：「我軍雖煩擾，虜亦不得犯我。」"]],"形":[["表示親切之意的語詞。","《論語．述而》：「述而不作，信而好古，竊比於我老彭。」","漢．曹操〈步出夏門行〉：「經過至我碣石，心惆悵我東海。」"]],"名":[["私心、私意。","《論語．子罕》：「毋意，毋必，毋固，毋我。」","如：「大公無我」。"],["姓。如戰國時有我子。"]]}},{"pinyin":"（讀音）ě","bopomofo":"（讀音）ㄜˇ","definitions":{"notype":[["(一)之讀音。"]]}}]}"#;
-    let test_obj: MeowdictResult = serde_json::from_str(test_str).unwrap();
-    let result_str_with_no_t2s = gen_dict_json_str(vec![test_obj.clone()], false).unwrap();
-    let right_result_with_no_t2s = r#"[{"name":"我","english":"I","translation":{"Deutsch":["ich (mir, mich) <Personalpronomen 1. Pers.&gt (Pron)"],"English":["I","me","my"],"francais":["je","moi"]},"heteronyms":[{"pinyin":"（語音）wǒ","bopomofo":"（語音）ㄨㄛˇ","definitions":{"代":[["自稱。","《易經．中孚卦．九二》：「我有好爵，吾與爾靡之。」","《詩經．小雅．采薇》：「昔我往矣，楊柳依依；今我來思，雨雪霏霏。」"],["自稱己方。","《左傳．莊公十年》：「春，齊師伐我。」","《漢書．卷五四．李廣傳》：「我軍雖煩擾，虜亦不得犯我。」"]],"形":[["表示親切之意的語詞。","《論語．述而》：「述而不作，信而好古，竊比於我老彭。」","漢．曹操〈步出夏門行〉：「經過至我碣石，心惆悵我東海。」"]],"名":[["私心、私意。","《論語．子罕》：「毋意，毋必，毋固，毋我。」","如：「大公無我」。"],["姓。如戰國時有我子。"]]}},{"pinyin":"（讀音）ě","bopomofo":"（讀音）ㄜˇ","definitions":{"notype":[["(一)之讀音。"]]}}]}]"#;
-    let result_str_with_t2s = gen_dict_json_str(vec![test_obj], true).unwrap();
-    let right_result_with_t2s = r#"[{"name":"我","english":"I","translation":{"Deutsch":["ich (mir, mich) <Personalpronomen 1. Pers.&gt (Pron)"],"English":["I","me","my"],"francais":["je","moi"]},"heteronyms":[{"pinyin":"（语音）wǒ","bopomofo":"（语音）ㄨㄛˇ","definitions":{"代":[["自称。","《易经．中孚卦．九二》：「我有好爵，吾与尔靡之。」","《诗经．小雅．采薇》：「昔我往矣，杨柳依依；今我来思，雨雪霏霏。」"],["自称己方。","《左传．庄公十年》：「春，齐师伐我。」","《汉书．卷五四．李广传》：「我军虽烦扰，虏亦不得犯我。」"]],"形":[["表示亲切之意的语词。","《论语．述而》：「述而不作，信而好古，窃比于我老彭。」","汉．曹操〈步出夏门行〉：「经过至我碣石，心惆怅我东海。」"]],"名":[["私心、私意。","《论语．子罕》：「毋意，毋必，毋固，毋我。」","如：「大公无我」。"],["姓。如战国时有我子。"]]}},{"pinyin":"（读音）ě","bopomofo":"（读音）ㄜˇ","definitions":{"notype":[["(一)之读音。"]]}}]}]"#;
-
-    assert_eq!(result_str_with_no_t2s, right_result_with_no_t2s);
-    assert_eq!(result_str_with_t2s, right_result_with_t2s);
 }

@@ -42,7 +42,7 @@ impl MeowdictRequest {
 
     pub async fn search_word_to_jyutping_result(
         &self,
-        words: &[String],
+        words: Vec<String>,
         result_t2s: bool,
     ) -> Result<()> {
         let jyutping_results = get_jyutping_result(&self.client, words).await?;

@@ -94,7 +94,7 @@ impl MeowdictConsole {
             } else if jyutping_mode {
                 if let Err(e) = self
                     .meowdict_request
-                    .search_word_to_jyutping_result(&words_mut, result_t2s)
+                    .search_word_to_jyutping_result(words_mut, result_t2s)
                     .await
                 {
                     println!("{}", e);

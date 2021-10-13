@@ -13,7 +13,7 @@ use lazy_static::lazy_static;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct MoedictDefinition {
     #[serde(rename(deserialize = "type"))]
     pub word_type: Option<String>,
@@ -27,7 +27,7 @@ pub struct MoedictDefinition {
     pub link: Option<Vec<String>>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct MoedictHeteronym {
     #[serde(rename(deserialize = "p"))]
     pub pinyin: Option<String>,
@@ -37,7 +37,7 @@ pub struct MoedictHeteronym {
     pub definitions: Option<Vec<MoedictDefinition>>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct MoedictRawResult {
     #[serde(rename(deserialize = "t"))]
     pub title: String,
@@ -46,21 +46,6 @@ pub struct MoedictRawResult {
     pub heteronyms: Option<Vec<MoedictHeteronym>>,
     #[serde(rename(deserialize = "English"))]
     pub english: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-pub struct MeowdictResult {
-    pub name: String,
-    pub english: Option<String>,
-    pub translation: Option<IndexMap<String, Vec<String>>>,
-    pub heteronyms: Option<Vec<MeowdictHeteronym>>,
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-pub struct MeowdictHeteronym {
-    pub pinyin: Option<String>,
-    pub bopomofo: Option<String>,
-    pub definitions: Option<IndexMap<String, Vec<Vec<String>>>>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -73,15 +58,6 @@ lazy_static! {
     static ref CACHE_PATH_DIRECTORY: PathBuf =
         dirs_next::cache_dir().unwrap_or_else(|| PathBuf::from("."));
     static ref CACHE_PATH: PathBuf = CACHE_PATH_DIRECTORY.join("jyutping.json");
-}
-
-macro_rules! push_qel {
-    ($qel:expr, $result:ident, $count:ident, $t:ident) => {
-        if let Some(qel) = &$qel {
-            qel.into_iter()
-                .for_each(|x| $result.get_mut(&$t).unwrap()[$count].push(x.to_owned()))
-        }
-    };
 }
 
 type JyutPingCharList = HashMap<String, HashMap<String, usize>>;
@@ -172,80 +148,18 @@ async fn request_wordshk(client: &Client) -> Result<(JyutPingCharList, JyutPingW
     }
 }
 
-pub fn to_meowdict_obj(moedict_obj: MoedictRawResult) -> MeowdictResult {
-    let name = moedict_obj.title;
-    let english = moedict_obj.english;
-    let translation = moedict_obj.translation;
-    let meowdict_heteronyms = if let Some(heteronyms) = moedict_obj.heteronyms {
-        let mut result = Vec::new();
-        for item in heteronyms {
-            let word_type = item
-                .definitions
-                .map(|definition| definition_formatter(&definition));
-            result.push(MeowdictHeteronym {
-                pinyin: item.pinyin,
-                bopomofo: item.bopomofo,
-                definitions: word_type,
-            });
-        }
-
-        Some(result)
-    } else {
-        None
-    };
-
-    MeowdictResult {
-        name,
-        english,
-        translation,
-        heteronyms: meowdict_heteronyms,
-    }
-}
-
-fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<String, Vec<Vec<String>>> {
-    let mut result = IndexMap::new();
-    let mut count: usize = 0;
-    for i in definitions {
-        let t = if let Some(word_type) = i.word_type.to_owned() {
-            word_type
-        } else {
-            "notype".to_string()
-        };
-        if result.get(&t).is_none() {
-            result.insert(t.to_owned(), vec![Vec::new()]);
-            count = 0;
-        } else {
-            result.get_mut(&t).unwrap().push(Vec::new());
-        }
-        if let Some(f) = &i.def {
-            result.get_mut(&t).unwrap()[count].push(f.to_owned());
-        }
-        push_qel!(i.quote, result, count, t);
-        push_qel!(i.example, result, count, t);
-        push_qel!(i.link, result, count, t);
-        count += 1;
-    }
-
-    result
-}
-
-pub async fn get_dict_result(client: &Client, words: &[String]) -> Result<Vec<MeowdictResult>> {
-    let mut result = Vec::new();
+pub async fn get_dict_result(client: &Client, words: &[String]) -> Result<Vec<MoedictRawResult>> {
     let mut tesk = Vec::new();
     for word in words {
         tesk.push(request_moedict(word, client));
     }
-    let response_results = future::try_join_all(tesk).await?;
-    for i in response_results {
-        result.push(to_meowdict_obj(i));
-    }
 
-    Ok(result)
+    Ok(future::try_join_all(tesk).await?)
 }
 
 pub async fn get_jyutping_result(
     client: &Client,
-    words: &[String],
+    words: Vec<String>,
 ) -> Result<Vec<MeowdictJyutPingResult>> {
     let mut result = Vec::new();
     let jyutping_map = get_wordshk(client).await?;
@@ -253,7 +167,7 @@ pub async fn get_jyutping_result(
         result.push(MeowdictJyutPingResult {
             word: word.to_owned(),
             jyutping: jyutping_map
-                .get(word)
+                .get(&word)
                 .ok_or_else(|| anyhow!("Cannot find jyutping: {}", word))?
                 .to_owned(),
         });
@@ -287,14 +201,4 @@ async fn test_moedict_api_result() {
     let right_result = r#"{"title":"我","translation":{"Deutsch":["ich (mir, mich) <Personalpronomen 1. Pers.&gt (Pron)"],"English":["I","me","my"],"francais":["je","moi"]},"heteronyms":[{"pinyin":"（語音）wǒ","bopomofo":"（語音）ㄨㄛˇ","definitions":[{"word_type":"代","quote":["《易經．中孚卦．九二》：「我有好爵，吾與爾靡之。」","《詩經．小雅．采薇》：「昔我往矣，楊柳依依；今我來思，雨雪霏霏。」"],"example":null,"def":"自稱。","link":null},{"word_type":"代","quote":["《左傳．莊公十年》：「春，齊師伐我。」","《漢書．卷五四．李廣傳》：「我軍雖煩擾，虜亦不得犯我。」"],"example":null,"def":"自稱己方。","link":null},{"word_type":"形","quote":["《論語．述而》：「述而不作，信而好古，竊比於我老彭。」","漢．曹操〈步出夏門行〉：「經過至我碣石，心惆悵我東海。」"],"example":null,"def":"表示親切之意的語詞。","link":null},{"word_type":"名","quote":["《論語．子罕》：「毋意，毋必，毋固，毋我。」"],"example":["如：「大公無我」。"],"def":"私心、私意。","link":null},{"word_type":"名","quote":null,"example":null,"def":"姓。如戰國時有我子。","link":null}]},{"pinyin":"（讀音）ě","bopomofo":"（讀音）ㄜˇ","definitions":[{"word_type":null,"quote":null,"example":null,"def":"(一)之讀音。","link":null}]}],"english":"I"}"#;
 
     assert_eq!(result_str, right_result);
-}
-
-#[test]
-fn test_to_meowdict_obj() {
-    let test_str = r#"{"Deutsch":"ich (mir, mich) <Personalpronomen 1. Pers.&gt (Pron)","English":"I","c":7,"francais":"je","h":[{"=":"6287","b":"（語音）ㄨㄛˇ","d":[{"f":"自稱。","q":["《易經．中孚卦．九二》：「我有好爵，吾與爾靡之。」","《詩經．小雅．采薇》：「昔我往矣，楊柳依依；今我來思，雨雪霏霏。」"],"type":"代"},{"f":"自稱己方。","q":["《左傳．莊公十年》：「春，齊師伐我。」","《漢書．卷五四．李廣傳》：「我軍雖煩擾，虜亦不得犯我。」"],"type":"代"},{"f":"表示親切之意的語詞。","q":["《論語．述而》：「述而不作，信而好古，竊比於我老彭。」","漢．曹操〈步出夏門行〉：「經過至我碣石，心惆悵我東海。」"],"type":"形"},{"e":["如：「大公無我」。"],"f":"私心、私意。","q":["《論語．子罕》：「毋意，毋必，毋固，毋我。」"],"type":"名"},{"f":"姓。如戰國時有我子。","type":"名"}],"p":"（語音）wǒ"},{"b":"（讀音）ㄜˇ","d":[{"f":"(一)之讀音。"}],"p":"（讀音）ě"}],"n":3,"r":"戈","t":"我","translation":{"Deutsch":["ich (mir, mich) <Personalpronomen 1. Pers.&gt (Pron)"],"English":["I","me","my"],"francais":["je","moi"]}}"#;
-    let json: MoedictRawResult = serde_json::from_str(test_str).unwrap();
-    let result_str = serde_json::to_string(&to_meowdict_obj(json)).unwrap();
-    let right_str = r#"{"name":"我","english":"I","translation":{"Deutsch":["ich (mir, mich) <Personalpronomen 1. Pers.&gt (Pron)"],"English":["I","me","my"],"francais":["je","moi"]},"heteronyms":[{"pinyin":"（語音）wǒ","bopomofo":"（語音）ㄨㄛˇ","definitions":{"代":[["自稱。","《易經．中孚卦．九二》：「我有好爵，吾與爾靡之。」","《詩經．小雅．采薇》：「昔我往矣，楊柳依依；今我來思，雨雪霏霏。」"],["自稱己方。","《左傳．莊公十年》：「春，齊師伐我。」","《漢書．卷五四．李廣傳》：「我軍雖煩擾，虜亦不得犯我。」"]],"形":[["表示親切之意的語詞。","《論語．述而》：「述而不作，信而好古，竊比於我老彭。」","漢．曹操〈步出夏門行〉：「經過至我碣石，心惆悵我東海。」"]],"名":[["私心、私意。","《論語．子罕》：「毋意，毋必，毋固，毋我。」","如：「大公無我」。"],["姓。如戰國時有我子。"]]}},{"pinyin":"（讀音）ě","bopomofo":"（讀音）ㄜˇ","definitions":{"notype":[["(一)之讀音。"]]}}]}"#;
-
-    assert_eq!(result_str, right_str);
 }
