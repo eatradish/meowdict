@@ -5,6 +5,32 @@ CLI Web client for moedict.tw
 
 ![screenshot](https://raw.githubusercontent.com/eatradish/meowdict/67c109554b60a43940b03ee408598536dfb1afe7/screenshot/Screenshot_20210902_004622.png)
 
+## Installation
+If you use AOSC OS:
+
+```
+sudo apt install meowdict
+```
+
+Else:
+
+```
+$ cargo build --release
+# install -vm755 target/release/meowdict /usr/local/bin/meowdict
+```
+
+## Dependencies
+Building:
+- Rust w/ Cargo
+- C compiler
+- make (when GCC LTO is used, not needed for Clang)
+
+Runtime:
+- Glibc
+- OpenSSL
+- OpenCC (>= 1.1.2)
+
+
 ## Usage
 
 ### Console Mode
@@ -217,20 +243,3 @@ Unsetting result mode...
 meowdict > 老师
 Could not find keyword: 老师
 ```
-
-## Installation
-```
-$ cargo build --release
-# install -vm755 target/release/meowdict /usr/local/bin/meowdict
-```
-
-## Dependencies
-Building:
-- Rust w/ Cargo
-- C compiler
-- make (when GCC LTO is used, not needed for Clang)
-
-Runtime:
-- Glibc
-- OpenSSL
-- OpenCC (>= 1.1.2)
