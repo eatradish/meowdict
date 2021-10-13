@@ -202,3 +202,17 @@ async fn test_moedict_api_result() {
 
     assert_eq!(result_str, right_result);
 }
+
+#[tokio::test]
+async fn test_wordshk_api_result() {
+    let client = reqwest::Client::new();
+    let word_1 = "我";
+    let word_2 = "我哋";
+    let (wordshk_charlist, wordshk_wordlist) = request_wordshk(&client).await.unwrap();
+    let mut result_1 = HashMap::new();
+    result_1.insert("ngo5".to_string(), 41usize);
+    let result_2 = vec!["ngo5 dei6".to_string()];
+
+    assert_eq!(wordshk_charlist[word_1], result_1);
+    assert_eq!(wordshk_wordlist[word_2], result_2);
+}

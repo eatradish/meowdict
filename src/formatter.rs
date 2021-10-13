@@ -199,6 +199,7 @@ pub fn gen_dict_json_str(
     if result_t2s {
         json = opencc_convert(&json, OpenccConvertMode::T2S);
     }
+
     Ok(json)
 }
 
