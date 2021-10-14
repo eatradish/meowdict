@@ -130,10 +130,10 @@ fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<&str, Vec
             result.insert(t, vec![Vec::new()]);
             count = 0;
         } else {
-            result.get_mut(&t).unwrap().push(Vec::new());
+            result[&t].push(Vec::new());
         }
         if let Some(f) = &i.def {
-            result.get_mut(&t).unwrap()[count].push(f.as_str());
+            result[&t][count].push(f.as_str());
         }
         push_qel!(i.quote, result, count, t);
         push_qel!(i.example, result, count, t);
