@@ -16,7 +16,6 @@ use anyhow::Result;
 use formatter::{opencc_convert, OpenccConvertMode};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use tokio::runtime::Builder;
 
 lazy_static! {
     static ref CONFTG_PATH_DIRECTORY: PathBuf =
@@ -31,67 +30,61 @@ pub struct MeowdictConfig {
     no_color: bool,
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let config = read_config()?;
     let app = cli::build_cli().get_matches();
-    let translation_mode = app.is_present("translation");
-    let jyutping_mode = app.is_present("jyutping");
     let no_color = config.no_color || app.is_present("no-color-output");
-    let json_mode = app.is_present("json");
     let client = reqwest::Client::new();
-    let runtime = Builder::new_multi_thread()
-        .enable_all()
-        .worker_threads(10)
-        .build()
-        .unwrap();
-    let meowdict_request = MeowdictRequest {
-        client,
-        runtime,
-        no_color,
-    };
+    let meowdict_request = MeowdictRequest { client, no_color };
+    let input_s2t = config.input_s2t || app.is_present("inputs2t");
+    let result_t2s = config.result_t2s || app.is_present("resultt2s");
     if let Some(words) = app.values_of("INPUT") {
-        meowdict_request.runtime.block_on(async {
-            let input_s2t = config.input_s2t || app.is_present("inputs2t");
-            let result_t2s = config.result_t2s || app.is_present("resultt2s");
-            let words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
-            let words = if input_s2t {
-                words
-                    .into_iter()
-                    .map(|x| opencc_convert(&x, OpenccConvertMode::S2T))
-                    .collect::<Vec<_>>()
-            } else {
-                words
-            };
-            if translation_mode {
+        let words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
+        let words = if input_s2t {
+            words
+                .into_iter()
+                .map(|x| opencc_convert(&x, OpenccConvertMode::S2T))
+                .collect::<Vec<_>>()
+        } else {
+            words
+        };
+        meowdict_request
+            .search_word_to_dict_result(&words, result_t2s)
+            .await
+    } else {
+        match app.subcommand() {
+            ("translate", Some(args)) => {
+                let words = words_to_vec_string(&args);
                 meowdict_request
                     .search_word_to_translation_result(&words, result_t2s)
                     .await
-            } else if jyutping_mode {
+            }
+            ("jyutping", Some(args)) => {
+                let words = words_to_vec_string(&args);
                 meowdict_request
                     .search_word_to_jyutping_result(words, result_t2s)
                     .await
-            } else if json_mode {
-                meowdict_request
-                    .search_word_to_json_result(&words, result_t2s)
-                    .await
-            } else {
-                meowdict_request
-                    .search_word_to_dict_result(&words, result_t2s)
-                    .await
             }
-        })?;
-    } else {
-        let input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
-        let result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
-        let mut console = MeowdictConsole {
-            input_s2t: input_s2t_mode,
-            result_t2s: result_t2s_mode,
-            meowdict_request,
-        };
-        console.create_console();
-    }
+            _ => {
+                let input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
+                let result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
+                let mut console = MeowdictConsole {
+                    input_s2t: input_s2t_mode,
+                    result_t2s: result_t2s_mode,
+                    meowdict_request,
+                };
 
-    Ok(())
+                console.create_console().await
+            }
+        }
+    }
+}
+
+fn words_to_vec_string(args: &clap::ArgMatches) -> Vec<String> {
+    let words: Vec<&str> = args.values_of("INPUT").unwrap().collect();
+
+    words.into_iter().map(|x| x.into()).collect::<Vec<String>>()
 }
 
 fn read_config() -> Result<MeowdictConfig> {

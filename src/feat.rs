@@ -5,11 +5,8 @@ use crate::formatter::{
 };
 use anyhow::Result;
 use reqwest::Client;
-use tokio::runtime::Runtime;
-
 pub struct MeowdictRequest {
     pub client: Client,
-    pub runtime: Runtime,
     pub no_color: bool,
 }
 

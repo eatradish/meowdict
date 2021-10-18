@@ -11,7 +11,7 @@ pub struct MeowdictConsole {
 }
 
 impl MeowdictConsole {
-    pub fn create_console(&mut self) {
+    pub async fn create_console(&mut self) -> Result<()> {
         display_meowdict_version(self.meowdict_request.no_color);
         let mut reader = Editor::<()>::new();
         while let Ok(argument) = reader.readline("meowdict > ") {
@@ -22,11 +22,13 @@ impl MeowdictConsole {
                 .collect::<Vec<&str>>();
             if !argument.is_empty() {
                 let (args, words) = argument_spliter(argument);
-                if let Err(e) = self.args_runner(args, words) {
+                if let Err(e) = self.args_runner(args, words).await {
                     println!("{}", e);
                 }
             }
         }
+
+        Ok(())
     }
 
     fn set_console_mode(&mut self, t: &OpenccConvertMode, enable: bool) {
@@ -48,7 +50,7 @@ impl MeowdictConsole {
         };
     }
 
-    fn args_runner(&mut self, args: Vec<&str>, words_mut: Vec<&str>) -> Result<()> {
+    async fn args_runner(&mut self, args: Vec<&str>, words_mut: Vec<&str>) -> Result<()> {
         let mut words_mut: Vec<String> = words_mut.into_iter().map(|x| x.into()).collect();
         let mut command_result_t2s = false;
         let mut command_input_s2t = false;
@@ -82,31 +84,29 @@ impl MeowdictConsole {
                 .collect::<Vec<_>>();
         }
         let result_t2s = command_result_t2s || self.result_t2s;
-        self.meowdict_request.runtime.block_on(async {
-            if translation_mode {
-                if let Err(e) = self
-                    .meowdict_request
-                    .search_word_to_translation_result(&words_mut, result_t2s)
-                    .await
-                {
-                    println!("{}", e);
-                }
-            } else if jyutping_mode {
-                if let Err(e) = self
-                    .meowdict_request
-                    .search_word_to_jyutping_result(words_mut, result_t2s)
-                    .await
-                {
-                    println!("{}", e);
-                }
-            } else if let Err(e) = self
+        if translation_mode {
+            if let Err(e) = self
                 .meowdict_request
-                .search_word_to_dict_result(&words_mut, result_t2s)
+                .search_word_to_translation_result(&words_mut, result_t2s)
                 .await
             {
                 println!("{}", e);
             }
-        });
+        } else if jyutping_mode {
+            if let Err(e) = self
+                .meowdict_request
+                .search_word_to_jyutping_result(words_mut, result_t2s)
+                .await
+            {
+                println!("{}", e);
+            }
+        } else if let Err(e) = self
+            .meowdict_request
+            .search_word_to_dict_result(&words_mut, result_t2s)
+            .await
+        {
+            println!("{}", e);
+        };
 
         Ok(())
     }
