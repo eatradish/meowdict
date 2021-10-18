@@ -40,15 +40,10 @@ async fn main() -> Result<()> {
     let input_s2t = config.input_s2t || app.is_present("inputs2t");
     let result_t2s = config.result_t2s || app.is_present("resultt2s");
     if let Some(words) = app.values_of("INPUT") {
-        let words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
-        let words = if input_s2t {
-            words
-                .into_iter()
-                .map(|x| opencc_convert(&x, OpenccConvertMode::S2T))
-                .collect::<Vec<_>>()
-        } else {
-            words
-        };
+        let words = words_input_s2t(
+            words.into_iter().map(|x| x.into()).collect::<Vec<String>>(),
+            input_s2t,
+        );
 
         meowdict_request
             .search_word_to_dict_result(&words, result_t2s)
@@ -84,7 +79,7 @@ async fn main() -> Result<()> {
                     result_t2s: result_t2s_mode,
                     meowdict_request,
                 };
-                
+
                 console.create_console().await
             }
         }
