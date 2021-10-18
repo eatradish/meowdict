@@ -1,4 +1,4 @@
-use clap::{App, Arg, SubCommand, crate_version};
+use clap::{crate_version, App, Arg, SubCommand};
 
 pub fn build_cli() -> App<'static, 'static> {
     App::new("meowdict")
@@ -12,6 +12,14 @@ pub fn build_cli() -> App<'static, 'static> {
                 .min_values(1),
         )
         .subcommand(
+            SubCommand::with_name("show").about("Get dict result").arg(
+                Arg::with_name("INPUT")
+                    .help("Input the keyword to use")
+                    .index(1)
+                    .min_values(1),
+            ),
+        )
+        .subcommand(
             SubCommand::with_name("translate")
                 .alias("trans")
                 .about("Get word translation")
@@ -20,7 +28,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .help("Input word here")
                         .requires("INPUT")
                         .takes_value(true),
-                    ),
+                ),
         )
         .subcommand(
             SubCommand::with_name("jyutping")
@@ -31,7 +39,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .help("Input word here")
                         .requires("INPUT")
                         .takes_value(true),
-                )
+                ),
         )
         .arg(
             Arg::with_name("inputs2t")
