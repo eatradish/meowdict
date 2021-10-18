@@ -12,7 +12,7 @@ const LINE_LENGTH: usize = 80;
 macro_rules! push_qel {
     ($qel:expr, $result:ident, $count:ident, $t:ident) => {
         if let Some(qel) = &$qel {
-            qel.into_iter().for_each(|x| $result[&$t][$count].push(x))
+            qel.into_iter().for_each(|x| $result[$t][$count].push(x))
         }
     };
 }
@@ -113,6 +113,7 @@ pub fn gen_dict_result_str(
             }
         }
     }
+
     result_to_result(result, no_color, result_t2s)
 }
 
@@ -125,14 +126,14 @@ fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<&str, Vec
         } else {
             "notype"
         };
-        if result.get(&t).is_none() {
+        if result.get(t).is_none() {
             result.insert(t, vec![Vec::new()]);
             count = 0;
         } else {
-            result[&t].push(Vec::new());
+            result[t].push(Vec::new());
         }
         if let Some(f) = &i.def {
-            result[&t][count].push(f.as_str());
+            result[t][count].push(f.as_str());
         }
         push_qel!(i.quote, result, count, t);
         push_qel!(i.example, result, count, t);

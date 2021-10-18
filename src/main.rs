@@ -110,6 +110,7 @@ fn read_config() -> Result<MeowdictConfig> {
         Ok(mut f) => {
             let mut buffer = Vec::new();
             f.read_to_end(&mut buffer)?;
+            
             toml::from_slice(&buffer)?
         }
         Err(_) => {
