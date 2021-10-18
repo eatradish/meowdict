@@ -39,6 +39,8 @@ async fn main() -> Result<()> {
     let meowdict_request = MeowdictRequest { client, no_color };
     let input_s2t = config.input_s2t || app.is_present("inputs2t");
     let result_t2s = config.result_t2s || app.is_present("resultt2s");
+    let input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
+    let result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
     if let Some(words) = app.values_of("INPUT") {
         let words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
         let words = if input_s2t {
@@ -76,19 +78,22 @@ async fn main() -> Result<()> {
                     .search_word_to_jyutping_result(words, result_t2s)
                     .await
             }
-            _ => {
-                let input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
-                let result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
-                let mut console = MeowdictConsole {
-                    input_s2t: input_s2t_mode,
-                    result_t2s: result_t2s_mode,
-                    meowdict_request,
-                };
-
-                console.create_console().await
-            }
+            _ => meowdict_console(input_s2t_mode, result_t2s_mode, meowdict_request).await,
         }
     }
+}
+
+async fn meowdict_console(
+    input_s2t_mode: bool,
+    result_t2s_mode: bool,
+    meowdict_request: MeowdictRequest,
+) -> Result<(), anyhow::Error> {
+    let mut console = MeowdictConsole {
+        input_s2t: input_s2t_mode,
+        result_t2s: result_t2s_mode,
+        meowdict_request,
+    };
+    console.create_console().await
 }
 
 fn words_to_vec_string(args: &clap::ArgMatches) -> Vec<String> {

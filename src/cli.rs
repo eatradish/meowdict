@@ -41,6 +41,11 @@ pub fn build_cli() -> App<'static, 'static> {
                         .takes_value(true),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("terminal")
+                .alias("term")
+                .about("Open meowdict terminal"),
+        )
         .arg(
             Arg::with_name("inputs2t")
                 .short("i")

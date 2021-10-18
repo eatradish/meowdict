@@ -91,13 +91,9 @@ async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
     if !CACHE_PATH.exists()
         || (CACHE_PATH.exists()
             && (SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)?
+                .duration_since(fs::metadata(&*CACHE_PATH)?.created()?)?
                 .as_secs()
-                - fs::metadata(&*CACHE_PATH)?
-                    .created()?
-                    .duration_since(SystemTime::UNIX_EPOCH)?
-                    .as_secs()
-                >= 86400))
+                >= 24 * 60 * 60))
     {
         let (response_charlist, response_wordlist) = request_wordshk(client).await?;
         create_dir_all(&*CACHE_PATH_DIRECTORY)?;
