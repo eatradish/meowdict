@@ -13,7 +13,7 @@ macro_rules! push_qel {
     ($qel:expr, $result:ident, $count:ident, $t:ident) => {
         if let Some(qel) = &$qel {
             qel.into_iter()
-                .for_each(|x| $result.get_mut(&$t).unwrap()[$count].push(x))
+                .for_each(|x| $result[&$t][$count].push(x))
         }
     };
 }
