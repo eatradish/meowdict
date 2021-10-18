@@ -87,7 +87,7 @@ impl MeowdictConsole {
         if translation_mode {
             if let Err(e) = self
                 .meowdict_request
-                .search_word_to_translation_result(&words_mut, result_t2s)
+                .search_word_to_translation_result(words_mut, result_t2s)
                 .await
             {
                 println!("{}", e);
@@ -102,7 +102,7 @@ impl MeowdictConsole {
             }
         } else if let Err(e) = self
             .meowdict_request
-            .search_word_to_dict_result(&words_mut, result_t2s)
+            .search_word_to_dict_result(words_mut, result_t2s)
             .await
         {
             println!("{}", e);

@@ -13,7 +13,7 @@ pub struct MeowdictRequest {
 impl MeowdictRequest {
     pub async fn search_word_to_dict_result(
         &self,
-        words: &[String],
+        words: Vec<String>,
         result_t2s: bool,
     ) -> Result<()> {
         let terminal_size = get_terminal_size();
@@ -27,7 +27,7 @@ impl MeowdictRequest {
 
     pub async fn search_word_to_translation_result(
         &self,
-        words: &[String],
+        words: Vec<String>,
         result_t2s: bool,
     ) -> Result<()> {
         let meowdict_results = get_dict_result(&self.client, words).await?;
@@ -51,7 +51,7 @@ impl MeowdictRequest {
 
     pub async fn search_word_to_json_result(
         &self,
-        words: &[String],
+        words: Vec<String>,
         result_t2s: bool,
     ) -> Result<()> {
         let meowdict_results = get_dict_result(&self.client, words).await?;

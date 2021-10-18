@@ -144,9 +144,9 @@ async fn request_wordshk(client: &Client) -> Result<(JyutPingCharList, JyutPingW
     }
 }
 
-pub async fn get_dict_result(client: &Client, words: &[String]) -> Result<Vec<MoedictRawResult>> {
+pub async fn get_dict_result(client: &Client, words: Vec<String>) -> Result<Vec<MoedictRawResult>> {
     let mut tesk = Vec::new();
-    for word in words {
+    for word in &words {
         tesk.push(request_moedict(word, client));
     }
 
