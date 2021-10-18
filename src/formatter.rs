@@ -34,7 +34,7 @@ pub fn opencc_convert(input: &str, t: OpenccConvertMode) -> String {
 fn result_to_result(result_vec: Vec<String>, no_color: bool, result_t2s: bool) -> String {
     let result = result_vec.join("\n");
     let result = if no_color {
-        gen_str_no_color(result)
+        gen_str_no_color(&result)
     } else {
         result
     };
@@ -203,8 +203,8 @@ pub fn gen_dict_json_str(
     Ok(json)
 }
 
-fn gen_str_no_color(str: String) -> String {
-    strip_ansi_codes(&str).to_string()
+fn gen_str_no_color(s: &str) -> String {
+    strip_ansi_codes(s).to_string()
 }
 
 fn string_split_new_line(s: String, tab: usize, terminal_size: usize) -> String {
@@ -235,7 +235,7 @@ pub fn display_meowdict_version(no_color: bool) {
     let s = format!("Welcome to meowdict {}!", crate_version!())
         .fg_rgb::<177, 180, 121>()
         .to_string();
-    println!("{}", if no_color { gen_str_no_color(s) } else { s });
+    println!("{}", if no_color { gen_str_no_color(&s) } else { s });
 }
 
 #[test]
