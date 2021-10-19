@@ -113,19 +113,20 @@ impl MeowdictConsole {
                     if run_status.is_some() {
                         return Err(anyhow!("Cannot run multi arguments!"));
                     }
-                    let enable = if values[0] == "true" {
-                        true
-                    } else if values[0] == "false" {
-                        false
-                    } else {
+                    if values.len() != 1 {
                         return Err(anyhow!(
                             "Usage: .input_s2t_mode true or .input_s2t_mode false"
                         ));
-                    };
-                    if run_status.is_some() {
-                        return Err(anyhow!("Cannot run multi arguments!"));
                     }
-                    run_status = Some(MeowdictCommand::ResultT2SMode(enable));
+                    run_status = Some(MeowdictCommand::ResultT2SMode(match values[0].as_str() {
+                        "true" => true,
+                        "false" => false,
+                        _ => {
+                            return Err(anyhow!(
+                                "Usage: .input_s2t_mode true or .input_s2t_mode false"
+                            ))
+                        }
+                    }));
                 }
                 ".help" => {
                     if run_status.is_some() {
