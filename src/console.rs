@@ -22,28 +22,30 @@ enum MeowdictCommand {
 macro_rules! set_run_status {
     ($run_status:ident, $meowdict_command:expr) => {
         if $run_status.is_some() {
-            return Err(anyhow!("Cannot set multi arguments!"));
+            return Err(anyhow!("Cannot perform multiple queries!"));
         }
         $run_status = Some($meowdict_command);
-    }
+    };
 }
 
 macro_rules! set_run_status_mode {
-    ($run_status:ident, $values:ident, $meowdict_command:expr) => {
+    ($run_status:ident, $values:ident, $usage:ident, $meowdict_command:expr) => {
         if $run_status.is_some() {
-            return Err(anyhow!("Cannot run multi arguments!"));
+            return Err(anyhow!("Cannot perform multiple queries!"));
         }
         $run_status = Some($meowdict_command(match $values[0].as_str() {
             "on" => true,
             "off" => false,
             _ => {
-                return Err(anyhow!(
-                    "Usage: .input_s2t_mode true or .input_s2t_mode false"
-                ));
+                return Err(anyhow!($usage));
             }
         }));
     };
 }
+
+const INPUT_S2T_MODE_USAGE: &str = "Usage: .set_input_s2t_mode true or .set_input_s2t_mode false";
+const RESULT_T2S_MODE_SUAGE: &str =
+    "Usage: .set_result_t2s_mode true or .set_result_t2s_mode false";
 
 impl MeowdictConsole {
     pub async fn create_console(&mut self) -> Result<()> {
@@ -165,10 +167,20 @@ fn get_run_status(
                 *command_result_t2s = true;
             }
             ".set_input_s2t_mode" => {
-                set_run_status_mode!(run_status, values, MeowdictCommand::InputS2TMode);
+                set_run_status_mode!(
+                    run_status,
+                    values,
+                    INPUT_S2T_MODE_USAGE,
+                    MeowdictCommand::InputS2TMode
+                );
             }
             ".set_result_t2s_mode" => {
-                set_run_status_mode!(run_status, values, MeowdictCommand::ResultT2SMode);
+                set_run_status_mode!(
+                    run_status,
+                    values,
+                    RESULT_T2S_MODE_SUAGE,
+                    MeowdictCommand::ResultT2SMode
+                );
             }
             ".help" => {
                 set_run_status!(run_status, MeowdictCommand::Help);
