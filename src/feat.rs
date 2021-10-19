@@ -1,4 +1,4 @@
-use crate::api::{get_dict_result, get_jyutping_result};
+use crate::api::{get_dict_result, get_jyutping_result, set_json_result};
 use crate::formatter::{
     gen_dict_json_str, gen_dict_result_str, gen_jyutping_str, gen_translation_str,
     get_terminal_size,
@@ -13,7 +13,7 @@ pub struct MeowdictRequest {
 impl MeowdictRequest {
     pub async fn search_word_to_dict_result(
         &self,
-        words: Vec<String>,
+        words: &[String],
         result_t2s: bool,
     ) -> Result<()> {
         let terminal_size = get_terminal_size();
@@ -27,7 +27,7 @@ impl MeowdictRequest {
 
     pub async fn search_word_to_translation_result(
         &self,
-        words: Vec<String>,
+        words: &[String],
         result_t2s: bool,
     ) -> Result<()> {
         let meowdict_results = get_dict_result(&self.client, words).await?;
@@ -39,7 +39,7 @@ impl MeowdictRequest {
 
     pub async fn search_word_to_jyutping_result(
         &self,
-        words: Vec<String>,
+        words: &[String],
         result_t2s: bool,
     ) -> Result<()> {
         let jyutping_results = get_jyutping_result(&self.client, words).await?;
@@ -51,11 +51,11 @@ impl MeowdictRequest {
 
     pub async fn search_word_to_json_result(
         &self,
-        words: Vec<String>,
+        words: &[String],
         result_t2s: bool,
     ) -> Result<()> {
-        let meowdict_results = get_dict_result(&self.client, words).await?;
-        println!("{}", gen_dict_json_str(meowdict_results, result_t2s)?);
+        let json_obj = set_json_result(&self.client, words).await?;
+        println!("{}", gen_dict_json_str(json_obj, result_t2s)?);
 
         Ok(())
     }

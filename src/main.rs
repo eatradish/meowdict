@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
         );
 
         meowdict_request
-            .search_word_to_dict_result(words, result_t2s)
+            .search_word_to_dict_result(&words, result_t2s)
             .await
     } else {
         match app.subcommand() {
@@ -54,21 +54,28 @@ async fn main() -> Result<()> {
                 let words = words_input_s2t(words_to_vec_string(args), input_s2t);
 
                 meowdict_request
-                    .search_word_to_dict_result(words, result_t2s)
+                    .search_word_to_dict_result(&words, result_t2s)
                     .await
             }
             ("translate", Some(args)) => {
                 let words = words_input_s2t(words_to_vec_string(args), input_s2t);
 
                 meowdict_request
-                    .search_word_to_translation_result(words, result_t2s)
+                    .search_word_to_translation_result(&words, result_t2s)
                     .await
             }
             ("jyutping", Some(args)) => {
                 let words = words_input_s2t(words_to_vec_string(args), input_s2t);
 
                 meowdict_request
-                    .search_word_to_jyutping_result(words, result_t2s)
+                    .search_word_to_jyutping_result(&words, result_t2s)
+                    .await
+            }
+            ("json", Some(args)) => {
+                let words = words_input_s2t(words_to_vec_string(args), input_s2t);
+                
+                meowdict_request
+                    .search_word_to_json_result(&words, result_t2s)
                     .await
             }
             _ => {
@@ -99,7 +106,7 @@ fn read_config() -> Result<MeowdictConfig> {
         Ok(mut f) => {
             let mut buffer = Vec::new();
             f.read_to_end(&mut buffer)?;
-            
+
             toml::from_slice(&buffer)?
         }
         Err(_) => {

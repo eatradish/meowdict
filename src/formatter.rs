@@ -4,8 +4,9 @@ use console::{strip_ansi_codes, truncate_str, Term};
 use indexmap::IndexMap;
 use opencc_rust::*;
 use owo_colors::OwoColorize;
+use serde::{Deserialize, Serialize};
 
-use crate::api::{MeowdictJyutPingResult, MoedictDefinition, MoedictRawResult};
+use crate::api::{MeowdictJsonResult, MeowdictJyutPingResult, MoedictDefinition, MoedictRawResult};
 
 const LINE_LENGTH: usize = 80;
 
@@ -15,6 +16,13 @@ macro_rules! push_qel {
             qel.into_iter().for_each(|x| $result[$t][$count].push(x))
         }
     };
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct MeowdictResult {
+    #[serde(flatten)]
+    pub meowdict_raw_result: Vec<MoedictRawResult>,
+    pub jyutping: Option<Vec<String>>,
 }
 
 pub enum OpenccConvertMode {
@@ -192,10 +200,10 @@ pub fn gen_jyutping_str(
 }
 
 pub fn gen_dict_json_str(
-    meowdict_results: Vec<MoedictRawResult>,
+    moedict_results: Vec<MeowdictJsonResult>,
     result_t2s: bool,
 ) -> Result<String> {
-    let mut json = serde_json::to_string(&meowdict_results)?;
+    let mut json = serde_json::to_string(&moedict_results)?;
     if result_t2s {
         json = opencc_convert(&json, OpenccConvertMode::T2S);
     }

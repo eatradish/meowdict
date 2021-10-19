@@ -54,6 +54,14 @@ pub struct MeowdictJyutPingResult {
     pub jyutping: Vec<String>,
 }
 
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct MeowdictJsonResult {
+    #[serde(flatten)]
+    pub moedict_raw_result: MoedictRawResult,
+    pub jyutping: Option<Vec<String>>,
+}
+
 lazy_static! {
     static ref CACHE_PATH_DIRECTORY: PathBuf =
         dirs_next::cache_dir().unwrap_or_else(|| PathBuf::from("."));
@@ -144,9 +152,9 @@ async fn request_wordshk(client: &Client) -> Result<(JyutPingCharList, JyutPingW
     }
 }
 
-pub async fn get_dict_result(client: &Client, words: Vec<String>) -> Result<Vec<MoedictRawResult>> {
+pub async fn get_dict_result(client: &Client, words:  &[String]) -> Result<Vec<MoedictRawResult>> {
     let mut tesk = Vec::new();
-    for word in &words {
+    for word in words {
         tesk.push(request_moedict(word, client));
     }
 
@@ -155,7 +163,7 @@ pub async fn get_dict_result(client: &Client, words: Vec<String>) -> Result<Vec<
 
 pub async fn get_jyutping_result(
     client: &Client,
-    words: Vec<String>,
+    words: &[String],
 ) -> Result<Vec<MeowdictJyutPingResult>> {
     let mut result = Vec::new();
     let jyutping_map = get_wordshk(client).await?;
@@ -163,9 +171,32 @@ pub async fn get_jyutping_result(
         result.push(MeowdictJyutPingResult {
             word: word.to_owned(),
             jyutping: jyutping_map
-                .get(&word)
+                .get(word)
                 .ok_or_else(|| anyhow!("Cannot find jyutping: {}", word))?
                 .to_owned(),
+        });
+    }
+
+    Ok(result)
+}
+
+pub async fn set_json_result(client: &Client, words: &[String]) -> Result<Vec<MeowdictJsonResult>> {
+    let mut result = Vec::new();
+    let moedict_raw_results = get_dict_result(client, words).await?;
+    let jyutping = match get_jyutping_result(client, words).await {
+        Ok(jyutping) => Some(jyutping),
+        Err(_) => None,
+    };
+
+    for (index, moedict_raw_result) in moedict_raw_results.iter().enumerate() {
+        let jyutping = if let Some(ref jyutping) = jyutping {
+            Some(jyutping[index].jyutping.clone())
+        } else {
+            None
+        };
+        result.push(MeowdictJsonResult {
+            moedict_raw_result: moedict_raw_result.to_owned(),
+            jyutping,
         });
     }
 

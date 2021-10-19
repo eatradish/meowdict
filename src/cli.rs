@@ -46,6 +46,16 @@ pub fn build_cli() -> App<'static, 'static> {
                 .alias("term")
                 .about("Open meowdict terminal"),
         )
+        .subcommand(
+            SubCommand::with_name("json")
+                .about("Print result to JSON output")
+                .arg(
+                    Arg::with_name("INPUT")
+                        .help("Input word here")
+                        .requires("INPUT")
+                        .takes_value(true),
+                ),
+        )
         .arg(
             Arg::with_name("inputs2t")
                 .short("i")
@@ -74,13 +84,6 @@ pub fn build_cli() -> App<'static, 'static> {
             Arg::with_name("no-color-output")
                 .long("no-color-output")
                 .help("Print result with no color")
-                .requires("INPUT"),
-        )
-        .arg(
-            Arg::with_name("json")
-                .short("J")
-                .long("json")
-                .help("Print result to JSON output")
                 .requires("INPUT"),
         )
 }

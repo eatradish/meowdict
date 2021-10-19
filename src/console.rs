@@ -100,19 +100,19 @@ impl MeowdictConsole {
             Some(MeowdictCommand::Show) | None => {
                 let words = words_input_s2t(values, self.input_s2t || command_input_s2t);
                 self.meowdict_request
-                    .search_word_to_dict_result(words, self.result_t2s || command_result_t2s)
+                    .search_word_to_dict_result(&words, self.result_t2s || command_result_t2s)
                     .await?
             }
             Some(MeowdictCommand::JyutPing) => {
                 let words = words_input_s2t(values, self.input_s2t || command_input_s2t);
                 self.meowdict_request
-                    .search_word_to_jyutping_result(words, self.result_t2s || command_result_t2s)
+                    .search_word_to_jyutping_result(&words, self.result_t2s || command_result_t2s)
                     .await?
             }
             Some(MeowdictCommand::Translate) => {
                 let words = words_input_s2t(values, self.input_s2t || command_input_s2t);
                 self.meowdict_request
-                    .search_word_to_translation_result(words, self.result_t2s || command_result_t2s)
+                    .search_word_to_translation_result(&words, self.result_t2s || command_result_t2s)
                     .await?
             }
             Some(MeowdictCommand::InputS2TMode(enable)) => {
