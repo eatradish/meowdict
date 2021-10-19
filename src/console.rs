@@ -100,8 +100,8 @@ impl MeowdictConsole {
                         ));
                     }
                     run_status = Some(MeowdictCommand::InputS2TMode(match values[0].as_str() {
-                        "true" => true,
-                        "false" => false,
+                        "on" => true,
+                        "off" => false,
                         _ => {
                             return Err(anyhow!(
                                 "Usage: .input_s2t_mode true or .input_s2t_mode false"
@@ -119,11 +119,11 @@ impl MeowdictConsole {
                         ));
                     }
                     run_status = Some(MeowdictCommand::ResultT2SMode(match values[0].as_str() {
-                        "true" => true,
-                        "false" => false,
+                        "on" => true,
+                        "off" => false,
                         _ => {
                             return Err(anyhow!(
-                                "Usage: .input_s2t_mode true or .input_s2t_mode false"
+                                "Usage: .result_t2s_mode on or .result_t2s_mode off"
                             ))
                         }
                     }));
@@ -165,13 +165,14 @@ impl MeowdictConsole {
             Some(MeowdictCommand::Help) => {
                 println!(
                     r#"Usage:
+[WORDS]
 .show [WORDS]
 .jyut(jyutping) [WORDS]
 .trans(translate) [WORDS]
 .show .input_s2t [WORDS]
 .show .result_t2s [WORDS]
-.set_input_s2t_mode [true|false]
-.set_result_t2s_mode [true|false]
+.set_input_s2t_mode [on|off]
+.set_result_t2s_mode [on|off]
 "#
                 )
             }
