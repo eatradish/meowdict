@@ -195,3 +195,12 @@ fn argument_spliter(argument: Vec<&str>) -> (Vec<&str>, Vec<&str>) {
 
     (command, values)
 }
+
+#[test]
+fn test_argument_splitter() {
+    let argument = ".jyut 我";
+    let (command, values) = argument_spliter(argument.split_whitespace().collect::<Vec<_>>());
+
+    assert_eq!(vec![".jyut"], command);
+    assert_eq!(vec!["我"], values);
+}
