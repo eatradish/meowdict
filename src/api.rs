@@ -188,11 +188,9 @@ pub async fn set_json_result(client: &Client, words: &[String]) -> Result<Vec<Me
     };
 
     for (index, moedict_raw_result) in moedict_raw_results.iter().enumerate() {
-        let jyutping = if let Some(ref jyutping) = jyutping {
-            Some(jyutping[index].jyutping.clone())
-        } else {
-            None
-        };
+        let jyutping = jyutping
+            .as_ref()
+            .map(|jyutping| jyutping[index].jyutping.clone());
         result.push(MeowdictJsonResult {
             moedict_raw_result: moedict_raw_result.to_owned(),
             jyutping,
