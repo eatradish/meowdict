@@ -2,6 +2,7 @@ use anyhow::Result;
 use clap::crate_version;
 use console::{strip_ansi_codes, truncate_str, Term};
 use indexmap::IndexMap;
+use lazy_static::lazy_static;
 use opencc_rust::*;
 use owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
@@ -28,6 +29,14 @@ pub struct MeowdictResult {
 pub enum OpenccConvertMode {
     S2T,
     T2S,
+}
+
+lazy_static! {
+    static ref WELCOME_INFO: String = format!(
+        r#"Welcome to meowdict {}!
+Please enter .help for more information"#,
+        crate_version!()
+    );
 }
 
 pub fn opencc_convert(input: &str, t: OpenccConvertMode) -> String {
@@ -239,11 +248,8 @@ fn string_split_new_line(s: String, tab: usize, terminal_size: usize) -> String 
     result_str
 }
 
-pub fn display_meowdict_version(no_color: bool) {
-    let s = format!("Welcome to meowdict {}!", crate_version!())
-        .fg_rgb::<177, 180, 121>()
-        .to_string();
-    println!("{}", if no_color { gen_str_no_color(&s) } else { s });
+pub fn display_meowdict_version() {
+    println!("{}", WELCOME_INFO.as_str());
 }
 
 pub fn words_input_s2t(words: Vec<String>, input_s2t: bool) -> Vec<String> {

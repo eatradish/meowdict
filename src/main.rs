@@ -73,7 +73,7 @@ async fn main() -> Result<()> {
             }
             ("json", Some(args)) => {
                 let words = words_input_s2t(words_to_vec_string(args), input_s2t);
-                
+
                 meowdict_request
                     .search_word_to_json_result(&words, result_t2s)
                     .await

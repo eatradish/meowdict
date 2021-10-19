@@ -40,7 +40,11 @@ macro_rules! set_run_status_mode {
             "on" => true,
             "off" => false,
             _ => {
-                return Err(anyhow!("Usage: .set_{} true or .set_{} false", $mode, $mode));
+                return Err(anyhow!(
+                    "Usage: .set_{} true or .set_{} false",
+                    $mode,
+                    $mode
+                ));
             }
         }));
     };
@@ -48,7 +52,7 @@ macro_rules! set_run_status_mode {
 
 impl MeowdictConsole {
     pub async fn create_console(&mut self) -> Result<()> {
-        display_meowdict_version(self.meowdict_request.no_color);
+        display_meowdict_version();
         let mut reader = Editor::<()>::new();
         while let Ok(argument) = reader.readline("meowdict > ") {
             let argument = argument
@@ -112,7 +116,10 @@ impl MeowdictConsole {
             Some(MeowdictCommand::Translate) => {
                 let words = words_input_s2t(values, self.input_s2t || command_input_s2t);
                 self.meowdict_request
-                    .search_word_to_translation_result(&words, self.result_t2s || command_result_t2s)
+                    .search_word_to_translation_result(
+                        &words,
+                        self.result_t2s || command_result_t2s,
+                    )
                     .await?
             }
             Some(MeowdictCommand::InputS2TMode(enable)) => {
@@ -169,7 +176,12 @@ fn get_run_status(
                 set_run_status_mode!(run_status, values, INPUT_S2T, MeowdictCommand::InputS2TMode);
             }
             ".set_result_t2s_mode" => {
-                set_run_status_mode!(run_status, values, RESULT_T2S, MeowdictCommand::ResultT2SMode);
+                set_run_status_mode!(
+                    run_status,
+                    values,
+                    RESULT_T2S,
+                    MeowdictCommand::ResultT2SMode
+                );
             }
             ".help" => {
                 set_run_status!(run_status, MeowdictCommand::Help);
