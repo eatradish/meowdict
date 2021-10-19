@@ -19,6 +19,32 @@ enum MeowdictCommand {
     ResultT2SMode(bool),
 }
 
+macro_rules! set_run_status {
+    ($run_status:ident, $meowdict_command:expr) => {
+        if $run_status.is_some() {
+            return Err(anyhow!("Cannot set multi arguments!"));
+        }
+        $run_status = Some($meowdict_command);
+    }
+}
+
+macro_rules! set_run_status_mode {
+    ($run_status:ident, $values:ident, $meowdict_command:expr) => {
+        if $run_status.is_some() {
+            return Err(anyhow!("Cannot run multi arguments!"));
+        }
+        $run_status = Some($meowdict_command(match $values[0].as_str() {
+            "on" => true,
+            "off" => false,
+            _ => {
+                return Err(anyhow!(
+                    "Usage: .input_s2t_mode true or .input_s2t_mode false"
+                ));
+            }
+        }));
+    };
+}
+
 impl MeowdictConsole {
     pub async fn create_console(&mut self) -> Result<()> {
         display_meowdict_version(self.meowdict_request.no_color);
@@ -63,80 +89,12 @@ impl MeowdictConsole {
         let values: Vec<String> = values.into_iter().map(|x| x.into()).collect();
         let mut command_result_t2s = false;
         let mut command_input_s2t = false;
-        let mut run_status: Option<MeowdictCommand> = None;
-        for arg in args {
-            match arg {
-                ".show" | "" => {
-                    if run_status.is_some() {
-                        return Err(anyhow!("Cannot set multi arguments!"));
-                    }
-                    run_status = Some(MeowdictCommand::Show);
-                }
-                ".jyutping" | ".jyut" => {
-                    if run_status.is_some() {
-                        return Err(anyhow!("Cannot set multi arguments!"));
-                    }
-                    run_status = Some(MeowdictCommand::JyutPing);
-                }
-                ".translate" | ".trans" => {
-                    if run_status.is_some() {
-                        return Err(anyhow!("Cannot set multi arguments!"));
-                    }
-                    run_status = Some(MeowdictCommand::Translate);
-                }
-                ".input_s2t" => {
-                    command_input_s2t = true;
-                }
-                ".result_t2s" => {
-                    command_result_t2s = true;
-                }
-                ".set_input_s2t_mode" => {
-                    if run_status.is_some() {
-                        return Err(anyhow!("Cannot run multi arguments!"));
-                    }
-                    if values.len() != 1 {
-                        return Err(anyhow!(
-                            "Usage: .input_s2t_mode true or .input_s2t_mode false"
-                        ));
-                    }
-                    run_status = Some(MeowdictCommand::InputS2TMode(match values[0].as_str() {
-                        "on" => true,
-                        "off" => false,
-                        _ => {
-                            return Err(anyhow!(
-                                "Usage: .input_s2t_mode true or .input_s2t_mode false"
-                            ))
-                        }
-                    }));
-                }
-                ".set_result_t2s_mode" => {
-                    if run_status.is_some() {
-                        return Err(anyhow!("Cannot run multi arguments!"));
-                    }
-                    if values.len() != 1 {
-                        return Err(anyhow!(
-                            "Usage: .input_s2t_mode true or .input_s2t_mode false"
-                        ));
-                    }
-                    run_status = Some(MeowdictCommand::ResultT2SMode(match values[0].as_str() {
-                        "on" => true,
-                        "off" => false,
-                        _ => {
-                            return Err(anyhow!(
-                                "Usage: .result_t2s_mode on or .result_t2s_mode off"
-                            ))
-                        }
-                    }));
-                }
-                ".help" => {
-                    if run_status.is_some() {
-                        return Err(anyhow!("Cannot run multi arguments!"));
-                    }
-                    run_status = Some(MeowdictCommand::Help);
-                }
-                _ => return Err(anyhow!("Invaild argument: {}!", arg)),
-            }
-        }
+        let run_status = get_run_status(
+            args,
+            &mut command_input_s2t,
+            &mut command_result_t2s,
+            &values,
+        )?;
         match run_status {
             Some(MeowdictCommand::Show) | None => {
                 let words = words_input_s2t(values, self.input_s2t || command_input_s2t);
@@ -180,6 +138,46 @@ impl MeowdictConsole {
 
         Ok(())
     }
+}
+
+fn get_run_status(
+    args: Vec<&str>,
+    command_input_s2t: &mut bool,
+    command_result_t2s: &mut bool,
+    values: &[String],
+) -> Result<Option<MeowdictCommand>> {
+    let mut run_status: Option<MeowdictCommand> = None;
+    for arg in args {
+        match arg {
+            ".show" | "" => {
+                set_run_status!(run_status, MeowdictCommand::Show);
+            }
+            ".jyutping" | ".jyut" => {
+                set_run_status!(run_status, MeowdictCommand::JyutPing);
+            }
+            ".translate" | ".trans" => {
+                set_run_status!(run_status, MeowdictCommand::Translate);
+            }
+            ".input_s2t" => {
+                *command_input_s2t = true;
+            }
+            ".result_t2s" => {
+                *command_result_t2s = true;
+            }
+            ".set_input_s2t_mode" => {
+                set_run_status_mode!(run_status, values, MeowdictCommand::InputS2TMode);
+            }
+            ".set_result_t2s_mode" => {
+                set_run_status_mode!(run_status, values, MeowdictCommand::ResultT2SMode);
+            }
+            ".help" => {
+                set_run_status!(run_status, MeowdictCommand::Help);
+            }
+            _ => return Err(anyhow!("Invaild argument: {}!", arg)),
+        }
+    }
+
+    Ok(run_status)
 }
 
 fn argument_spliter(argument: Vec<&str>) -> (Vec<&str>, Vec<&str>) {
