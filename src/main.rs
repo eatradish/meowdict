@@ -51,21 +51,21 @@ async fn main() -> Result<()> {
     } else {
         match app.subcommand() {
             ("show", Some(args)) => {
-                let words = words_input_s2t(words_to_vec_string(&args), input_s2t);
+                let words = words_input_s2t(words_to_vec_string(args), input_s2t);
 
                 meowdict_request
                     .search_word_to_dict_result(words, result_t2s)
                     .await
             }
             ("translate", Some(args)) => {
-                let words = words_input_s2t(words_to_vec_string(&args), input_s2t);
+                let words = words_input_s2t(words_to_vec_string(args), input_s2t);
 
                 meowdict_request
                     .search_word_to_translation_result(words, result_t2s)
                     .await
             }
             ("jyutping", Some(args)) => {
-                let words = words_input_s2t(words_to_vec_string(&args), input_s2t);
+                let words = words_input_s2t(words_to_vec_string(args), input_s2t);
 
                 meowdict_request
                     .search_word_to_jyutping_result(words, result_t2s)
@@ -87,7 +87,7 @@ async fn main() -> Result<()> {
 }
 
 fn words_to_vec_string(args: &clap::ArgMatches) -> Vec<String> {
-    let words: Vec<&str> = args.values_of("INPUT").unwrap().collect();
+    let words = args.values_of("INPUT").unwrap();
 
     words.into_iter().map(|x| x.into()).collect::<Vec<String>>()
 }
