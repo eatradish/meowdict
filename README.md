@@ -46,7 +46,6 @@ FLAGS:
     -h, --help               Prints help information
     -i, --input-s2t          Convert input to traditional Chinese and search
         --input-s2t-mode     Open console with input-s2t mode
-    -J, --json               Print result to JSON output
         --no-color-output    Print result with no color
     -r, --result-t2s         Convert result to Simplified Chinese to display
         --result-t2s-mode    Open console with result-t2s mode
@@ -57,6 +56,7 @@ ARGS:
 
 SUBCOMMANDS:
     help         Prints this message or the help of the given subcommand(s)
+    json         Print result to JSON output
     jyutping     Get word jyutping
     show         Get dict result
     terminal     Open meowdict terminal
