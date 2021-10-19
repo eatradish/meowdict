@@ -94,14 +94,20 @@ impl MeowdictConsole {
                     if run_status.is_some() {
                         return Err(anyhow!("Cannot run multi arguments!"));
                     }
-                    let enable = if values[0] == "true" {
-                        true
-                    } else if values[0] == "false" {
-                        false
-                    } else {
-                        return Err(anyhow!("Usage: .input_s2t_mode true or .input_s2t_mode false"))
-                    };
-                    run_status = Some(MeowdictCommand::InputS2TMode(enable));
+                    if values.len() != 1 {
+                        return Err(anyhow!(
+                            "Usage: .input_s2t_mode true or .input_s2t_mode false"
+                        ));
+                    }
+                    run_status = Some(MeowdictCommand::InputS2TMode(match values[0].as_str() {
+                        "true" => true,
+                        "false" => false,
+                        _ => {
+                            return Err(anyhow!(
+                                "Usage: .input_s2t_mode true or .input_s2t_mode false"
+                            ))
+                        }
+                    }));
                 }
                 ".set_result_t2s_mode" => {
                     if run_status.is_some() {
@@ -112,7 +118,9 @@ impl MeowdictConsole {
                     } else if values[0] == "false" {
                         false
                     } else {
-                        return Err(anyhow!("Usage: .input_s2t_mode true or .input_s2t_mode false"))
+                        return Err(anyhow!(
+                            "Usage: .input_s2t_mode true or .input_s2t_mode false"
+                        ));
                     };
                     if run_status.is_some() {
                         return Err(anyhow!("Cannot run multi arguments!"));
@@ -125,9 +133,7 @@ impl MeowdictConsole {
                     }
                     run_status = Some(MeowdictCommand::Help);
                 }
-                _ => {
-                    run_status = Some(MeowdictCommand::Show);
-                }
+                _ => return Err(anyhow!("Invaild argument: {}!", arg)),
             }
         }
         match run_status {
@@ -156,7 +162,8 @@ impl MeowdictConsole {
                 self.set_console_mode(&OpenccConvertMode::T2S, enable);
             }
             Some(MeowdictCommand::Help) => {
-                println!(r#"Usage:
+                println!(
+                    r#"Usage:
 .show [WORDS]
 .jyut(jyutping) [WORDS]
 .trans(translate) [WORDS]
@@ -164,7 +171,8 @@ impl MeowdictConsole {
 .show .result_t2s [WORDS]
 .set_input_s2t_mode [true|false]
 .set_result_t2s_mode [true|false]
-"#)
+"#
+                )
             }
         }
 
