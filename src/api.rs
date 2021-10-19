@@ -91,7 +91,7 @@ async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
     if !CACHE_PATH.exists()
         || (CACHE_PATH.exists()
             && (SystemTime::now()
-                .duration_since(fs::metadata(&*CACHE_PATH)?.created()?)?
+                .duration_since(fs::metadata(&*CACHE_PATH)?.modified()?)?
                 .as_secs()
                 >= 24 * 60 * 60))
     {

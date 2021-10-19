@@ -238,6 +238,17 @@ pub fn display_meowdict_version(no_color: bool) {
     println!("{}", if no_color { gen_str_no_color(&s) } else { s });
 }
 
+pub fn words_input_s2t(words: Vec<String>, input_s2t: bool) -> Vec<String> {
+    if input_s2t {
+        words
+            .into_iter()
+            .map(|x| opencc_convert(&x, OpenccConvertMode::S2T))
+            .collect::<Vec<_>>()
+    } else {
+        words
+    }
+}
+
 #[test]
 fn test_opencc() {
     let s = "老师";

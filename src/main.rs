@@ -13,7 +13,7 @@ use std::{
 use crate::console::MeowdictConsole;
 use crate::feat::*;
 use anyhow::Result;
-use formatter::{opencc_convert, OpenccConvertMode};
+use formatter::words_input_s2t;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 
@@ -90,17 +90,6 @@ fn words_to_vec_string(args: &clap::ArgMatches) -> Vec<String> {
     let words: Vec<&str> = args.values_of("INPUT").unwrap().collect();
 
     words.into_iter().map(|x| x.into()).collect::<Vec<String>>()
-}
-
-fn words_input_s2t(words: Vec<String>, input_s2t: bool) -> Vec<String> {
-    if input_s2t {
-        words
-            .into_iter()
-            .map(|x| opencc_convert(&x, OpenccConvertMode::S2T))
-            .collect::<Vec<_>>()
-    } else {
-        words
-    }
 }
 
 fn read_config() -> Result<MeowdictConfig> {
