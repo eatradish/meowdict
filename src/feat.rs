@@ -51,7 +51,7 @@ impl MeowdictRequest {
 
     pub async fn search_word_to_json_result(
         &self,
-        words: &[String],
+        words: Vec<String>,
         result_t2s: bool,
     ) -> Result<()> {
         let json_obj = set_json_result(&self.client, words).await;

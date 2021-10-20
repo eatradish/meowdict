@@ -56,6 +56,7 @@ pub struct MeowdictJyutPingResult {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct MeowdictJsonResult {
+    pub name: String,
     #[serde(flatten)]
     pub moedict_raw_result: Option<MoedictRawResult>,
     pub jyutping: Option<Vec<String>>,
@@ -179,57 +180,59 @@ pub async fn get_jyutping_result(
     Ok(result)
 }
 
-pub async fn set_json_result(client: &Client, words: &[String]) -> Vec<MeowdictJsonResult> {
+pub async fn set_json_result(client: &Client, words: Vec<String>) -> Vec<MeowdictJsonResult> {
     let mut result = Vec::new();
-    let moedict_raw_results = match get_dict_result(client, words).await {
+    let moedict_raw_results = match get_dict_result(client, &words).await {
         Ok(meowdict_raw_result) => Some(meowdict_raw_result),
         Err(_) => None,
     };
-    let jyutping = match get_jyutping_result(client, words).await {
+    let jyutping = match get_jyutping_result(client, &words).await {
         Ok(jyutping) => Some(jyutping),
         Err(_) => None,
     };
 
     match moedict_raw_results {
-        Some(moedict_raw_results) => {
-            match jyutping {
-                Some(jyutping) => {
-                    let zip: Vec<_> = moedict_raw_results.iter().zip(jyutping.iter()).collect();
-                    for (moedict_raw_result, jyutping) in zip {
-                        result.push(MeowdictJsonResult {
-                            moedict_raw_result: Some(moedict_raw_result.to_owned()),
-                            jyutping: Some(jyutping.jyutping.to_owned()),
-                        });
-                    } 
-                }
-                None => {
-                    for i in moedict_raw_results {
-                        result.push(MeowdictJsonResult {
-                            moedict_raw_result: Some(i),
-                            jyutping: None,
-                        });
-                    }
+        Some(moedict_raw_results) => match jyutping {
+            Some(jyutping) => {
+                let zip: Vec<_> = moedict_raw_results.into_iter().zip(jyutping.into_iter()).collect();
+                for (index, (moedict_raw_result, jyutping)) in zip.into_iter().enumerate() {
+                    result.push(MeowdictJsonResult {
+                        name: words[index].to_owned(),
+                        moedict_raw_result: Some(moedict_raw_result),
+                        jyutping: Some(jyutping.jyutping),
+                    });
                 }
             }
-        }
-        None => {
-            match jyutping {
-                Some(jyutping) => {
-                    for i in jyutping {
-                        result.push(MeowdictJsonResult {
-                            moedict_raw_result: None,
-                            jyutping: Some(i.jyutping)
-                        })
-                    }
-                }
-                None => {
+            None => {
+                for (index, moedict_raw_result) in moedict_raw_results.into_iter().enumerate() {
                     result.push(MeowdictJsonResult {
+                        name: words[index].to_owned(),
+                        moedict_raw_result: Some(moedict_raw_result),
+                        jyutping: None,
+                    });
+                }
+            }
+        },
+        None => match jyutping {
+            Some(jyutping) => {
+                for (index, jyutping_item) in jyutping.into_iter().enumerate() {
+                    result.push(MeowdictJsonResult {
+                        name: words[index].to_owned(),
+                        moedict_raw_result: None,
+                        jyutping: Some(jyutping_item.jyutping),
+                    })
+                }
+            }
+            None => {
+                for i in words {
+                    result.push(MeowdictJsonResult {
+                        name: i.to_owned(),
                         moedict_raw_result: None,
                         jyutping: None,
-                    }) 
+                    });
                 }
             }
-        }
+        },
     };
 
     result
