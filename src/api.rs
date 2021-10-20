@@ -57,7 +57,7 @@ pub struct MeowdictJyutPingResult {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct MeowdictJsonResult {
     #[serde(flatten)]
-    pub moedict_raw_result: MoedictRawResult,
+    pub moedict_raw_result: Option<MoedictRawResult>,
     pub jyutping: Option<Vec<String>>,
 }
 
@@ -179,25 +179,60 @@ pub async fn get_jyutping_result(
     Ok(result)
 }
 
-pub async fn set_json_result(client: &Client, words: &[String]) -> Result<Vec<MeowdictJsonResult>> {
+pub async fn set_json_result(client: &Client, words: &[String]) -> Vec<MeowdictJsonResult> {
     let mut result = Vec::new();
-    let moedict_raw_results = get_dict_result(client, words).await?;
+    let moedict_raw_results = match get_dict_result(client, words).await {
+        Ok(meowdict_raw_result) => Some(meowdict_raw_result),
+        Err(_) => None,
+    };
     let jyutping = match get_jyutping_result(client, words).await {
         Ok(jyutping) => Some(jyutping),
         Err(_) => None,
     };
 
-    for (index, moedict_raw_result) in moedict_raw_results.iter().enumerate() {
-        let jyutping = jyutping
-            .as_ref()
-            .map(|jyutping| jyutping[index].jyutping.clone());
-        result.push(MeowdictJsonResult {
-            moedict_raw_result: moedict_raw_result.to_owned(),
-            jyutping,
-        });
-    }
+    match moedict_raw_results {
+        Some(moedict_raw_results) => {
+            match jyutping {
+                Some(jyutping) => {
+                    let zip: Vec<_> = moedict_raw_results.iter().zip(jyutping.iter()).collect();
+                    for (moedict_raw_result, jyutping) in zip {
+                        result.push(MeowdictJsonResult {
+                            moedict_raw_result: Some(moedict_raw_result.to_owned()),
+                            jyutping: Some(jyutping.jyutping.to_owned()),
+                        });
+                    } 
+                }
+                None => {
+                    for i in moedict_raw_results {
+                        result.push(MeowdictJsonResult {
+                            moedict_raw_result: Some(i),
+                            jyutping: None,
+                        });
+                    }
+                }
+            }
+        }
+        None => {
+            match jyutping {
+                Some(jyutping) => {
+                    for i in jyutping {
+                        result.push(MeowdictJsonResult {
+                            moedict_raw_result: None,
+                            jyutping: Some(i.jyutping)
+                        })
+                    }
+                }
+                None => {
+                    result.push(MeowdictJsonResult {
+                        moedict_raw_result: None,
+                        jyutping: None,
+                    }) 
+                }
+            }
+        }
+    };
 
-    Ok(result)
+    result
 }
 
 #[test]

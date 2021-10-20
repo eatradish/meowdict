@@ -54,7 +54,7 @@ impl MeowdictRequest {
         words: &[String],
         result_t2s: bool,
     ) -> Result<()> {
-        let json_obj = set_json_result(&self.client, words).await?;
+        let json_obj = set_json_result(&self.client, words).await;
         println!("{}", gen_dict_json_str(json_obj, result_t2s)?);
 
         Ok(())
