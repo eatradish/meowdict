@@ -88,7 +88,10 @@ impl MeowdictRequest {
                                 .to_owned(),
                         )
                     } else {
-                        return Err(anyhow!("Cannot find keyword and about word words: {}", word));
+                        return Err(anyhow!(
+                            "Cannot find keyword and about word words: {}",
+                            word
+                        ));
                     }
                 }
 
