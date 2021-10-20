@@ -22,6 +22,7 @@ futures = "0.3"
 dirs-next = "2.0"
 toml = "0.5"
 lazy_static = "1.4"
+rand = "0.8"
 
 [dev-dependencies]
 tempfile = "3.2"

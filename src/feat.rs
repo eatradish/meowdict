@@ -1,10 +1,13 @@
-use crate::api::{get_dict_result, get_jyutping_result, set_json_result};
+use crate::api::{get_dict_result, get_jyutping_result, get_moedict_index, set_json_result};
 use crate::formatter::{
     gen_dict_json_str, gen_dict_result_str, gen_jyutping_str, gen_translation_str,
     get_terminal_size,
 };
+use anyhow::anyhow;
 use anyhow::Result;
+use rand::prelude::SliceRandom;
 use reqwest::Client;
+
 pub struct MeowdictRequest {
     pub client: Client,
     pub no_color: bool,
@@ -53,9 +56,24 @@ impl MeowdictRequest {
         &self,
         words: Vec<String>,
         result_t2s: bool,
+
     ) -> Result<()> {
         let json_obj = set_json_result(&self.client, words).await;
         println!("{}", gen_dict_json_str(json_obj, result_t2s)?);
+
+        Ok(())
+    }
+
+    pub async fn random_moedict_item(&self, result_t2s: bool) -> Result<()> {
+        let moedict_index = get_moedict_index(&self.client).await?;
+        let words = vec![moedict_index
+            .choose(&mut rand::thread_rng())
+            .ok_or_else(|| anyhow!("Cannot choose one!"))?
+            .to_owned()];
+        let terminal_size = get_terminal_size();
+        let moedict_results = get_dict_result(&self.client, &words).await?;
+        let result = gen_dict_result_str(moedict_results, terminal_size, self.no_color, result_t2s);
+        println!("{}", result);
 
         Ok(())
     }

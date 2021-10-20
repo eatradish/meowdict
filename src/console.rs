@@ -15,6 +15,7 @@ enum MeowdictCommand {
     JyutPing,
     Translate,
     Help,
+    Random,
     InputS2TMode(bool),
     ResultT2SMode(bool),
 }
@@ -142,6 +143,9 @@ impl MeowdictConsole {
                     )
                     .await?
             }
+            Some(MeowdictCommand::Random) => {
+                self.meowdict_request.random_moedict_item(self.result_t2s || command_result_t2s).await?
+            }
             Some(MeowdictCommand::InputS2TMode(enable)) => {
                 self.set_console_mode(&OpenccConvertMode::S2T, enable);
             }
@@ -199,6 +203,9 @@ fn get_run_status(
             }
             ".help" => {
                 set_run_status!(run_status, MeowdictCommand::Help);
+            }
+            ".random" | ".rand" => {
+                set_run_status!(run_status, MeowdictCommand::Random);
             }
             _ => return Err(anyhow!("Invaild argument: {}!", arg)),
         }

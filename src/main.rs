@@ -78,6 +78,7 @@ async fn main() -> Result<()> {
                     .search_word_to_json_result(words, result_t2s)
                     .await
             }
+            ("random", _) => meowdict_request.random_moedict_item(result_t2s).await,
             _ => {
                 let input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
                 let result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");

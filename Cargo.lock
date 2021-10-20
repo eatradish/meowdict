@@ -567,6 +567,7 @@ dependencies = [
  "lazy_static",
  "opencc-rust",
  "owo-colors",
+ "rand",
  "reqwest",
  "rustyline",
  "serde",

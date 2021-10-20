@@ -65,11 +65,13 @@ pub struct MeowdictJsonResult {
 lazy_static! {
     static ref CACHE_PATH_DIRECTORY: PathBuf =
         dirs_next::cache_dir().unwrap_or_else(|| PathBuf::from("."));
-    static ref CACHE_PATH: PathBuf = CACHE_PATH_DIRECTORY.join("jyutping.json");
+    static ref JYUTPING_CACHE_PATH: PathBuf = CACHE_PATH_DIRECTORY.join("jyutping.json");
+    static ref MOEDICT_INDEX_CACHE_PATH: PathBuf = CACHE_PATH_DIRECTORY.join("moedict_index.json");
 }
 
 type JyutPingCharList = HashMap<String, HashMap<String, usize>>;
 type JyutPingWordList = HashMap<String, Vec<String>>;
+const MOEDICT_INDEX_URL: &str = "https://www.moedict.tw/a/index.json";
 
 async fn request_moedict(keyword: &str, client: &Client) -> Result<MoedictRawResult> {
     let response = client
@@ -95,20 +97,31 @@ async fn request_moedict(keyword: &str, client: &Client) -> Result<MoedictRawRes
     }
 }
 
+async fn request_moedict_index(client: &Client) -> Result<Vec<String>> {
+    Ok(client
+        .get(MOEDICT_INDEX_URL)
+        .send()
+        .await?
+        .json::<Vec<String>>()
+        .await?)
+}
+
 async fn get_wordshk(client: &Client) -> Result<HashMap<String, Vec<String>>> {
-    if !CACHE_PATH.exists()
-        || (CACHE_PATH.exists()
+    if !JYUTPING_CACHE_PATH.exists()
+        || (JYUTPING_CACHE_PATH.exists()
             && (SystemTime::now()
-                .duration_since(fs::metadata(&*CACHE_PATH)?.modified()?)?
+                .duration_since(fs::metadata(&*JYUTPING_CACHE_PATH)?.modified()?)?
                 .as_secs()
                 >= 24 * 60 * 60))
     {
         let (response_charlist, response_wordlist) = request_wordshk(client).await?;
         create_dir_all(&*CACHE_PATH_DIRECTORY)?;
 
-        create_jyutping_cache(response_charlist, response_wordlist, &*CACHE_PATH)
+        create_jyutping_cache(response_charlist, response_wordlist, &*JYUTPING_CACHE_PATH)
     } else {
-        Ok(serde_json::from_reader(&File::open(&*CACHE_PATH)?)?)
+        Ok(serde_json::from_reader(&File::open(
+            &*JYUTPING_CACHE_PATH,
+        )?)?)
     }
 }
 
@@ -129,6 +142,35 @@ fn create_jyutping_cache(
     f.write_all(serde_json::to_string(&json)?.as_bytes())?;
 
     Ok(json)
+}
+
+pub async fn get_moedict_index(client: &Client) -> Result<Vec<String>> {
+    if !MOEDICT_INDEX_CACHE_PATH.exists()
+        || (MOEDICT_INDEX_CACHE_PATH.exists()
+            && (SystemTime::now()
+                .duration_since(fs::metadata(&*MOEDICT_INDEX_CACHE_PATH)?.modified()?)?
+                .as_secs()
+                >= 24 * 60 * 60))
+    {
+        let moedict_index = request_moedict_index(client).await?;
+        create_dir_all(&*CACHE_PATH_DIRECTORY)?;
+
+        create_moedict_index_cache(moedict_index, &*MOEDICT_INDEX_CACHE_PATH)
+    } else {
+        Ok(serde_json::from_reader(&File::open(
+            &*MOEDICT_INDEX_CACHE_PATH,
+        )?)?)
+    }
+}
+
+fn create_moedict_index_cache(
+    response_moedict_index: Vec<String>,
+    cache_path: &Path,
+) -> Result<Vec<String>> {
+    let mut f = fs::File::create(cache_path)?;
+    f.write_all(serde_json::to_string(&response_moedict_index)?.as_bytes())?;
+
+    Ok(response_moedict_index)
 }
 
 async fn request_wordshk(client: &Client) -> Result<(JyutPingCharList, JyutPingWordList)> {

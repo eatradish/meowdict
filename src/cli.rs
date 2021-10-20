@@ -16,7 +16,9 @@ pub fn build_cli() -> App<'static, 'static> {
                 Arg::with_name("INPUT")
                     .help("Input the keyword to use")
                     .index(1)
-                    .min_values(1),
+                    .min_values(1)
+                    .requires("INPUT")
+                    .takes_value(true),
             ),
         )
         .subcommand(
@@ -45,6 +47,11 @@ pub fn build_cli() -> App<'static, 'static> {
             SubCommand::with_name("terminal")
                 .alias("term")
                 .about("Open meowdict terminal"),
+        )
+        .subcommand(
+            SubCommand::with_name("random")
+                .alias("rand")
+                .about("search random word"),
         )
         .subcommand(
             SubCommand::with_name("json")
