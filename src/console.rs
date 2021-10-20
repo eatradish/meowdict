@@ -28,6 +28,7 @@ enum RunStatusMode {
 const USAGE: &str = r#"Usage:
 [WORDS]
 .show [WORDS]
+.rand(random)
 .jyut(jyutping) [WORDS]
 .trans(translate) [WORDS]
 .show .input_s2t [WORDS]
