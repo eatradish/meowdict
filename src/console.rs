@@ -19,8 +19,11 @@ enum MeowdictCommand {
     ResultT2SMode(bool),
 }
 
-const INPUT_S2T: &str = "input_S2t";
-const RESULT_T2S: &str = "result_t2s";
+enum RunStatusMode {
+    InputS2T,
+    ResultT2S,
+}
+
 const USAGE: &str = r#"Usage:
 [WORDS]
 .show [WORDS]
@@ -42,7 +45,7 @@ macro_rules! set_run_status {
 }
 
 macro_rules! set_run_status_mode {
-    ($run_status:ident, $values:ident, $mode:ident, $meowdict_command:expr) => {
+    ($run_status:ident, $values:ident, $mode:expr, $meowdict_command:expr) => {
         if $run_status.is_some() {
             return Err(anyhow!("Cannot perform multiple queries!"));
         }
@@ -58,6 +61,13 @@ macro_rules! set_run_status_mode {
             }
         }));
     };
+}
+
+fn match_run_sattus_mode(t: RunStatusMode) -> &'static str {
+    match t {
+        RunStatusMode::InputS2T => "input_s2t",
+        RunStatusMode::ResultT2S => "result_t2s",
+    }
 }
 
 impl MeowdictConsole {
@@ -172,13 +182,18 @@ fn get_run_status(
                 *command_result_t2s = true;
             }
             ".set_input_s2t_mode" => {
-                set_run_status_mode!(run_status, values, INPUT_S2T, MeowdictCommand::InputS2TMode);
+                set_run_status_mode!(
+                    run_status,
+                    values,
+                    match_run_sattus_mode(RunStatusMode::InputS2T),
+                    MeowdictCommand::InputS2TMode
+                );
             }
             ".set_result_t2s_mode" => {
                 set_run_status_mode!(
                     run_status,
                     values,
-                    RESULT_T2S,
+                    match_run_sattus_mode(RunStatusMode::ResultT2S),
                     MeowdictCommand::ResultT2SMode
                 );
             }
