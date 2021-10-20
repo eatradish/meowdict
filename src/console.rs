@@ -29,6 +29,7 @@ const USAGE: &str = r#"Usage:
 [WORDS]
 .show [WORDS]
 .rand(random)
+.rand(random) [WORDS]
 .jyut(jyutping) [WORDS]
 .trans(translate) [WORDS]
 .show .input_s2t [WORDS]
