@@ -5,7 +5,7 @@ use crate::formatter::{
 };
 use anyhow::anyhow;
 use anyhow::Result;
-use rand::prelude::SliceRandom;
+use rand::prelude::{IteratorRandom, SliceRandom};
 use reqwest::Client;
 
 pub struct MeowdictRequest {
@@ -56,7 +56,6 @@ impl MeowdictRequest {
         &self,
         words: Vec<String>,
         result_t2s: bool,
-
     ) -> Result<()> {
         let json_obj = set_json_result(&self.client, words).await;
         println!("{}", gen_dict_json_str(json_obj, result_t2s)?);
@@ -64,14 +63,38 @@ impl MeowdictRequest {
         Ok(())
     }
 
-    pub async fn random_moedict_item(&self, result_t2s: bool) -> Result<()> {
+    pub async fn random_moedict_item(
+        &self,
+        result_t2s: bool,
+        words: Option<Vec<String>>,
+    ) -> Result<()> {
         let moedict_index = get_moedict_index(&self.client).await?;
-        let words = vec![moedict_index
-            .choose(&mut rand::thread_rng())
-            .ok_or_else(|| anyhow!("Cannot choose one!"))?
-            .to_owned()];
+        let rng = &mut rand::thread_rng();
         let terminal_size = get_terminal_size();
-        let moedict_results = get_dict_result(&self.client, &words).await?;
+        let rand_words = match words {
+            Some(words) => {
+                let mut result = Vec::new();
+                for word in words {
+                    result.push(
+                        moedict_index
+                            .iter()
+                            .filter(|x| x.contains(&word))
+                            .choose(rng)
+                            .ok_or_else(|| anyhow!("Cannot choose one!"))?
+                            .to_owned(),
+                    )
+                }
+
+                result
+            }
+            None => {
+                vec![moedict_index
+                    .choose(rng)
+                    .ok_or_else(|| anyhow!("Cannot choose one!"))?
+                    .to_owned()]
+            }
+        };
+        let moedict_results = get_dict_result(&self.client, &rand_words).await?;
         let result = gen_dict_result_str(moedict_results, terminal_size, self.no_color, result_t2s);
         println!("{}", result);
 

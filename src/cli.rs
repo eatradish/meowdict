@@ -51,7 +51,12 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("random")
                 .alias("rand")
-                .about("search random word"),
+                .about("search random word")
+                .arg(
+                    Arg::with_name("INPUT")
+                        .help("Input word here")
+                        .takes_value(true),
+                ),
         )
         .subcommand(
             SubCommand::with_name("json")
