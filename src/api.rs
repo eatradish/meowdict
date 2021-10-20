@@ -194,7 +194,7 @@ pub async fn set_json_result(client: &Client, words: Vec<String>) -> Vec<Meowdic
     match moedict_raw_results {
         Some(moedict_raw_results) => match jyutping {
             Some(jyutping) => {
-                let zip: Vec<_> = moedict_raw_results.into_iter().zip(jyutping.into_iter()).collect();
+                let zip = moedict_raw_results.into_iter().zip(jyutping.into_iter());
                 for (index, (moedict_raw_result, jyutping)) in zip.into_iter().enumerate() {
                     result.push(MeowdictJsonResult {
                         name: words[index].to_owned(),
