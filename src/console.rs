@@ -21,6 +21,16 @@ enum MeowdictCommand {
 
 const INPUT_S2T: &str = "input_S2t";
 const RESULT_T2S: &str = "result_t2s";
+const USAGE: &str = r#"Usage:
+[WORDS]
+.show [WORDS]
+.jyut(jyutping) [WORDS]
+.trans(translate) [WORDS]
+.show .input_s2t [WORDS]
+.show .result_t2s [WORDS]
+.set_input_s2t_mode [on|off]
+.set_result_t2s_mode [on|off]
+"#;
 
 macro_rules! set_run_status {
     ($run_status:ident, $meowdict_command:expr) => {
@@ -129,18 +139,7 @@ impl MeowdictConsole {
                 self.set_console_mode(&OpenccConvertMode::T2S, enable);
             }
             Some(MeowdictCommand::Help) => {
-                println!(
-                    r#"Usage:
-[WORDS]
-.show [WORDS]
-.jyut(jyutping) [WORDS]
-.trans(translate) [WORDS]
-.show .input_s2t [WORDS]
-.show .result_t2s [WORDS]
-.set_input_s2t_mode [on|off]
-.set_result_t2s_mode [on|off]
-"#
-                )
+                println!("{}", USAGE);
             }
         }
 
