@@ -80,7 +80,9 @@ async fn main() -> Result<()> {
             }
             ("random", Some(args)) => {
                 let words = args.values_of_lossy("INPUT");
-                meowdict_request.random_moedict_item(result_t2s, words).await
+                meowdict_request
+                    .random_moedict_item(result_t2s, words)
+                    .await
             }
             _ => {
                 let input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
