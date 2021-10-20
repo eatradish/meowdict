@@ -144,7 +144,9 @@ impl MeowdictConsole {
                     .await?
             }
             Some(MeowdictCommand::Random) => {
-                self.meowdict_request.random_moedict_item(self.result_t2s || command_result_t2s).await?
+                self.meowdict_request
+                    .random_moedict_item(self.result_t2s || command_result_t2s)
+                    .await?
             }
             Some(MeowdictCommand::InputS2TMode(enable)) => {
                 self.set_console_mode(&OpenccConvertMode::S2T, enable);
