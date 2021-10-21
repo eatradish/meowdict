@@ -51,7 +51,7 @@ async fn main() -> Result<()> {
                 let input_s2t = config.input_s2t || args.is_present("inputs2t");
                 let result_t2s = config.result_t2s || args.is_present("resultt2s");
                 let no_color = config.no_color || args.is_present("no-color-output");
-                let words = words_input_s2t(words_to_vec_string(args), input_s2t);
+                let words = words_input_s2t(args.values_of_lossy("INPUT").unwrap(), input_s2t);
 
                 search_word_to_dict_result(&client, no_color, &words, result_t2s).await
             }
@@ -59,7 +59,7 @@ async fn main() -> Result<()> {
                 let input_s2t = config.input_s2t || args.is_present("inputs2t");
                 let result_t2s = config.result_t2s || args.is_present("resultt2s");
                 let no_color = config.no_color || args.is_present("no-color-output");
-                let words = words_input_s2t(words_to_vec_string(args), input_s2t);
+                let words = words_input_s2t(args.values_of_lossy("INPUT").unwrap(), input_s2t);
 
                 search_word_to_translation_result(&client, no_color, &words, result_t2s).await
             }
@@ -67,14 +67,14 @@ async fn main() -> Result<()> {
                 let input_s2t = config.input_s2t || args.is_present("inputs2t");
                 let result_t2s = config.result_t2s || args.is_present("resultt2s");
                 let no_color = config.no_color || args.is_present("no-color-output");
-                let words = words_input_s2t(words_to_vec_string(args), input_s2t);
+                let words = words_input_s2t(args.values_of_lossy("INPUT").unwrap(), input_s2t);
 
                 search_word_to_jyutping_result(&client, no_color, &words, result_t2s).await
             }
             ("json", Some(args)) => {
                 let input_s2t = config.input_s2t || args.is_present("inputs2t");
                 let result_t2s = config.result_t2s || args.is_present("resultt2s");
-                let words = words_input_s2t(words_to_vec_string(args), input_s2t);
+                let words = words_input_s2t(args.values_of_lossy("INPUT").unwrap(), input_s2t);
 
                 search_word_to_json_result(&client, words, result_t2s).await
             }
@@ -86,27 +86,28 @@ async fn main() -> Result<()> {
 
                 random_moedict_item(&client, no_color, input_s2t, result_t2s, words).await
             }
-            _ => {
-                let input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
-                let result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
-                let no_color = config.no_color || app.is_present("no-color-output");
-                let mut console = MeowdictConsole {
-                    client,
-                    input_s2t: input_s2t_mode,
-                    result_t2s: result_t2s_mode,
-                    no_color,
-                };
-
-                console.create_console().await
-            }
+            ("terminal", Some(args)) => create_meowdict_console(config, &args, client).await,
+            _ => create_meowdict_console(config, &app, client).await,
         }
     }
 }
 
-fn words_to_vec_string(args: &clap::ArgMatches) -> Vec<String> {
-    let words = args.values_of("INPUT").unwrap();
+async fn create_meowdict_console(
+    config: MeowdictConfig,
+    app: &clap::ArgMatches<'_>,
+    client: reqwest::Client,
+) -> Result<()> {
+    let input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
+    let result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
+    let no_color = config.no_color || app.is_present("no-color-output");
+    let mut console = MeowdictConsole {
+        client,
+        input_s2t: input_s2t_mode,
+        result_t2s: result_t2s_mode,
+        no_color,
+    };
 
-    words.into_iter().map(|x| x.into()).collect::<Vec<String>>()
+    console.create_console().await
 }
 
 fn read_config() -> Result<MeowdictConfig> {

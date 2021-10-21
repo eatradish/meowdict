@@ -1,10 +1,12 @@
 use crate::api::{get_dict_result, get_jyutping_result, get_moedict_index, set_json_result};
-use crate::formatter::{gen_dict_json_str, gen_dict_result_str, gen_jyutping_str, gen_translation_str, get_terminal_size, words_input_s2t};
+use crate::formatter::{
+    gen_dict_json_str, gen_dict_result_str, gen_jyutping_str, gen_translation_str,
+    get_terminal_size, words_input_s2t,
+};
 use anyhow::anyhow;
 use anyhow::Result;
 use rand::prelude::{IteratorRandom, SliceRandom};
 use reqwest::Client;
-
 
 pub async fn search_word_to_dict_result(
     client: &Client,
@@ -14,8 +16,7 @@ pub async fn search_word_to_dict_result(
 ) -> Result<()> {
     let terminal_size = get_terminal_size();
     let meowdict_results = get_dict_result(client, words).await?;
-    let result =
-        gen_dict_result_str(meowdict_results, terminal_size, no_color, result_t2s);
+    let result = gen_dict_result_str(meowdict_results, terminal_size, no_color, result_t2s);
     println!("{}", result);
 
     Ok(())
