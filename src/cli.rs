@@ -105,8 +105,8 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand({
             let meowdict_subcommand = meowdict_subcommand!(
                 SubCommand::with_name("terminal"),
-                "term",
-                "Open meowdict terminal"
+                "Open meowdict terminal",
+                "term"
             );
             let meowdict_subcommand = meowdict_subcommand_with_no_color!(meowdict_subcommand);
             let meowdict_subcommand = meowdict_subcommand_with_mode!(meowdict_subcommand);
