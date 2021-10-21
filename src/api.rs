@@ -224,14 +224,8 @@ pub async fn get_jyutping_result(
 
 pub async fn set_json_result(client: &Client, words: Vec<String>) -> Vec<MeowdictJsonResult> {
     let mut result = Vec::new();
-    let moedict_raw_results = match get_dict_result(client, &words).await {
-        Ok(meowdict_raw_result) => Some(meowdict_raw_result),
-        Err(_) => None,
-    };
-    let jyutping = match get_jyutping_result(client, &words).await {
-        Ok(jyutping) => Some(jyutping),
-        Err(_) => None,
-    };
+    let moedict_raw_results = get_dict_result(client, &words).await.ok();
+    let jyutping = get_jyutping_result(client, &words).await.ok();
 
     match moedict_raw_results {
         Some(moedict_raw_results) => match jyutping {
