@@ -23,8 +23,7 @@ macro_rules! meowdict_subcommand_with_s2t2s {
                 Arg::with_name("resultt2s")
                     .short("r")
                     .long("result-t2s")
-                    .help("Convert result to Simplified Chinese to display")
-                    .requires("INPUT"),
+                    .help("Convert result to Simplified Chinese to display"),
             )
     };
 }

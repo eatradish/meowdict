@@ -13,7 +13,7 @@ pub async fn search_word_to_dict_result(
     result_t2s: bool,
 ) -> Result<()> {
     let terminal_size = get_terminal_size();
-    let meowdict_results = get_dict_result(&client, words).await?;
+    let meowdict_results = get_dict_result(client, words).await?;
     let result =
         gen_dict_result_str(meowdict_results, terminal_size, no_color, result_t2s);
     println!("{}", result);
@@ -27,7 +27,7 @@ pub async fn search_word_to_translation_result(
     words: &[String],
     result_t2s: bool,
 ) -> Result<()> {
-    let meowdict_results = get_dict_result(&client, words).await?;
+    let meowdict_results = get_dict_result(client, words).await?;
     let result = gen_translation_str(meowdict_results, no_color, result_t2s);
     println!("{}", result);
 
@@ -40,7 +40,7 @@ pub async fn search_word_to_jyutping_result(
     words: &[String],
     result_t2s: bool,
 ) -> Result<()> {
-    let jyutping_results = get_jyutping_result(&client, words).await?;
+    let jyutping_results = get_jyutping_result(client, words).await?;
     let result = gen_jyutping_str(jyutping_results, no_color, result_t2s);
     println!("{}", result);
 
@@ -52,7 +52,7 @@ pub async fn search_word_to_json_result(
     words: Vec<String>,
     result_t2s: bool,
 ) -> Result<()> {
-    let json_obj = set_json_result(&client, words).await;
+    let json_obj = set_json_result(client, words).await;
     println!("{}", gen_dict_json_str(json_obj, result_t2s)?);
 
     Ok(())
@@ -65,7 +65,7 @@ pub async fn random_moedict_item(
     result_t2s: bool,
     words: Option<Vec<String>>,
 ) -> Result<()> {
-    let moedict_index = get_moedict_index(&client).await?;
+    let moedict_index = get_moedict_index(client).await?;
     let rng = &mut rand::thread_rng();
     let terminal_size = get_terminal_size();
     let rand_words = match words {
@@ -92,7 +92,7 @@ pub async fn random_moedict_item(
                 .to_owned()]
         }
     };
-    let moedict_results = get_dict_result(&client, &rand_words).await?;
+    let moedict_results = get_dict_result(client, &rand_words).await?;
     let result = gen_dict_result_str(moedict_results, terminal_size, no_color, result_t2s);
     println!("{}", result);
 
