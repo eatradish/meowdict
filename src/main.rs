@@ -86,7 +86,7 @@ async fn main() -> Result<()> {
 
                 random_moedict_item(&client, no_color, input_s2t, result_t2s, words).await
             }
-            ("terminal", Some(args)) => create_meowdict_console(config, &args, client).await,
+            ("terminal", Some(args)) => create_meowdict_console(config, args, client).await,
             _ => create_meowdict_console(config, &app, client).await,
         }
     }
