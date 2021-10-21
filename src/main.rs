@@ -80,7 +80,7 @@ async fn main() -> Result<()> {
             }
             ("random", Some(args)) => {
                 let words = args.values_of_lossy("INPUT");
-
+                
                 meowdict_request
                     .random_moedict_item(result_t2s, words)
                     .await

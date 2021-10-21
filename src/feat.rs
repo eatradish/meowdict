@@ -75,24 +75,14 @@ impl MeowdictRequest {
             Some(words) => {
                 let mut result = Vec::new();
                 for word in words {
-                    let filter_list = moedict_index
-                        .iter()
-                        .filter(|x| x.contains(&word))
-                        .collect::<Vec<_>>();
-                    if !filter_list.is_empty() {
-                        result.push(
-                            filter_list
-                                .into_iter()
-                                .choose(rng)
-                                .ok_or_else(|| anyhow!("Cannot choose one!"))?
-                                .to_owned(),
-                        )
-                    } else {
-                        return Err(anyhow!(
-                            "Cannot find keyword and about word words: {}",
-                            word
-                        ));
-                    }
+                    result.push(
+                        moedict_index
+                            .iter()
+                            .filter(|x| x.contains(&word))
+                            .choose(rng)
+                            .ok_or_else(|| anyhow!("Cannot choose one!"))?
+                            .to_owned(),
+                    )
                 }
 
                 result
