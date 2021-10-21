@@ -556,7 +556,7 @@ dependencies = [
 
 [[package]]
 name = "meowdict"
-version = "0.10.2"
+version = "0.10.3-alpha.0"
 dependencies = [
  "anyhow",
  "clap",
