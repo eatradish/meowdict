@@ -2,14 +2,9 @@ use clap::{crate_version, App, Arg, SubCommand};
 
 macro_rules! meowdict_subcommand {
     ($subcommand:expr, $about:expr, $alias:expr) => {
-        $subcommand.about($about).arg(
+        $subcommand.about($about).alias($alias).arg(
             Arg::with_name("INPUT")
                 .help("Input the keyword to use")
-                .alias($alias)
-                .index(1)
-                .min_values(1)
-                .requires("INPUT")
-                .takes_value(true),
         )
     };
 }

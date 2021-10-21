@@ -1,13 +1,15 @@
 use anyhow::{anyhow, Result};
+use reqwest::Client;
 use rustyline::Editor;
 
 use crate::feat::*;
 use crate::formatter::{display_meowdict_version, words_input_s2t, OpenccConvertMode};
 
 pub struct MeowdictConsole {
+    pub client: Client,
     pub input_s2t: bool,
     pub result_t2s: bool,
-    pub meowdict_request: MeowdictRequest,
+    pub no_color: bool,
 }
 
 enum MeowdictCommand {
@@ -127,26 +129,35 @@ impl MeowdictConsole {
             Some(MeowdictCommand::Show) | None => {
                 let words = words_input_s2t(values, self.input_s2t || command_input_s2t);
 
-                self.meowdict_request
-                    .search_word_to_dict_result(&words, self.result_t2s || command_result_t2s)
-                    .await?
+                search_word_to_dict_result(
+                    &self.client,
+                    self.no_color,
+                    &words,
+                    self.result_t2s || command_result_t2s,
+                )
+                .await?
             }
             Some(MeowdictCommand::JyutPing) => {
                 let words = words_input_s2t(values, self.input_s2t || command_input_s2t);
 
-                self.meowdict_request
-                    .search_word_to_jyutping_result(&words, self.result_t2s || command_result_t2s)
-                    .await?
+                search_word_to_jyutping_result(
+                    &self.client,
+                    self.no_color,
+                    &words,
+                    self.result_t2s || command_result_t2s,
+                )
+                .await?
             }
             Some(MeowdictCommand::Translate) => {
                 let words = words_input_s2t(values, self.input_s2t || command_input_s2t);
 
-                self.meowdict_request
-                    .search_word_to_translation_result(
-                        &words,
-                        self.result_t2s || command_result_t2s,
-                    )
-                    .await?
+                search_word_to_translation_result(
+                    &self.client,
+                    self.no_color,
+                    &words,
+                    self.result_t2s || command_result_t2s,
+                )
+                .await?
             }
             Some(MeowdictCommand::Random) => {
                 let words = if !values.is_empty() {
@@ -155,9 +166,14 @@ impl MeowdictConsole {
                     None
                 };
 
-                self.meowdict_request
-                    .random_moedict_item(self.result_t2s || command_result_t2s, words)
-                    .await?
+                random_moedict_item(
+                    &self.client,
+                    self.no_color,
+                    self.input_s2t || command_input_s2t,
+                    self.result_t2s || command_result_t2s,
+                    words,
+                )
+                .await?
             }
             Some(MeowdictCommand::InputS2TMode(enable)) => {
                 self.set_console_mode(&OpenccConvertMode::S2T, enable);
