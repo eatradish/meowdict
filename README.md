@@ -62,5 +62,4 @@ SUBCOMMANDS:
     show         Get dict result
     terminal     Open meowdict terminal
     translate    Get word translation
-
 ```
