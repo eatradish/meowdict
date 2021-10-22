@@ -2,7 +2,7 @@
 name = "meowdict"
 version = "0.10.4-alpha.0"
 authors = ["eatradish <sakiiily@aosc.io>"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
