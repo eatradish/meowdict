@@ -3,7 +3,7 @@ CLI Web client for moedict.tw
 
 ## Screenshot
 
-![screenshot](https://raw.githubusercontent.com/eatradish/meowdict/67c109554b60a43940b03ee408598536dfb1afe7/screenshot/Screenshot_20211022_113701.png)
+![screenshot](https://raw.githubusercontent.com/eatradish/meowdict/master/screenshot/Screenshot_20211022_113701.png)
 
 ## Installation
 If you use AOSC OS:
