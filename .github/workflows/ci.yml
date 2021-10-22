@@ -14,11 +14,10 @@ jobs:
         apt-get install -y opencc
     - uses: actions/checkout@v2
     - name: Build
-      env:
-        PATH: $HOME/.cargo/bin:$PATH
       run: |
+        export PATH=$HOME/.cargo/bin:$PATH
         cargo build
     - name: Test
-      env:
-        PATH: $HOME/.cargo/bin:$PATH
-      run: cargo test
+      run: |
+        export PATH=$HOME/.cargo/bin:$PATH
+        cargo test
