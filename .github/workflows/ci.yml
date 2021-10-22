@@ -7,15 +7,16 @@ jobs:
     runs-on: ubuntu-latest
     container: aosc/aosc-os-buildkit
     steps:
+    - uses: hecrj/setup-rust-action@master
+      with:
+        rust-version: stable
     - name: Install Dependency
       run: |
-        curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
         apt update
         apt-get install -y opencc
     - uses: actions/checkout@v2
     - name: Build
       run: |
-        export PATH=$HOME/.cargo/bin:$PATH
         cargo build
     - name: Test
       run: cargo test
