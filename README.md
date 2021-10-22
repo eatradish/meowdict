@@ -3,7 +3,7 @@ CLI Web client for moedict.tw
 
 ## Screenshot
 
-![screenshot](https://raw.githubusercontent.com/eatradish/meowdict/67c109554b60a43940b03ee408598536dfb1afe7/screenshot/Screenshot_20210902_004622.png)
+![screenshot](https://raw.githubusercontent.com/eatradish/meowdict/67c109554b60a43940b03ee408598536dfb1afe7/screenshot/Screenshot_20211022_113701.png)
 
 ## Installation
 If you use AOSC OS:
@@ -34,8 +34,8 @@ Runtime:
 ## Usage
 
 ```
-$ ./target/debug/meowdict --help
-meowdict 0.8.2-alpha.0
+$ ./target/debug/meowdict help
+meowdict 0.10.4-alpha.0
 Mag Mell
 Search chinese keyword from moedict.tw
 
@@ -58,7 +58,9 @@ SUBCOMMANDS:
     help         Prints this message or the help of the given subcommand(s)
     json         Print result to JSON output
     jyutping     Get word jyutping
+    random       search random word
     show         Get dict result
     terminal     Open meowdict terminal
     translate    Get word translation
+
 ```
