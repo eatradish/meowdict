@@ -252,14 +252,14 @@ pub fn display_meowdict_version() {
     println!("{}", WELCOME_INFO.as_str());
 }
 
-pub fn words_input_s2t(words: Vec<String>, input_s2t: bool) -> Vec<String> {
+pub fn words_input_s2t(words: &[String], input_s2t: bool) -> Vec<String> {
     if input_s2t {
         words
-            .into_iter()
-            .map(|x| opencc_convert(&x, OpenccConvertMode::S2T))
+            .iter()
+            .map(|x| opencc_convert(x, OpenccConvertMode::S2T))
             .collect::<Vec<_>>()
     } else {
-        words
+        words.to_vec()
     }
 }
 

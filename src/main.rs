@@ -13,7 +13,7 @@ use std::{
 use crate::console::MeowdictConsole;
 use crate::feat::*;
 use anyhow::Result;
-use formatter::words_input_s2t;
+use clap::ArgMatches;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 
@@ -30,84 +30,93 @@ pub struct MeowdictConfig {
     no_color: bool,
 }
 
+pub struct MeowdictRunStatus {
+    pub run_command: MeowdictRunCommand,
+    pub input_s2t: bool,
+    pub result_t2s: bool,
+    pub no_color: bool,
+    pub words: Option<Vec<String>>,
+}
+
+enum MeowdictMode {
+    Normal,
+    Terminal,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let config = read_config()?;
     let app = cli::build_cli().get_matches();
     let client = reqwest::Client::new();
-    if let Some(words) = app.values_of("INPUT") {
-        let input_s2t = config.input_s2t || app.is_present("inputs2t");
-        let result_t2s = config.result_t2s || app.is_present("resultt2s");
-        let no_color = config.no_color || app.is_present("no-color-output");
-        let words = words_input_s2t(
-            words.into_iter().map(|x| x.into()).collect::<Vec<String>>(),
-            input_s2t,
-        );
-
-        search_word_to_dict_result(&client, no_color, &words, result_t2s).await
-    } else {
-        match app.subcommand() {
-            ("show", Some(args)) => {
-                let input_s2t = config.input_s2t || args.is_present("inputs2t");
-                let result_t2s = config.result_t2s || args.is_present("resultt2s");
-                let no_color = config.no_color || args.is_present("no-color-output");
-                let words = words_input_s2t(args.values_of_lossy("INPUT").unwrap(), input_s2t);
-
-                search_word_to_dict_result(&client, no_color, &words, result_t2s).await
+    let mut input_s2t = config.input_s2t || app.is_present("inputs2t");
+    let mut result_t2s = config.result_t2s || app.is_present("resultt2s");
+    let mut no_color = config.no_color || app.is_present("no-color-output");
+    let mode = match_meowdict_mode(&app);
+    match mode {
+        MeowdictMode::Normal => {
+            if app.values_of("INPUT").is_some() {
+                MeowdictResponse {
+                    command: MeowdictRunCommand::Show,
+                    client: &client,
+                    input_s2t,
+                    result_t2s,
+                    no_color,
+                    words: app.values_of_lossy("INPUT"),
+                }
+                .match_command_to_run()
+                .await
+            } else {
+                let (subcommand, args) = app.subcommand();
+                let command = match subcommand {
+                    "show" => MeowdictRunCommand::Show,
+                    "translate" => MeowdictRunCommand::Translate,
+                    "jyutping" => MeowdictRunCommand::JyutPing,
+                    "random" => MeowdictRunCommand::Random,
+                    _ => panic!(),
+                };
+                let mut words: Option<Vec<String>> = None;
+                if let Some(args) = args {
+                    words = args.values_of_lossy("INPUT");
+                    input_s2t = input_s2t || args.is_present("inputs2t");
+                    result_t2s = result_t2s || args.is_present("resultt2s");
+                    no_color = no_color || args.is_present("no-color-output");
+                }
+                MeowdictResponse {
+                    command,
+                    client: &client,
+                    input_s2t,
+                    result_t2s,
+                    no_color,
+                    words,
+                }
+                .match_command_to_run()
+                .await
             }
-            ("translate", Some(args)) => {
-                let input_s2t = config.input_s2t || args.is_present("inputs2t");
-                let result_t2s = config.result_t2s || args.is_present("resultt2s");
-                let no_color = config.no_color || args.is_present("no-color-output");
-                let words = words_input_s2t(args.values_of_lossy("INPUT").unwrap(), input_s2t);
-
-                search_word_to_translation_result(&client, no_color, &words, result_t2s).await
-            }
-            ("jyutping", Some(args)) => {
-                let input_s2t = config.input_s2t || args.is_present("inputs2t");
-                let result_t2s = config.result_t2s || args.is_present("resultt2s");
-                let no_color = config.no_color || args.is_present("no-color-output");
-                let words = words_input_s2t(args.values_of_lossy("INPUT").unwrap(), input_s2t);
-
-                search_word_to_jyutping_result(&client, no_color, &words, result_t2s).await
-            }
-            ("json", Some(args)) => {
-                let input_s2t = config.input_s2t || args.is_present("inputs2t");
-                let result_t2s = config.result_t2s || args.is_present("resultt2s");
-                let words = words_input_s2t(args.values_of_lossy("INPUT").unwrap(), input_s2t);
-
-                search_word_to_json_result(&client, words, result_t2s).await
-            }
-            ("random", Some(args)) => {
-                let input_s2t = config.input_s2t || args.is_present("inputs2t");
-                let result_t2s = config.result_t2s || args.is_present("resultt2s");
-                let no_color = config.no_color || args.is_present("no-color-output");
-                let words = args.values_of_lossy("INPUT");
-
-                random_moedict_item(&client, no_color, input_s2t, result_t2s, words).await
-            }
-            ("terminal", Some(args)) => create_meowdict_console(config, args, client).await,
-            _ => create_meowdict_console(config, &app, client).await,
+        }
+        MeowdictMode::Terminal => {
+            let input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
+            let result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
+            let no_color = config.no_color || app.is_present("no-color-output");
+            let mut console = MeowdictConsole {
+                client: &client,
+                input_s2t: input_s2t_mode,
+                result_t2s: result_t2s_mode,
+                no_color,
+            };
+            console.create_console().await
         }
     }
 }
 
-async fn create_meowdict_console(
-    config: MeowdictConfig,
-    app: &clap::ArgMatches<'_>,
-    client: reqwest::Client,
-) -> Result<()> {
-    let input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
-    let result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
-    let no_color = config.no_color || app.is_present("no-color-output");
-    let mut console = MeowdictConsole {
-        client,
-        input_s2t: input_s2t_mode,
-        result_t2s: result_t2s_mode,
-        no_color,
-    };
+fn match_meowdict_mode(app: &ArgMatches) -> MeowdictMode {
+    if app.values_of("INPUT").is_some() {
+        return MeowdictMode::Normal;
+    }
 
-    console.create_console().await
+    match app.subcommand().0 {
+        "terminal" | "" => MeowdictMode::Terminal,
+        _ => MeowdictMode::Normal,
+    }
 }
 
 fn read_config() -> Result<MeowdictConfig> {
