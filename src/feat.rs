@@ -36,7 +36,7 @@ impl MeowdictResponse<'_> {
         }
     }
 
-    pub async fn search_word_to_dict_result(&self) -> Result<()> {
+    async fn search_word_to_dict_result(&self) -> Result<()> {
         let terminal_size = get_terminal_size();
         let meowdict_results = get_dict_result(
             self.client,
@@ -54,7 +54,7 @@ impl MeowdictResponse<'_> {
         Ok(())
     }
 
-    pub async fn search_word_to_translation_result(&self) -> Result<()> {
+    async fn search_word_to_translation_result(&self) -> Result<()> {
         let meowdict_results = get_dict_result(
             self.client,
             &words_input_s2t(self.words.as_ref().unwrap(), self.input_s2t),
@@ -66,7 +66,7 @@ impl MeowdictResponse<'_> {
         Ok(())
     }
 
-    pub async fn search_word_to_jyutping_result(&self) -> Result<()> {
+    async fn search_word_to_jyutping_result(&self) -> Result<()> {
         let jyutping_results = get_jyutping_result(
             self.client,
             &words_input_s2t(self.words.as_ref().unwrap(), self.input_s2t),
@@ -78,7 +78,7 @@ impl MeowdictResponse<'_> {
         Ok(())
     }
 
-    pub async fn search_word_to_json_result(&self) -> Result<()> {
+    async fn search_word_to_json_result(&self) -> Result<()> {
         let json_obj = set_json_result(
             self.client,
             &words_input_s2t(self.words.as_ref().unwrap(), self.input_s2t),
@@ -89,7 +89,7 @@ impl MeowdictResponse<'_> {
         Ok(())
     }
 
-    pub async fn random_moedict_item(&self) -> Result<()> {
+    async fn random_moedict_item(&self) -> Result<()> {
         let moedict_index = get_moedict_index(self.client).await?;
         let rng = &mut rand::thread_rng();
         let terminal_size = get_terminal_size();
