@@ -1,15 +1,25 @@
 use anyhow::{anyhow, Result};
+use clap::crate_version;
+use lazy_static::lazy_static;
 use reqwest::Client;
 use rustyline::Editor;
 
 use crate::feat::*;
-use crate::formatter::{display_meowdict_version, OpenccConvertMode};
+use crate::formatter::{OpenccConvertMode};
 
 pub struct MeowdictConsole<'a> {
     pub client: &'a Client,
     pub input_s2t: bool,
     pub result_t2s: bool,
     pub no_color: bool,
+}
+
+lazy_static! {
+    static ref WELCOME_INFO: String = format!(
+        r#"Welcome to meowdict {}!
+Please enter .help for more information"#,
+        crate_version!()
+    );
 }
 
 const USAGE: &str = r#"Usage:
@@ -93,7 +103,7 @@ impl MeowdictConsole<'_> {
         let mut command_result_t2s = false;
         let mut command_input_s2t = false;
         let mut run_status: Option<MeowdictRunCommand> = None;
-        if args.is_empty() {
+        if args.is_empty() && !values.is_empty() {
             set_run_status!(run_status, MeowdictRunCommand::Show);
         }
         for arg in args {
@@ -130,6 +140,9 @@ impl MeowdictConsole<'_> {
                 }
             }
         }
+        if run_status.is_none() && !values.is_empty() {
+            run_status = Some(MeowdictRunCommand::Show);
+        }
         let input_s2t = command_input_s2t || self.input_s2t;
         let result_t2s = command_result_t2s || self.result_t2s;
         let no_color = self.no_color;
@@ -162,6 +175,10 @@ fn argument_spliter(argument: Vec<&str>) -> (Vec<&str>, Vec<&str>) {
     }
 
     (command, values)
+}
+
+fn display_meowdict_version() {
+    println!("{}", WELCOME_INFO.as_str());
 }
 
 #[test]

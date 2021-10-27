@@ -1,9 +1,6 @@
 use anyhow::Result;
-use clap::crate_version;
-use console::{strip_ansi_codes, truncate_str, Term};
+use console::truncate_str;
 use indexmap::IndexMap;
-use lazy_static::lazy_static;
-use opencc_rust::*;
 use owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
 
@@ -31,44 +28,7 @@ pub enum OpenccConvertMode {
     T2S,
 }
 
-lazy_static! {
-    static ref WELCOME_INFO: String = format!(
-        r#"Welcome to meowdict {}!
-Please enter .help for more information"#,
-        crate_version!()
-    );
-}
-
-pub fn opencc_convert(input: &str, t: OpenccConvertMode) -> String {
-    OpenCC::new(match t {
-        OpenccConvertMode::S2T => DefaultConfig::S2TWP,
-        OpenccConvertMode::T2S => DefaultConfig::TW2S,
-    })
-    .unwrap()
-    .convert(input)
-}
-
-fn result_to_result(result_vec: Vec<String>, no_color: bool, result_t2s: bool) -> String {
-    let result = result_vec.join("\n");
-    let result = if no_color {
-        gen_str_no_color(&result)
-    } else {
-        result
-    };
-
-    if result_t2s {
-        opencc_convert(&result, OpenccConvertMode::T2S)
-    } else {
-        result
-    }
-}
-
-pub fn gen_dict_result_str(
-    moedict_result: Vec<MoedictRawResult>,
-    terminal_size: usize,
-    no_color: bool,
-    result_t2s: bool,
-) -> String {
+pub fn gen_dict_result_str(moedict_result: Vec<MoedictRawResult>, terminal_size: usize) -> String {
     let mut result = Vec::new();
 
     for i in moedict_result {
@@ -131,7 +91,7 @@ pub fn gen_dict_result_str(
         }
     }
 
-    result_to_result(result, no_color, result_t2s)
+    result.join("\n")
 }
 
 fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<&str, Vec<Vec<&str>>> {
@@ -161,15 +121,7 @@ fn definition_formatter(definitions: &[MoedictDefinition]) -> IndexMap<&str, Vec
     result
 }
 
-pub fn get_terminal_size() -> usize {
-    Term::stdout().size().1.into()
-}
-
-pub fn gen_translation_str(
-    meowdict_results: Vec<MoedictRawResult>,
-    no_color: bool,
-    result_t2s: bool,
-) -> String {
+pub fn gen_translation_str(meowdict_results: Vec<MoedictRawResult>) -> String {
     let mut result = Vec::new();
     for i in meowdict_results {
         result.push(
@@ -187,14 +139,10 @@ pub fn gen_translation_str(
         }
     }
 
-    result_to_result(result, no_color, result_t2s)
+    result.join("\n")
 }
 
-pub fn gen_jyutping_str(
-    jyutping_result: Vec<MeowdictJyutPingResult>,
-    no_color: bool,
-    result_t2s: bool,
-) -> String {
+pub fn gen_jyutping_str(jyutping_result: Vec<MeowdictJyutPingResult>) -> String {
     let mut result = Vec::new();
     for i in jyutping_result {
         result.push(
@@ -205,23 +153,11 @@ pub fn gen_jyutping_str(
         result.push(i.jyutping.join("\n").fg_rgb::<168, 216, 165>().to_string());
     }
 
-    result_to_result(result, no_color, result_t2s)
+    result.join("\n")
 }
 
-pub fn gen_dict_json_str(
-    moedict_results: Vec<MeowdictJsonResult>,
-    result_t2s: bool,
-) -> Result<String> {
-    let mut json = serde_json::to_string(&moedict_results)?;
-    if result_t2s {
-        json = opencc_convert(&json, OpenccConvertMode::T2S);
-    }
-
-    Ok(json)
-}
-
-fn gen_str_no_color(s: &str) -> String {
-    strip_ansi_codes(s).to_string()
+pub fn gen_dict_json_str(moedict_results: Vec<MeowdictJsonResult>) -> Result<String> {
+    Ok(serde_json::to_string(&moedict_results)?)
 }
 
 fn string_split_new_line(s: String, tab: usize, terminal_size: usize) -> String {
@@ -248,37 +184,13 @@ fn string_split_new_line(s: String, tab: usize, terminal_size: usize) -> String 
     result_str
 }
 
-pub fn display_meowdict_version() {
-    println!("{}", WELCOME_INFO.as_str());
-}
-
-pub fn words_input_s2t(words: &[String], input_s2t: bool) -> Vec<String> {
-    if input_s2t {
-        words
-            .iter()
-            .map(|x| opencc_convert(x, OpenccConvertMode::S2T))
-            .collect::<Vec<_>>()
-    } else {
-        words.to_vec()
-    }
-}
-
-#[test]
-fn test_opencc() {
-    let s = "老师";
-    let t = "老師";
-
-    assert_eq!(opencc_convert(s, OpenccConvertMode::S2T), t);
-    assert_eq!(opencc_convert(t, OpenccConvertMode::T2S), s);
-}
-
 #[test]
 fn test_result_str() {
     let test_str = r#"{"t":"空穴來風","translation":{"English":["lit. wind from an empty cave (idiom)","fig. unfounded (story)","baseless (claim)"],"francais":["(expr. idiom.) les fissures laissent passer le vent","les faiblesses donnent prise à la médisance","prêter le flanc à la critique"]},"h":[{"p":"kōng xuè lái fēng","b":"ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ","d":[{"type":null,"q":null,"e":null,"f":"有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞，不足以採信。」","l":null}]}],"English":"lit. wind from an empty cave (idiom)"}"#;
     let test_obj: MoedictRawResult = serde_json::from_str(test_str).unwrap();
     const LESS_80: usize = 79;
     const MORE_80: usize = 81;
-    let result_with_less_80 = gen_dict_result_str(vec![test_obj.clone()], LESS_80, true, false);
+    let result_with_less_80 = gen_dict_result_str(vec![test_obj.clone()], LESS_80);
     let right_result_with_less_80 = r#"空穴來風：
   英語：lit. wind from an empty cave (idiom)
   拼音：kōng xuè lái fēng
@@ -286,7 +198,7 @@ fn test_result_str() {
   1.有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空
   穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的
   傳聞，不足以採信。」"#;
-    let result_with_more_80 = gen_dict_result_str(vec![test_obj], MORE_80, true, false);
+    let result_with_more_80 = gen_dict_result_str(vec![test_obj], MORE_80);
     let right_result_with_more_80 = r#"空穴來風：
   英語：lit. wind from an empty cave (idiom)
   拼音：kōng xuè lái fēng
@@ -303,7 +215,7 @@ fn test_result_str() {
 fn test_transtation_str() {
     let test_str = r#"{"t":"空穴來風","translation":{"English":["lit. wind from an empty cave (idiom)","fig. unfounded (story)","baseless (claim)"],"francais":["(expr. idiom.) les fissures laissent passer le vent","les faiblesses donnent prise à la médisance","prêter le flanc à la critique"]},"h":[{"p":"kōng xuè lái fēng","b":"ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ","d":[{"type":null,"q":null,"e":null,"f":"有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞，不足以採信。」","l":null}]}],"English":"lit. wind from an empty cave (idiom)"}"#;
     let test_obj: MoedictRawResult = serde_json::from_str(test_str).unwrap();
-    let result_str = gen_translation_str(vec![test_obj], true, false);
+    let result_str = gen_translation_str(vec![test_obj]);
     let right_str = r#"空穴來風：
 English:
 lit. wind from an empty cave (idiom)
@@ -323,7 +235,7 @@ fn test_jyutping_str() {
         word: "我".to_string(),
         jyutping: vec!["ngo5".to_string()],
     };
-    let result_str = gen_jyutping_str(vec![test_obj], true, false);
+    let result_str = gen_jyutping_str(vec![test_obj]);
     let right_str = r#"我：
 ngo5"#;
 
