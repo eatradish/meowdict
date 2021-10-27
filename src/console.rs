@@ -65,7 +65,7 @@ impl MeowdictConsole<'_> {
         while let Ok(argument) = reader.readline("meowdict > ") {
             let argument = argument
                 .trim()
-                .split(' ')
+                .split_whitespace()
                 .filter(|x| x != &"")
                 .collect::<Vec<&str>>();
             if !argument.is_empty() {
