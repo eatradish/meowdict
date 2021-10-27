@@ -129,7 +129,7 @@ impl MeowdictConsole<'_> {
                 ".set_result_t2s_mode" => {
                     set_run_status_mode!(&OpenccConvertMode::T2S, values, run_status, self);
                 }
-                ".random" | "rand" => {
+                ".random" | ".rand" => {
                     set_run_status!(run_status, MeowdictRunCommand::Random);
                 }
                 ".help" => {
@@ -146,6 +146,11 @@ impl MeowdictConsole<'_> {
         let input_s2t = command_input_s2t || self.input_s2t;
         let result_t2s = command_result_t2s || self.result_t2s;
         let no_color = self.no_color;
+        let words = if !values.is_empty() {
+            Some(values)
+        } else {
+            None
+        };
         if let Some(run_status) = run_status {
             MeowdictResponse {
                 command: run_status,
@@ -153,7 +158,7 @@ impl MeowdictConsole<'_> {
                 input_s2t,
                 result_t2s,
                 no_color,
-                words: Some(values),
+                words
             }
             .match_command_to_run()
             .await?;
