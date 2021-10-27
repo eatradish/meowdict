@@ -158,7 +158,7 @@ impl MeowdictConsole<'_> {
                 input_s2t,
                 result_t2s,
                 no_color,
-                words
+                words,
             }
             .match_command_to_run()
             .await?;
