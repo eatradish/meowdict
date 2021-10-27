@@ -5,7 +5,7 @@ use reqwest::Client;
 use rustyline::Editor;
 
 use crate::feat::*;
-use crate::formatter::{OpenccConvertMode};
+use crate::formatter::OpenccConvertMode;
 
 pub struct MeowdictConsole<'a> {
     pub client: &'a Client,
@@ -120,7 +120,7 @@ impl MeowdictConsole<'_> {
                 ".input_s2t" => {
                     command_input_s2t = true;
                 }
-                ".resukt_t2s" => {
+                ".result_t2s" => {
                     command_result_t2s = true;
                 }
                 ".set_input_s2t_mode" => {

@@ -2,8 +2,7 @@ use crate::api::{get_dict_result, get_jyutping_result, get_moedict_index, set_js
 use crate::formatter::{
     gen_dict_json_str, gen_dict_result_str, gen_jyutping_str, gen_translation_str,
 };
-use anyhow::anyhow;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use console::{strip_ansi_codes, Term};
 use opencc_rust::{DefaultConfig, OpenCC};
 use rand::prelude::{IteratorRandom, SliceRandom};
@@ -45,7 +44,7 @@ impl MeowdictResponse<'_> {
         Ok(())
     }
 
-    async fn search_word_to_dict_result(&self) -> Result<String>{
+    async fn search_word_to_dict_result(&self) -> Result<String> {
         let terminal_size = get_terminal_size();
         let meowdict_results = get_dict_result(
             self.client,
