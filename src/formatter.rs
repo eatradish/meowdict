@@ -186,11 +186,13 @@ fn string_split_new_line(s: String, tab: usize, terminal_size: usize) -> String 
 
 #[test]
 fn test_result_str() {
+    use console::strip_ansi_codes;
     let test_str = r#"{"t":"空穴來風","translation":{"English":["lit. wind from an empty cave (idiom)","fig. unfounded (story)","baseless (claim)"],"francais":["(expr. idiom.) les fissures laissent passer le vent","les faiblesses donnent prise à la médisance","prêter le flanc à la critique"]},"h":[{"p":"kōng xuè lái fēng","b":"ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ","d":[{"type":null,"q":null,"e":null,"f":"有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞，不足以採信。」","l":null}]}],"English":"lit. wind from an empty cave (idiom)"}"#;
     let test_obj: MoedictRawResult = serde_json::from_str(test_str).unwrap();
     const LESS_80: usize = 79;
     const MORE_80: usize = 81;
-    let result_with_less_80 = gen_dict_result_str(vec![test_obj.clone()], LESS_80);
+    let result_with_less_80 =
+        strip_ansi_codes(&gen_dict_result_str(vec![test_obj.clone()], LESS_80)).to_string();
     let right_result_with_less_80 = r#"空穴來風：
   英語：lit. wind from an empty cave (idiom)
   拼音：kōng xuè lái fēng
@@ -198,7 +200,8 @@ fn test_result_str() {
   1.有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空
   穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的
   傳聞，不足以採信。」"#;
-    let result_with_more_80 = gen_dict_result_str(vec![test_obj], MORE_80);
+    let result_with_more_80 =
+        strip_ansi_codes(&gen_dict_result_str(vec![test_obj], MORE_80)).to_string();
     let right_result_with_more_80 = r#"空穴來風：
   英語：lit. wind from an empty cave (idiom)
   拼音：kōng xuè lái fēng
@@ -213,9 +216,10 @@ fn test_result_str() {
 
 #[test]
 fn test_transtation_str() {
+    use console::strip_ansi_codes;
     let test_str = r#"{"t":"空穴來風","translation":{"English":["lit. wind from an empty cave (idiom)","fig. unfounded (story)","baseless (claim)"],"francais":["(expr. idiom.) les fissures laissent passer le vent","les faiblesses donnent prise à la médisance","prêter le flanc à la critique"]},"h":[{"p":"kōng xuè lái fēng","b":"ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ","d":[{"type":null,"q":null,"e":null,"f":"有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞，不足以採信。」","l":null}]}],"English":"lit. wind from an empty cave (idiom)"}"#;
     let test_obj: MoedictRawResult = serde_json::from_str(test_str).unwrap();
-    let result_str = gen_translation_str(vec![test_obj]);
+    let result_str = strip_ansi_codes(&gen_translation_str(vec![test_obj])).to_string();
     let right_str = r#"空穴來風：
 English:
 lit. wind from an empty cave (idiom)
@@ -231,11 +235,12 @@ prêter le flanc à la critique"#;
 
 #[test]
 fn test_jyutping_str() {
+    use console::strip_ansi_codes;
     let test_obj = MeowdictJyutPingResult {
         word: "我".to_string(),
         jyutping: vec!["ngo5".to_string()],
     };
-    let result_str = gen_jyutping_str(vec![test_obj]);
+    let result_str = strip_ansi_codes(&gen_jyutping_str(vec![test_obj])).to_string();
     let right_str = r#"我：
 ngo5"#;
 
