@@ -86,9 +86,17 @@ async fn main() -> Result<()> {
             .await
         }
     } else {
-        let input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
-        let result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
-        let no_color = config.no_color || app.is_present("no-color-output");
+        let mut input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
+        let mut result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
+        let mut no_color = config.no_color || app.is_present("no-color-output");
+        let (subcommand, args) = app.subcommand();
+        if subcommand == "terminal" {
+            if let Some(args) = args {
+                input_s2t_mode = input_s2t_mode || args.is_present("inputs2tmode");
+                result_t2s_mode = result_t2s_mode || args.is_present("resultt2smode");
+                no_color = no_color || args.is_present("no-color-output");
+            }
+        }
         let mut console = MeowdictConsole {
             client: &client,
             input_s2t: input_s2t_mode,
