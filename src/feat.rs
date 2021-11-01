@@ -123,9 +123,9 @@ impl MeowdictResponse<'_> {
         Ok(result)
     }
 
-    fn setup_result(&self, result: &str) -> String  {
+    fn setup_result(&self, result: &str) -> String {
         let result = if self.no_color {
-            strip_ansi_codes(&result).to_string()
+            strip_ansi_codes(result).to_string()
         } else {
             result.to_string()
         };
