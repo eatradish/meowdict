@@ -39,7 +39,7 @@ impl MeowdictResponse<'_> {
             MeowdictRunCommand::Json => self.search_word_to_json_result().await?,
             MeowdictRunCommand::Random => self.random_moedict_item().await?,
         };
-        println!("{}", self.setup_result(result));
+        println!("{}", self.setup_result(&result));
 
         Ok(())
     }
@@ -123,24 +123,23 @@ impl MeowdictResponse<'_> {
         Ok(result)
     }
 
-    fn setup_result(&self, mut result: String) -> String {
-        if self.no_color {
-            result = gen_str_no_color(&result);
-        }
-        if self.result_t2s {
-            result = opencc_convert(&result, OpenccConvertMode::T2S);
-        }
+    fn setup_result(&self, result: &str) -> String  {
+        let result = if self.no_color {
+            strip_ansi_codes(&result).to_string()
+        } else {
+            result.to_string()
+        };
 
-        result
+        if self.result_t2s {
+            opencc_convert(&result, OpenccConvertMode::T2S)
+        } else {
+            result
+        }
     }
 }
 
 fn get_terminal_size() -> usize {
     Term::stdout().size().1.into()
-}
-
-fn gen_str_no_color(s: &str) -> String {
-    strip_ansi_codes(s).to_string()
 }
 
 fn opencc_convert(input: &str, t: OpenccConvertMode) -> String {
