@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::api::{MeowdictJsonResult, MeowdictJyutPingResult, MoedictDefinition, MoedictRawResult};
 
-const LINE_LENGTH: usize = 80;
+const TERMINAL_LINE_LIMIT_LENGTH: usize = 80;
 
 macro_rules! push_qel {
     ($qel:expr, $result:ident, $count:ident, $t:ident) => {
@@ -162,10 +162,10 @@ pub fn gen_dict_json_str(moedict_results: Vec<MeowdictJsonResult>) -> Result<Str
 
 fn string_split_new_line(s: String, tab: usize, terminal_size: usize) -> String {
     let mut result_str = String::new();
-    let limit_length = if terminal_size < LINE_LENGTH {
+    let limit_length = if terminal_size < TERMINAL_LINE_LIMIT_LENGTH {
         terminal_size
     } else {
-        LINE_LENGTH
+        TERMINAL_LINE_LIMIT_LENGTH
     };
     let mut ref_s = s.as_str();
     let mut i = 0;
@@ -189,10 +189,8 @@ fn test_result_str() {
     use console::strip_ansi_codes;
     let test_str = r#"{"t":"空穴來風","translation":{"English":["lit. wind from an empty cave (idiom)","fig. unfounded (story)","baseless (claim)"],"francais":["(expr. idiom.) les fissures laissent passer le vent","les faiblesses donnent prise à la médisance","prêter le flanc à la critique"]},"h":[{"p":"kōng xuè lái fēng","b":"ㄎㄨㄥ　ㄒㄩㄝˋ　ㄌㄞˊ　ㄈㄥ","d":[{"type":null,"q":null,"e":null,"f":"有空穴，就有風吹來。語出《文選．宋玉．風賦》：「臣聞於師：『枳句來巢，空穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的傳聞，不足以採信。」","l":null}]}],"English":"lit. wind from an empty cave (idiom)"}"#;
     let test_obj: MoedictRawResult = serde_json::from_str(test_str).unwrap();
-    const LESS_80: usize = 79;
-    const MORE_80: usize = 81;
     let result_with_less_80 =
-        strip_ansi_codes(&gen_dict_result_str(vec![test_obj.clone()], LESS_80)).to_string();
+        strip_ansi_codes(&gen_dict_result_str(vec![test_obj.clone()], TERMINAL_LINE_LIMIT_LENGTH - 1)).to_string();
     let right_result_with_less_80 = r#"空穴來風：
   英語：lit. wind from an empty cave (idiom)
   拼音：kōng xuè lái fēng
@@ -201,7 +199,7 @@ fn test_result_str() {
   穴來風，其所託者然，則風氣殊焉。』」後比喻流言乘隙而入。如：「那些空穴來風的
   傳聞，不足以採信。」"#;
     let result_with_more_80 =
-        strip_ansi_codes(&gen_dict_result_str(vec![test_obj], MORE_80)).to_string();
+        strip_ansi_codes(&gen_dict_result_str(vec![test_obj], TERMINAL_LINE_LIMIT_LENGTH + 1)).to_string();
     let right_result_with_more_80 = r#"空穴來風：
   英語：lit. wind from an empty cave (idiom)
   拼音：kōng xuè lái fēng

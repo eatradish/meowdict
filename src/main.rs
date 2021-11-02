@@ -5,7 +5,7 @@ mod feat;
 pub mod formatter;
 
 use std::{
-    fs::{create_dir_all, File},
+    fs::{create_dir_all},
     io::{Read, Write},
     path::PathBuf,
 };
@@ -16,6 +16,7 @@ use anyhow::Result;
 use clap::ArgMatches;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
+use std::fs::OpenOptions;
 
 lazy_static! {
     static ref CONFTG_PATH_DIRECTORY: PathBuf =
@@ -38,6 +39,16 @@ pub struct MeowdictRunStatus {
     pub words: Option<Vec<String>>,
 }
 
+impl Default for MeowdictConfig {
+    fn default() -> Self {
+        MeowdictConfig {
+            input_s2t: false,
+            result_t2s: false,
+            no_color: false,
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let config = read_config()?;
@@ -46,6 +57,7 @@ async fn main() -> Result<()> {
     let mut input_s2t = config.input_s2t || app.is_present("inputs2t");
     let mut result_t2s = config.result_t2s || app.is_present("resultt2s");
     let mut no_color = config.no_color || app.is_present("no-color-output");
+    let (subcommand, args) = app.subcommand();
     if !is_meowdict_terminal(&app) {
         if app.values_of("INPUT").is_some() {
             MeowdictResponse {
@@ -59,7 +71,6 @@ async fn main() -> Result<()> {
             .match_command_to_run()
             .await
         } else {
-            let (subcommand, args) = app.subcommand();
             let command = match subcommand {
                 "show" => MeowdictRunCommand::Show,
                 "translate" => MeowdictRunCommand::Translate,
@@ -74,6 +85,7 @@ async fn main() -> Result<()> {
                 result_t2s = result_t2s || args.is_present("resultt2s");
                 no_color = no_color || args.is_present("no-color-output");
             }
+
             MeowdictResponse {
                 command,
                 client: &client,
@@ -89,7 +101,6 @@ async fn main() -> Result<()> {
         let mut input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
         let mut result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
         let mut no_color = config.no_color || app.is_present("no-color-output");
-        let (subcommand, args) = app.subcommand();
         if subcommand == "terminal" {
             if let Some(args) = args {
                 input_s2t_mode = input_s2t_mode || args.is_present("inputs2tmode");
@@ -103,6 +114,7 @@ async fn main() -> Result<()> {
             result_t2s: result_t2s_mode,
             no_color,
         };
+
         console.create_console().await
     }
 }
@@ -114,24 +126,21 @@ fn is_meowdict_terminal(app: &ArgMatches) -> bool {
 
 fn read_config() -> Result<MeowdictConfig> {
     create_dir_all(&*CONFTG_PATH_DIRECTORY)?;
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(&*CONFIG_PATH)?;
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer)?;
 
-    Ok(match File::open(&*CONFIG_PATH) {
-        Ok(mut f) => {
-            let mut buffer = Vec::new();
-            f.read_to_end(&mut buffer)?;
-
-            toml::from_slice(&buffer)?
-        }
+    Ok(match toml::from_slice(&buffer) {
+        Ok(config) => config,
         Err(_) => {
-            let default_meowdict_config = MeowdictConfig {
-                input_s2t: false,
-                result_t2s: false,
-                no_color: false,
-            };
-            let mut f = File::create(&*CONFIG_PATH)?;
-            f.write_all(&toml::to_vec(&default_meowdict_config)?)?;
+            let default = MeowdictConfig::default();
+            file.write_all(&toml::to_vec(&default)?)?;
 
-            default_meowdict_config
+            default
         }
     })
 }
