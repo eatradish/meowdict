@@ -5,7 +5,7 @@ mod feat;
 pub mod formatter;
 
 use std::{
-    fs::{create_dir_all},
+    fs::create_dir_all,
     io::{Read, Write},
     path::PathBuf,
 };

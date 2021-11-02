@@ -47,14 +47,14 @@ impl MeowdictResponse<'_> {
 
     async fn search_word_to_dict_result(&self) -> Result<String> {
         let terminal_size = get_terminal_size();
-        let meowdict_results = get_dict_result(self.client, &self.words.as_ref().unwrap()).await?;
+        let meowdict_results = get_dict_result(self.client, self.words.as_ref().unwrap()).await?;
         let result = gen_dict_result_str(meowdict_results, terminal_size);
 
         Ok(result)
     }
 
     async fn search_word_to_translation_result(&self) -> Result<String> {
-        let meowdict_results = get_dict_result(self.client, &self.words.as_ref().unwrap()).await?;
+        let meowdict_results = get_dict_result(self.client, self.words.as_ref().unwrap()).await?;
         let result = gen_translation_str(meowdict_results);
 
         Ok(result)
@@ -62,14 +62,14 @@ impl MeowdictResponse<'_> {
 
     async fn search_word_to_jyutping_result(&self) -> Result<String> {
         let jyutping_results =
-            get_jyutping_result(self.client, &self.words.as_ref().unwrap()).await?;
+            get_jyutping_result(self.client, self.words.as_ref().unwrap()).await?;
         let result = gen_jyutping_str(jyutping_results);
 
         Ok(result)
     }
 
     async fn search_word_to_json_result(&self) -> Result<String> {
-        let json_obj = set_json_result(self.client, &self.words.as_ref().unwrap()).await;
+        let json_obj = set_json_result(self.client, self.words.as_ref().unwrap()).await;
         let result = gen_dict_json_str(json_obj)?;
 
         Ok(result)
@@ -123,20 +123,16 @@ impl MeowdictResponse<'_> {
     }
 
     fn words_input_s2t(&self) -> Option<Vec<String>> {
-        if let Some(words) = &self.words {
+        self.words.as_ref().map(|words| {
             if self.input_s2t {
-                Some(
-                    words
-                        .iter()
-                        .map(|x| opencc_convert(x, OpenccConvertMode::S2T))
-                        .collect::<Vec<_>>(),
-                )
+                words
+                    .iter()
+                    .map(|x| opencc_convert(x, OpenccConvertMode::S2T))
+                    .collect::<Vec<_>>()
             } else {
-                Some(words.to_vec())
+                words.to_vec()
             }
-        } else {
-            None
-        }
+        })
     }
 }
 
