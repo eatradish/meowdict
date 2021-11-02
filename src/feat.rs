@@ -31,7 +31,8 @@ pub struct MeowdictResponse<'a> {
 }
 
 impl MeowdictResponse<'_> {
-    pub async fn match_command_to_run(&self) -> Result<()> {
+    pub async fn match_command_to_run(&mut self) -> Result<()> {
+        self.words = self.words_input_s2t();
         let result = match self.command {
             MeowdictRunCommand::Show => self.search_word_to_dict_result().await?,
             MeowdictRunCommand::Translate => self.search_word_to_translation_result().await?,
@@ -46,44 +47,29 @@ impl MeowdictResponse<'_> {
 
     async fn search_word_to_dict_result(&self) -> Result<String> {
         let terminal_size = get_terminal_size();
-        let meowdict_results = get_dict_result(
-            self.client,
-            &words_input_s2t(self.words.as_ref().unwrap(), self.input_s2t),
-        )
-        .await?;
+        let meowdict_results = get_dict_result(self.client, &self.words.as_ref().unwrap()).await?;
         let result = gen_dict_result_str(meowdict_results, terminal_size);
 
         Ok(result)
     }
 
     async fn search_word_to_translation_result(&self) -> Result<String> {
-        let meowdict_results = get_dict_result(
-            self.client,
-            &words_input_s2t(self.words.as_ref().unwrap(), self.input_s2t),
-        )
-        .await?;
+        let meowdict_results = get_dict_result(self.client, &self.words.as_ref().unwrap()).await?;
         let result = gen_translation_str(meowdict_results);
 
         Ok(result)
     }
 
     async fn search_word_to_jyutping_result(&self) -> Result<String> {
-        let jyutping_results = get_jyutping_result(
-            self.client,
-            &words_input_s2t(self.words.as_ref().unwrap(), self.input_s2t),
-        )
-        .await?;
+        let jyutping_results =
+            get_jyutping_result(self.client, &self.words.as_ref().unwrap()).await?;
         let result = gen_jyutping_str(jyutping_results);
 
         Ok(result)
     }
 
     async fn search_word_to_json_result(&self) -> Result<String> {
-        let json_obj = set_json_result(
-            self.client,
-            &words_input_s2t(self.words.as_ref().unwrap(), self.input_s2t),
-        )
-        .await;
+        let json_obj = set_json_result(self.client, &self.words.as_ref().unwrap()).await;
         let result = gen_dict_json_str(json_obj)?;
 
         Ok(result)
@@ -95,13 +81,12 @@ impl MeowdictResponse<'_> {
         let terminal_size = get_terminal_size();
         let rand_words = match &self.words {
             Some(words) => {
-                let words = words_input_s2t(words, self.input_s2t);
                 let mut result = Vec::new();
                 for word in words {
                     result.push(
                         moedict_index
                             .iter()
-                            .filter(|x| x.contains(&word))
+                            .filter(|x| x.contains(word))
                             .choose(rng)
                             .ok_or_else(|| anyhow!("Cannot choose one!"))?
                             .to_owned(),
@@ -136,6 +121,23 @@ impl MeowdictResponse<'_> {
             result
         }
     }
+
+    fn words_input_s2t(&self) -> Option<Vec<String>> {
+        if let Some(words) = &self.words {
+            if self.input_s2t {
+                Some(
+                    words
+                        .iter()
+                        .map(|x| opencc_convert(x, OpenccConvertMode::S2T))
+                        .collect::<Vec<_>>(),
+                )
+            } else {
+                Some(words.to_vec())
+            }
+        } else {
+            None
+        }
+    }
 }
 
 fn get_terminal_size() -> usize {
@@ -151,16 +153,6 @@ fn opencc_convert(input: &str, t: OpenccConvertMode) -> String {
     .convert(input)
 }
 
-fn words_input_s2t(words: &[String], input_s2t: bool) -> Vec<String> {
-    if input_s2t {
-        words
-            .iter()
-            .map(|x| opencc_convert(x, OpenccConvertMode::S2T))
-            .collect::<Vec<_>>()
-    } else {
-        words.to_vec()
-    }
-}
 #[test]
 fn test_opencc() {
     let s = "老师";
