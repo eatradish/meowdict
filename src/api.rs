@@ -80,18 +80,14 @@ async fn request_moedict(keyword: &str, client: &Client) -> Result<MoedictRawRes
         .await?;
 
     match response.status().into() {
-        200 => {
-            let obj: MoedictRawResult = serde_json::from_str(
-                response
-                    .text()
-                    .await?
-                    .replace("`", "")
-                    .replace("~", "")
-                    .as_str(),
-            )?;
-
-            Ok(obj)
-        }
+        200 => Ok(serde_json::from_str(
+            response
+                .text()
+                .await?
+                .replace("`", "")
+                .replace("~", "")
+                .as_str(),
+        )?),
         404 => Err(anyhow!("Could not find keyword: {}", keyword)),
         _ => Err(anyhow!("Response status code: {}", response.status())),
     }
