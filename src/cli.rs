@@ -162,7 +162,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 .arg(
                     Arg::with_name("INPUT")
                         .help("Input word here")
-                        .min_values(0)
+                        .min_values(0),
                 )
                 .arg(
                     Arg::with_name("inputs2t")
