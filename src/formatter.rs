@@ -4,10 +4,7 @@ use indexmap::IndexMap;
 use owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
 
-use crate::api::{
-    MeowdictJsonResult, MeowdictJyutPingResult, MoedictDefinition, MoedictRawResult,
-    WantWordsResult,
-};
+use crate::api::*;
 
 const TERMINAL_LINE_LIMIT_LENGTH: usize = 80;
 
@@ -175,12 +172,10 @@ pub fn gen_wantwords_str(
             if !is_all && wantwords_result_item.correlation == "00" {
                 continue;
             }
-            s.push(
-                format!(
-                    "{}: {}",
-                    wantwords_result_item.word, wantwords_result_item.correlation
-                )
-            );
+            s.push(format!(
+                "{}: {}",
+                wantwords_result_item.word, wantwords_result_item.correlation
+            ));
         }
         result.push(s.join("\n"));
     }

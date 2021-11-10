@@ -97,7 +97,7 @@ async fn main() -> Result<()> {
                 result_t2s,
                 no_color,
                 words,
-                is_all
+                is_all,
             }
             .match_command_to_run()
             .await

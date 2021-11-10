@@ -166,7 +166,7 @@ impl MeowdictConsole<'_> {
                 result_t2s,
                 no_color,
                 words,
-                is_all: command_is_all
+                is_all: command_is_all,
             }
             .match_command_to_run()
             .await?;
