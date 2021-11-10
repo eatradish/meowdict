@@ -2,8 +2,7 @@ use anyhow::{anyhow, Result};
 use clap::crate_version;
 use lazy_static::lazy_static;
 use reqwest::Client;
-use rustyline::Editor;
-use rustyline::config::Configurer;
+use rustyline::{config::Configurer, Editor};
 
 use crate::feat::*;
 use crate::formatter::OpenccConvertMode;
@@ -29,6 +28,8 @@ const USAGE: &str = r#"Usage:
 .rand(random)
 .rand(random) [WORDS]
 .jyut(jyutping) [WORDS]
+.rev(reverse) [WORDS]
+.rev(reverse) .all [WORDS]
 .trans(translate) [WORDS]
 .show .input_s2t [WORDS]
 .show .result_t2s [WORDS]
@@ -104,7 +105,7 @@ impl MeowdictConsole<'_> {
         let values: Vec<String> = values.into_iter().map(|x| x.into()).collect();
         let mut command_result_t2s = false;
         let mut command_input_s2t = false;
-        let mut command_is_all = false;
+        let mut is_all = false;
         let mut run_status: Option<MeowdictRunCommand> = None;
         if args.is_empty() && !values.is_empty() {
             set_run_status!(run_status, MeowdictRunCommand::Show);
@@ -139,7 +140,7 @@ impl MeowdictConsole<'_> {
                     set_run_status!(run_status, MeowdictRunCommand::Reverse);
                 }
                 ".all" => {
-                    command_is_all = true;
+                    is_all = true;
                 }
                 ".help" => {
                     println!("{}", USAGE);
@@ -168,7 +169,7 @@ impl MeowdictConsole<'_> {
                 result_t2s,
                 no_color,
                 words,
-                is_all: command_is_all,
+                is_all,
             }
             .match_command_to_run()
             .await?;

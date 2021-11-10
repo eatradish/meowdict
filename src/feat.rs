@@ -114,7 +114,7 @@ impl MeowdictResponse<'_> {
         let reverse_results = get_wantwords(words, self.client).await?;
         let results = gen_wantwords_str(words, reverse_results, self.is_all);
 
-        Ok(results.join(""))
+        Ok(results.join("\n"))
     }
 
     fn setup_result(&self, result: &str) -> String {
