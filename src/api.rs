@@ -62,6 +62,14 @@ pub struct MeowdictJsonResult {
     pub jyutping: Option<Vec<String>>,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct WantWordsResult {
+    #[serde(rename(deserialize = "c"))]
+    pub correlation: String,
+    #[serde(rename(deserialize = "w"))]
+    pub word: String,
+}
+
 lazy_static! {
     static ref CACHE_PATH_DIRECTORY: PathBuf =
         dirs_next::cache_dir().unwrap_or_else(|| PathBuf::from("."));
@@ -268,6 +276,26 @@ pub async fn set_json_result(client: &Client, words: &[String]) -> Vec<MeowdictJ
     };
 
     result
+}
+
+async fn request_wantwords(keyword: &str, client: &Client) -> Result<Vec<WantWordsResult>> {
+    Ok(client
+        .get(format!(
+            "https://wantwords.thunlp.org/ChineseRD/?description={}&mode=CC",
+            keyword
+        ))
+        .send()
+        .await?
+        .json::<Vec<WantWordsResult>>()
+        .await?)
+}
+
+pub async fn get_wantwords(words: &[String], client: &Client) -> Result<Vec<Vec<WantWordsResult>>> {
+    let mut tesk = Vec::new();
+    for word in words {
+        tesk.push(request_wantwords(word, client));
+    }
+    Ok(future::try_join_all(tesk).await?)
 }
 
 #[test]

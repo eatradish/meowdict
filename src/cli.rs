@@ -209,4 +209,21 @@ pub fn build_cli() -> App<'static, 'static> {
                         .requires("INPUT"),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("reverse")
+                .about("Get word reverse result (data from wantwords.thunlp.org")
+                .alias("rev")
+                .arg(
+                    Arg::with_name("INPUT")
+                        .help("Input word here")
+                        .takes_value(true)
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("all")
+                        .help("Get all reverse result")
+                        .short("a")
+                        .requires("INPUT"),
+                ),
+        )
 }

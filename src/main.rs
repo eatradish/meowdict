@@ -58,6 +58,7 @@ async fn main() -> Result<()> {
     let mut result_t2s = config.result_t2s || app.is_present("resultt2s");
     let mut no_color = config.no_color || app.is_present("no-color-output");
     let (subcommand, args) = app.subcommand();
+    let mut is_all = false;
     if !is_meowdict_terminal(&app) {
         if app.values_of("INPUT").is_some() {
             MeowdictResponse {
@@ -67,6 +68,7 @@ async fn main() -> Result<()> {
                 result_t2s,
                 no_color,
                 words: app.values_of_lossy("INPUT"),
+                is_all,
             }
             .match_command_to_run()
             .await
@@ -76,6 +78,7 @@ async fn main() -> Result<()> {
                 "translate" => MeowdictRunCommand::Translate,
                 "jyutping" => MeowdictRunCommand::JyutPing,
                 "random" => MeowdictRunCommand::Random,
+                "reverse" => MeowdictRunCommand::Reverse,
                 _ => unreachable!(),
             };
             let mut words: Option<Vec<String>> = None;
@@ -84,6 +87,7 @@ async fn main() -> Result<()> {
                 input_s2t = input_s2t || args.is_present("inputs2t");
                 result_t2s = result_t2s || args.is_present("resultt2s");
                 no_color = no_color || args.is_present("no-color-output");
+                is_all = args.is_present("all");
             }
 
             MeowdictResponse {
@@ -93,6 +97,7 @@ async fn main() -> Result<()> {
                 result_t2s,
                 no_color,
                 words,
+                is_all
             }
             .match_command_to_run()
             .await

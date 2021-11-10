@@ -1,7 +1,5 @@
-use crate::api::{get_dict_result, get_jyutping_result, get_moedict_index, set_json_result};
-use crate::formatter::{
-    gen_dict_json_str, gen_dict_result_str, gen_jyutping_str, gen_translation_str,
-};
+use crate::api::{get_dict_result, get_jyutping_result, get_moedict_index, get_wantwords, set_json_result};
+use crate::formatter::{gen_dict_json_str, gen_dict_result_str, gen_jyutping_str, gen_translation_str, gen_wantwords_str};
 use anyhow::{anyhow, Result};
 use console::{strip_ansi_codes, Term};
 use opencc_rust::{DefaultConfig, OpenCC};
@@ -14,6 +12,7 @@ pub enum MeowdictRunCommand {
     JyutPing,
     Json,
     Random,
+    Reverse,
 }
 
 enum OpenccConvertMode {
@@ -28,6 +27,7 @@ pub struct MeowdictResponse<'a> {
     pub result_t2s: bool,
     pub no_color: bool,
     pub words: Option<Vec<String>>,
+    pub is_all: bool,
 }
 
 impl MeowdictResponse<'_> {
@@ -39,6 +39,7 @@ impl MeowdictResponse<'_> {
             MeowdictRunCommand::JyutPing => self.search_word_to_jyutping_result().await?,
             MeowdictRunCommand::Json => self.search_word_to_json_result().await?,
             MeowdictRunCommand::Random => self.random_moedict_item().await?,
+            MeowdictRunCommand::Reverse => self.search_reverse_word().await?
         };
         println!("{}", self.setup_result(&result));
 
@@ -106,6 +107,14 @@ impl MeowdictResponse<'_> {
         let result = gen_dict_result_str(moedict_results, terminal_size);
 
         Ok(result)
+    }
+
+    async fn search_reverse_word(&self) -> Result<String> {
+        let words = &self.words.as_ref().unwrap();
+        let reverse_results = get_wantwords(words, self.client).await?;
+        let results = gen_wantwords_str(words, reverse_results, self.is_all);
+
+        Ok(results.join(""))
     }
 
     fn setup_result(&self, result: &str) -> String {

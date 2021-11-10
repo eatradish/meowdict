@@ -102,6 +102,7 @@ impl MeowdictConsole<'_> {
         let values: Vec<String> = values.into_iter().map(|x| x.into()).collect();
         let mut command_result_t2s = false;
         let mut command_input_s2t = false;
+        let mut command_is_all = false;
         let mut run_status: Option<MeowdictRunCommand> = None;
         if args.is_empty() && !values.is_empty() {
             set_run_status!(run_status, MeowdictRunCommand::Show);
@@ -132,6 +133,12 @@ impl MeowdictConsole<'_> {
                 ".random" | ".rand" => {
                     set_run_status!(run_status, MeowdictRunCommand::Random);
                 }
+                ".reverse" | ".rev" => {
+                    set_run_status!(run_status, MeowdictRunCommand::Reverse);
+                }
+                ".all" => {
+                    command_is_all = true;
+                }
                 ".help" => {
                     println!("{}", USAGE);
                 }
@@ -159,6 +166,7 @@ impl MeowdictConsole<'_> {
                 result_t2s,
                 no_color,
                 words,
+                is_all: command_is_all
             }
             .match_command_to_run()
             .await?;

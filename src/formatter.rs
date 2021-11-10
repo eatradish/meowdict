@@ -4,7 +4,10 @@ use indexmap::IndexMap;
 use owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
 
-use crate::api::{MeowdictJsonResult, MeowdictJyutPingResult, MoedictDefinition, MoedictRawResult};
+use crate::api::{
+    MeowdictJsonResult, MeowdictJyutPingResult, MoedictDefinition, MoedictRawResult,
+    WantWordsResult,
+};
 
 const TERMINAL_LINE_LIMIT_LENGTH: usize = 80;
 
@@ -158,6 +161,31 @@ pub fn gen_jyutping_str(jyutping_result: Vec<MeowdictJyutPingResult>) -> String 
 
 pub fn gen_dict_json_str(moedict_results: Vec<MeowdictJsonResult>) -> Result<String> {
     Ok(serde_json::to_string(&moedict_results)?)
+}
+
+pub fn gen_wantwords_str(
+    words: &[String],
+    wantwords_results: Vec<Vec<WantWordsResult>>,
+    is_all: bool,
+) -> Vec<String> {
+    let mut result = Vec::new();
+    for (index, wantwords_result) in wantwords_results.into_iter().enumerate() {
+        let mut s = vec![format!("{}：", words[index])];
+        for wantwords_result_item in wantwords_result {
+            if !is_all && wantwords_result_item.correlation == "00" {
+                continue;
+            }
+            s.push(
+                format!(
+                    "{}: {}",
+                    wantwords_result_item.word, wantwords_result_item.correlation
+                )
+            );
+        }
+        result.push(s.join("\n"));
+    }
+
+    result
 }
 
 fn string_split_new_line(s: String, tab: usize, terminal_size: usize) -> String {
