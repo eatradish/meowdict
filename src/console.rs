@@ -3,6 +3,7 @@ use clap::crate_version;
 use lazy_static::lazy_static;
 use reqwest::Client;
 use rustyline::Editor;
+use rustyline::config::Configurer;
 
 use crate::feat::*;
 use crate::formatter::OpenccConvertMode;
@@ -62,6 +63,7 @@ impl MeowdictConsole<'_> {
     pub async fn create_console(&mut self) -> Result<()> {
         display_meowdict_version();
         let mut reader = Editor::<()>::new();
+        reader.set_auto_add_history(true);
         while let Ok(argument) = reader.readline("meowdict > ") {
             let argument = argument
                 .trim()
