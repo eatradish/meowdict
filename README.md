@@ -5,6 +5,10 @@ CLI Web client for moedict.tw
 
 ![screenshot](https://raw.githubusercontent.com/eatradish/meowdict/master/screenshot/Screenshot_20211022_113701.png)
 
+## How to find me?
+- Github Issue
+- Telegram Group: https://t.me/meodict_dev
+
 ## Installation
 If you use AOSC OS:
 
