@@ -57,7 +57,7 @@ async fn main() -> Result<()> {
     let mut input_s2t = config.input_s2t || app.is_present("inputs2t");
     let mut result_t2s = config.result_t2s || app.is_present("resultt2s");
     let mut no_color = config.no_color || app.is_present("no-color-output");
-    let (subcommand, args) = app.subcommand();
+    let subcmd = app.subcommand();
     let mut is_all = false;
     if !is_meowdict_terminal(&app) {
         if app.values_of("INPUT").is_some() {
@@ -73,7 +73,7 @@ async fn main() -> Result<()> {
             .match_command_to_run()
             .await
         } else {
-            let command = match subcommand {
+            let command = match subcmd.unwrap().0 {
                 "show" => MeowdictRunCommand::Show,
                 "translate" => MeowdictRunCommand::Translate,
                 "jyutping" => MeowdictRunCommand::JyutPing,
@@ -82,7 +82,7 @@ async fn main() -> Result<()> {
                 _ => unreachable!(),
             };
             let mut words: Option<Vec<String>> = None;
-            if let Some(args) = args {
+            if let Some((_, args)) = subcmd {
                 words = args.values_of_lossy("INPUT");
                 input_s2t = input_s2t || args.is_present("inputs2t");
                 result_t2s = result_t2s || args.is_present("resultt2s");
@@ -106,8 +106,8 @@ async fn main() -> Result<()> {
         let mut input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
         let mut result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
         let mut no_color = config.no_color || app.is_present("no-color-output");
-        if subcommand == "terminal" {
-            if let Some(args) = args {
+        if let Some((cmd, args)) = subcmd {
+            if cmd == "terminal" {
                 input_s2t_mode = input_s2t_mode || args.is_present("inputs2tmode");
                 result_t2s_mode = result_t2s_mode || args.is_present("resultt2smode");
                 no_color = no_color || args.is_present("no-color-output");

@@ -1,50 +1,50 @@
-use clap::{crate_version, App, Arg, SubCommand};
+use clap::{App, Arg};
 
-pub fn build_cli() -> App<'static, 'static> {
+pub fn build_cli() -> App<'static> {
     App::new("meowdict")
-        .version(crate_version!())
+        .version(env!("CARGO_PKG_VERSION"))
         .author("Mag Mell")
         .about("Search chinese keyword from moedict.tw")
         .arg(
-            Arg::with_name("inputs2t")
-                .short("i")
+            Arg::new("inputs2t")
+                .short('i')
                 .long("input-s2t")
                 .help("Convert input to traditional Chinese and search")
                 .requires("INPUT"),
         )
         .arg(
-            Arg::with_name("resultt2s")
-                .short("r")
+            Arg::new("resultt2s")
+                .short('r')
                 .long("result-t2s")
                 .help("Convert result to Simplified Chinese to display"),
         )
         .arg(
-            Arg::with_name("inputs2tmode")
+            Arg::new("inputs2tmode")
                 .long("input-s2t-mode")
                 .help("Open console with input-s2t mode"),
         )
         .arg(
-            Arg::with_name("resultt2smode")
+            Arg::new("resultt2smode")
                 .long("result-t2s-mode")
                 .help("Open console with result-t2s mode"),
         )
         .arg(
-            Arg::with_name("no-color-output")
+            Arg::new("no-color-output")
                 .long("no-color-output")
                 .help("Print result with no color")
                 .requires("INPUT"),
         )
         .arg(
-            Arg::with_name("INPUT")
+            Arg::new("INPUT")
                 .help("Input the keyword to use")
                 .index(1)
                 .min_values(1),
         )
         .subcommand(
-            SubCommand::with_name("show")
+            App::new("show")
                 .about("Get dict result")
                 .arg(
-                    Arg::with_name("INPUT")
+                    Arg::new("INPUT")
                         .help("Input the keyword to use")
                         .index(1)
                         .min_values(1)
@@ -52,178 +52,178 @@ pub fn build_cli() -> App<'static, 'static> {
                         .required(true),
                 )
                 .arg(
-                    Arg::with_name("inputs2t")
-                        .short("i")
+                    Arg::new("inputs2t")
+                        .short('i')
                         .long("input-s2t")
                         .help("Convert input to traditional Chinese and search")
                         .requires("INPUT"),
                 )
                 .arg(
-                    Arg::with_name("resultt2s")
-                        .short("r")
+                    Arg::new("resultt2s")
+                        .short('r')
                         .long("result-t2s")
                         .help("Convert result to Simplified Chinese to display")
                         .requires("INPUT"),
                 )
                 .arg(
-                    Arg::with_name("no-color-output")
+                    Arg::new("no-color-output")
                         .long("no-color-output")
                         .help("Print result with no color")
                         .requires("INPUT"),
                 ),
         )
         .subcommand(
-            SubCommand::with_name("translate")
+            App::new("translate")
                 .alias("trans")
                 .about("Get word translation")
                 .arg(
-                    Arg::with_name("INPUT")
+                    Arg::new("INPUT")
                         .help("Input word here")
                         .takes_value(true)
                         .required(true),
                 )
                 .arg(
-                    Arg::with_name("inputs2t")
-                        .short("i")
+                    Arg::new("inputs2t")
+                        .short('i')
                         .long("input-s2t")
                         .help("Convert input to traditional Chinese and search")
                         .requires("INPUT"),
                 )
                 .arg(
-                    Arg::with_name("resultt2s")
-                        .short("r")
+                    Arg::new("resultt2s")
+                        .short('r')
                         .long("result-t2s")
                         .help("Convert result to Simplified Chinese to display")
                         .requires("INPUT"),
                 )
                 .arg(
-                    Arg::with_name("no-color-output")
+                    Arg::new("no-color-output")
                         .long("no-color-output")
                         .help("Print result with no color")
                         .requires("INPUT"),
                 ),
         )
         .subcommand(
-            SubCommand::with_name("jyutping")
+            App::new("jyutping")
                 .alias("jyut")
                 .about("Get word jyutping")
                 .arg(
-                    Arg::with_name("INPUT")
+                    Arg::new("INPUT")
                         .help("Input word here")
                         .takes_value(true)
                         .required(true),
                 )
                 .arg(
-                    Arg::with_name("inputs2t")
-                        .short("i")
+                    Arg::new("inputs2t")
+                        .short('i')
                         .long("input-s2t")
                         .help("Convert input to traditional Chinese and search")
                         .requires("INPUT"),
                 )
                 .arg(
-                    Arg::with_name("resultt2s")
-                        .short("r")
+                    Arg::new("resultt2s")
+                        .short('r')
                         .long("result-t2s")
                         .help("Convert result to Simplified Chinese to display")
                         .requires("INPUT"),
                 )
                 .arg(
-                    Arg::with_name("no-color-output")
+                    Arg::new("no-color-output")
                         .long("no-color-output")
                         .help("Print result with no color")
                         .requires("INPUT"),
                 ),
         )
         .subcommand(
-            SubCommand::with_name("terminal")
+            App::new("terminal")
                 .alias("term")
                 .about("Open meowdict terminal")
                 .arg(
-                    Arg::with_name("inputs2tmode")
+                    Arg::new("inputs2tmode")
                         .long("input-s2t-mode")
                         .help("Open console with input-s2t mode"),
                 )
                 .arg(
-                    Arg::with_name("resultt2smode")
+                    Arg::new("resultt2smode")
                         .long("result-t2s-mode")
                         .help("Open console with result-t2s mode"),
                 )
                 .arg(
-                    Arg::with_name("no-color-output")
+                    Arg::new("no-color-output")
                         .long("no-color-output")
                         .help("Print result with no color")
                         .requires("INPUT"),
                 ),
         )
         .subcommand(
-            SubCommand::with_name("random")
+            App::new("random")
                 .alias("rand")
                 .about("search random word")
                 .arg(
-                    Arg::with_name("INPUT")
+                    Arg::new("INPUT")
                         .help("Input word here")
                         .min_values(0),
                 )
                 .arg(
-                    Arg::with_name("inputs2t")
-                        .short("i")
+                    Arg::new("inputs2t")
+                        .short('i')
                         .long("input-s2t")
                         .help("Convert input to traditional Chinese and search")
                         .requires("INPUT"),
                 )
                 .arg(
-                    Arg::with_name("resultt2s")
-                        .short("r")
+                    Arg::new("resultt2s")
+                        .short('r')
                         .long("result-t2s")
                         .help("Convert result to Simplified Chinese to display")
                         .requires("INPUT"),
                 )
                 .arg(
-                    Arg::with_name("no-color-output")
+                    Arg::new("no-color-output")
                         .long("no-color-output")
                         .help("Print result with no color")
                         .requires("INPUT"),
                 ),
         )
         .subcommand(
-            SubCommand::with_name("json")
+            App::new("json")
                 .about("Print result to JSON output")
                 .arg(
-                    Arg::with_name("INPUT")
+                    Arg::new("INPUT")
                         .help("Input word here")
                         .takes_value(true)
                         .required(true),
                 )
                 .arg(
-                    Arg::with_name("inputs2t")
-                        .short("i")
+                    Arg::new("inputs2t")
+                        .short('i')
                         .long("input-s2t")
                         .help("Convert input to traditional Chinese and search")
                         .requires("INPUT"),
                 )
                 .arg(
-                    Arg::with_name("resultt2s")
-                        .short("r")
+                    Arg::new("resultt2s")
+                        .short('r')
                         .long("result-t2s")
                         .help("Convert result to Simplified Chinese to display")
                         .requires("INPUT"),
                 ),
         )
         .subcommand(
-            SubCommand::with_name("reverse")
+            App::new("reverse")
                 .about("Get word reverse result (data from wantwords.thunlp.org")
                 .alias("rev")
                 .arg(
-                    Arg::with_name("INPUT")
+                    Arg::new("INPUT")
                         .help("Input word here")
                         .takes_value(true)
                         .min_values(1)
                         .required(true),
                 )
                 .arg(
-                    Arg::with_name("all")
+                    Arg::new("all")
                         .help("Get all reverse result")
-                        .short("a")
+                        .short('a')
                         .requires("INPUT"),
                 ),
         )

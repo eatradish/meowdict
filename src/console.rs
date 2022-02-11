@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Result};
-use clap::crate_version;
 use lazy_static::lazy_static;
 use reqwest::Client;
 use rustyline::{config::Configurer, Editor};
@@ -18,7 +17,7 @@ lazy_static! {
     static ref WELCOME_INFO: String = format!(
         r#"Welcome to meowdict {}!
 Please enter .help for more information"#,
-        crate_version!()
+        env!("CARGO_PKG_VERSION")
     );
 }
 
