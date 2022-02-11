@@ -60,14 +60,15 @@ async fn main() -> Result<()> {
     let subcmd = app.subcommand();
     let mut is_all = false;
     if !is_meowdict_terminal(&app) {
-        if app.values_of("INPUT").is_some() {
+        if let Some(words) = app.values_of("INPUT") {
+            let words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
             MeowdictResponse {
                 command: MeowdictRunCommand::Show,
                 client: &client,
                 input_s2t,
                 result_t2s,
                 no_color,
-                words: app.values_of_lossy("INPUT"),
+                words: Some(words),
                 is_all,
             }
             .match_command_to_run()
