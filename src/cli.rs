@@ -159,11 +159,7 @@ pub fn build_cli() -> App<'static> {
             App::new("random")
                 .alias("rand")
                 .about("search random word")
-                .arg(
-                    Arg::new("INPUT")
-                        .help("Input word here")
-                        .min_values(0),
-                )
+                .arg(Arg::new("INPUT").help("Input word here").min_values(0))
                 .arg(
                     Arg::new("inputs2t")
                         .short('i')
@@ -206,24 +202,6 @@ pub fn build_cli() -> App<'static> {
                         .short('r')
                         .long("result-t2s")
                         .help("Convert result to Simplified Chinese to display")
-                        .requires("INPUT"),
-                ),
-        )
-        .subcommand(
-            App::new("reverse")
-                .about("Get word reverse result (data from wantwords.thunlp.org")
-                .alias("rev")
-                .arg(
-                    Arg::new("INPUT")
-                        .help("Input word here")
-                        .takes_value(true)
-                        .min_values(1)
-                        .required(true),
-                )
-                .arg(
-                    Arg::new("all")
-                        .help("Get all reverse result")
-                        .short('a')
                         .requires("INPUT"),
                 ),
         )

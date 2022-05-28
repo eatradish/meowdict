@@ -79,7 +79,6 @@ async fn main() -> Result<()> {
                 "translate" => MeowdictRunCommand::Translate,
                 "jyutping" => MeowdictRunCommand::JyutPing,
                 "random" => MeowdictRunCommand::Random,
-                "reverse" => MeowdictRunCommand::Reverse,
                 _ => unreachable!(),
             };
             let mut words: Option<Vec<String>> = None;

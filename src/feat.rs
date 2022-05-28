@@ -12,7 +12,6 @@ pub enum MeowdictRunCommand {
     JyutPing,
     Json,
     Random,
-    Reverse,
 }
 
 enum OpenccConvertMode {
@@ -39,7 +38,6 @@ impl MeowdictResponse<'_> {
             MeowdictRunCommand::JyutPing => self.search_word_to_jyutping_result().await?,
             MeowdictRunCommand::Json => self.search_word_to_json_result().await?,
             MeowdictRunCommand::Random => self.random_moedict_item().await?,
-            MeowdictRunCommand::Reverse => self.search_reverse_word().await?,
         };
         println!("{}", self.setup_result(&result));
 
@@ -107,14 +105,6 @@ impl MeowdictResponse<'_> {
         let result = gen_dict_result_str(moedict_results, terminal_size);
 
         Ok(result)
-    }
-
-    async fn search_reverse_word(&self) -> Result<String> {
-        let words = &self.words.as_ref().unwrap();
-        let reverse_results = get_wantwords(words, self.client).await?;
-        let results = gen_wantwords_str(words, reverse_results, self.is_all);
-
-        Ok(results.join("\n"))
     }
 
     fn setup_result(&self, result: &str) -> String {

@@ -135,9 +135,6 @@ impl MeowdictConsole<'_> {
                 ".random" | ".rand" => {
                     set_run_status!(run_status, MeowdictRunCommand::Random);
                 }
-                ".reverse" | ".rev" => {
-                    set_run_status!(run_status, MeowdictRunCommand::Reverse);
-                }
                 ".all" => {
                     is_all = true;
                 }
