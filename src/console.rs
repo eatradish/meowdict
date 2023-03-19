@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use lazy_static::lazy_static;
 use reqwest::Client;
-use rustyline::{config::Configurer, Editor};
+use rustyline::{config::Configurer, DefaultEditor};
 
 use crate::feat::*;
 use crate::formatter::OpenccConvertMode;
@@ -62,7 +62,7 @@ macro_rules! set_run_status_mode {
 impl MeowdictConsole<'_> {
     pub async fn create_console(&mut self) -> Result<()> {
         display_meowdict_version();
-        let mut reader = Editor::<()>::new();
+        let mut reader = DefaultEditor::new()?;
         reader.set_auto_add_history(true);
         while let Ok(argument) = reader.readline("meowdict > ") {
             let argument = argument
