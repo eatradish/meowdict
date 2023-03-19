@@ -54,13 +54,13 @@ async fn main() -> Result<()> {
     let config = read_config()?;
     let app = cli::build_cli().get_matches();
     let client = reqwest::Client::new();
-    let mut input_s2t = config.input_s2t || app.is_present("inputs2t");
-    let mut result_t2s = config.result_t2s || app.is_present("resultt2s");
-    let mut no_color = config.no_color || app.is_present("no-color-output");
+    let mut input_s2t = config.input_s2t || app.contains_id("inputs2t");
+    let mut result_t2s = config.result_t2s || app.contains_id("resultt2s");
+    let mut no_color = config.no_color || app.contains_id("no-color-output");
     let subcmd = app.subcommand();
     let mut is_all = false;
     if !is_meowdict_terminal(&app) {
-        if let Some(words) = app.values_of("INPUT") {
+        if let Some(words) = app.get_many::<String>("INPUT") {
             let words = words.into_iter().map(|x| x.into()).collect::<Vec<String>>();
             MeowdictResponse {
                 command: MeowdictRunCommand::Show,
@@ -81,13 +81,15 @@ async fn main() -> Result<()> {
                 "random" => MeowdictRunCommand::Random,
                 _ => unreachable!(),
             };
-            let mut words: Option<Vec<String>> = None;
+            let mut words = None;
             if let Some((_, args)) = subcmd {
-                words = args.values_of_lossy("INPUT");
-                input_s2t = input_s2t || args.is_present("inputs2t");
-                result_t2s = result_t2s || args.is_present("resultt2s");
-                no_color = no_color || args.is_present("no-color-output");
-                is_all = args.is_present("all");
+                words = args
+                    .get_many::<String>("INPUT")
+                    .map(|x| x.cloned().collect());
+                input_s2t = input_s2t || args.contains_id("inputs2t");
+                result_t2s = result_t2s || args.contains_id("resultt2s");
+                no_color = no_color || args.contains_id("no-color-output");
+                is_all = args.contains_id("all");
             }
 
             MeowdictResponse {
@@ -103,14 +105,14 @@ async fn main() -> Result<()> {
             .await
         }
     } else {
-        let mut input_s2t_mode = config.input_s2t || app.is_present("inputs2tmode");
-        let mut result_t2s_mode = config.result_t2s || app.is_present("resultt2smode");
-        let mut no_color = config.no_color || app.is_present("no-color-output");
+        let mut input_s2t_mode = config.input_s2t || app.contains_id("inputs2tmode");
+        let mut result_t2s_mode = config.result_t2s || app.contains_id("resultt2smode");
+        let mut no_color = config.no_color || app.contains_id("no-color-output");
         if let Some((cmd, args)) = subcmd {
             if cmd == "terminal" {
-                input_s2t_mode = input_s2t_mode || args.is_present("inputs2tmode");
-                result_t2s_mode = result_t2s_mode || args.is_present("resultt2smode");
-                no_color = no_color || args.is_present("no-color-output");
+                input_s2t_mode = input_s2t_mode || args.contains_id("inputs2tmode");
+                result_t2s_mode = result_t2s_mode || args.contains_id("resultt2smode");
+                no_color = no_color || args.contains_id("no-color-output");
             }
         }
         let mut console = MeowdictConsole {
@@ -125,7 +127,7 @@ async fn main() -> Result<()> {
 }
 
 fn is_meowdict_terminal(app: &ArgMatches) -> bool {
-    app.values_of("INPUT").is_none() && app.subcommand_name().is_none()
+    app.get_many::<String>("INPUT").is_none() && app.subcommand_name().is_none()
         || app.subcommand_name() == Some("terminal")
 }
 
@@ -136,14 +138,14 @@ fn read_config() -> Result<MeowdictConfig> {
         .write(true)
         .create(true)
         .open(&*CONFIG_PATH)?;
-    let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer)?;
+    let mut buffer = String::new();
+    file.read_to_string(&mut buffer)?;
 
-    Ok(match toml::from_slice(&buffer) {
+    Ok(match toml::from_str(&buffer) {
         Ok(config) => config,
         Err(_) => {
             let default = MeowdictConfig::default();
-            file.write_all(&toml::to_vec(&default)?)?;
+            file.write_all(&toml::to_string(&default)?.as_bytes())?;
 
             default
         }

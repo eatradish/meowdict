@@ -1,7 +1,7 @@
-use clap::{App, Arg};
+use clap::{Command, Arg};
 
-pub fn build_cli() -> App<'static> {
-    App::new("meowdict")
+pub fn build_cli() -> Command {
+    Command::new("meowdict")
         .version(env!("CARGO_PKG_VERSION"))
         .author("Mag Mell")
         .about("Search chinese keyword from moedict.tw")
@@ -38,17 +38,17 @@ pub fn build_cli() -> App<'static> {
             Arg::new("INPUT")
                 .help("Input the keyword to use")
                 .index(1)
-                .min_values(1),
+                .num_args(1..),
         )
         .subcommand(
-            App::new("show")
+            Command::new("show")
                 .about("Get dict result")
                 .arg(
                     Arg::new("INPUT")
                         .help("Input the keyword to use")
                         .index(1)
-                        .min_values(1)
-                        .takes_value(true)
+                        .num_args(1..)
+                        .action(clap::ArgAction::Set)
                         .required(true),
                 )
                 .arg(
@@ -73,13 +73,13 @@ pub fn build_cli() -> App<'static> {
                 ),
         )
         .subcommand(
-            App::new("translate")
+            Command::new("translate")
                 .alias("trans")
                 .about("Get word translation")
                 .arg(
                     Arg::new("INPUT")
                         .help("Input word here")
-                        .takes_value(true)
+                        .action(clap::ArgAction::Set)
                         .required(true),
                 )
                 .arg(
@@ -104,13 +104,13 @@ pub fn build_cli() -> App<'static> {
                 ),
         )
         .subcommand(
-            App::new("jyutping")
+            Command::new("jyutping")
                 .alias("jyut")
                 .about("Get word jyutping")
                 .arg(
                     Arg::new("INPUT")
                         .help("Input word here")
-                        .takes_value(true)
+                        .action(clap::ArgAction::Set)
                         .required(true),
                 )
                 .arg(
@@ -135,7 +135,7 @@ pub fn build_cli() -> App<'static> {
                 ),
         )
         .subcommand(
-            App::new("terminal")
+            Command::new("terminal")
                 .alias("term")
                 .about("Open meowdict terminal")
                 .arg(
@@ -156,10 +156,10 @@ pub fn build_cli() -> App<'static> {
                 ),
         )
         .subcommand(
-            App::new("random")
+            Command::new("random")
                 .alias("rand")
                 .about("search random word")
-                .arg(Arg::new("INPUT").help("Input word here").min_values(0))
+                .arg(Arg::new("INPUT").help("Input word here").num_args(0..))
                 .arg(
                     Arg::new("inputs2t")
                         .short('i')
@@ -182,12 +182,12 @@ pub fn build_cli() -> App<'static> {
                 ),
         )
         .subcommand(
-            App::new("json")
+            Command::new("json")
                 .about("Print result to JSON output")
                 .arg(
                     Arg::new("INPUT")
                         .help("Input word here")
-                        .takes_value(true)
+                        .action(clap::ArgAction::Set)
                         .required(true),
                 )
                 .arg(
